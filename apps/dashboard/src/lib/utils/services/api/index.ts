@@ -139,7 +139,7 @@ class ApiClient {
 
     // Add organization ID header if available
     const org = get(currentOrg);
-    if (org?.id) {
+    if (org?.id && !headers.has('cio-org-id')) {
       headers.set('cio-org-id', org.id);
     }
 

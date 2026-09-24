@@ -187,6 +187,12 @@ export const baseNavConfig: NavItemConfig[] = [
   },
   {
     group: 'people',
+    titleKey: 'enterprise.title',
+    path: '/enterprise',
+    icon: PeopleIcon
+  },
+  {
+    group: 'people',
     titleKey: 'org_navigation.community',
     path: '/community',
     icon: CommunityIcon,

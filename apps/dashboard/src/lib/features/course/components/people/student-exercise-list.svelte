@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Card from '@cio/ui/base/card';
-  import * as Empty from '@cio/ui/custom/empty';
+  import * as Empty from '@cio/ui/base/empty';
   import * as ResourceListRow from '@cio/ui/custom/resource-list-row';
   import * as Separator from '@cio/ui/base/separator';
   import { Badge } from '@cio/ui/base/badge';
@@ -12,6 +12,7 @@
   import { STATUS } from '$features/course/components/exercise/constants';
   import { t } from '$lib/utils/functions/translations';
   import type { UserCourseAnalytics } from '$features/course/utils/types';
+  import { resolve } from '$app/paths';
 
   let {
     courseId,
@@ -25,6 +26,17 @@
   let completedExercises = $derived(exercises.filter((exercise) => exercise.isCompleted).length);
   let totalExercises = $derived(exercises.length);
   let exerciseCompletion = $derived(totalExercises === 0 ? 0 : Math.round((completedExercises / totalExercises) * 100));
+
+  function exerciseHref(exerciseId: string): `/${string}` {
+    const path = `/courses/${encodeURIComponent(courseId)}/exercises/${encodeURIComponent(exerciseId)}`;
+    const query = new URLSearchParams({
+      tab: 'submissions',
+      submission: 'individual',
+      student: userCourseAnalytics.user.id
+    });
+
+    return `${path}?${query}` as `/${string}`;
+  }
 
   function scoreLabel(exercise: (typeof exercises)[number]): string {
     if (exercise.status !== STATUS.GRADED) return `—/${exercise.totalPoints}`;
@@ -79,15 +91,12 @@
             </div>
           </ResourceListRow.Lead>
           <ResourceListRow.Main class="ui:gap-1">
-            <a
-              href={`/courses/${courseId}/exercises/${exercise.id}?tab=submissions&submission=individual&student=${encodeURIComponent(userCourseAnalytics.user.id)}`}
-              class="line-clamp-1 text-sm font-semibold hover:underline"
-            >
+            <a href={resolve(exerciseHref(exercise.id), {})} class="line-clamp-1 text-sm font-semibold hover:underline">
               {exercise.title}
             </a>
             {#if exercise.lessonId}
               <a
-                href={`/courses/${courseId}/lessons/${exercise.lessonId}`}
+                href={resolve('/courses/[id]/lessons/[lessonId]', { id: courseId, lessonId: exercise.lessonId })}
                 class="ui:text-muted-foreground line-clamp-1 text-xs hover:underline"
               >
                 {exercise.lessonTitle}

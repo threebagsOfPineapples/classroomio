@@ -34,6 +34,7 @@ import { transcriptsRouter } from '@api/routes/transcripts';
 import { mountQueueDashboard } from '@api/routes/admin/queues';
 import { onboardingRouter } from '@api/routes/onboarding';
 import { organizationRouter } from '@api/routes/organization';
+import { enterpriseRouter } from '@api/routes/enterprise';
 import { organizationSsoRouter } from '@api/routes/organization/sso';
 import { organizationTokenAuthRouter } from '@api/routes/organization/token-auth';
 import { prettyJSON } from 'hono/pretty-json';
@@ -243,6 +244,7 @@ export const app = new Hono()
   .route('/jobs', jobsRouter)
   .route('/license', licenseRouter)
   .route('/organization', organizationRouter)
+  .route('/enterprise', enterpriseRouter)
   .route('/organization/sso', organizationSsoRouter)
   .route('/organization/token-auth', organizationTokenAuthRouter)
   .route('/sso', ssoDiscoveryRouter)

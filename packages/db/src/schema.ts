@@ -85,6 +85,16 @@ export const organizationInviteType = pgEnum('ORGANIZATION_INVITE_TYPE', ['EMAIL
  *   (see `countActiveStudents`). The intended answer to "remove them".
  */
 export const organizationMemberStatus = pgEnum('ORGANIZATION_MEMBER_STATUS', ['ACTIVE', 'DEACTIVATED', 'ARCHIVED']);
+export const departmentStatus = pgEnum('DEPARTMENT_STATUS', ['ACTIVE', 'INACTIVE']);
+export const employmentStatus = pgEnum('EMPLOYMENT_STATUS', ['ACTIVE', 'ON_LEAVE', 'TERMINATED']);
+export const enterpriseRole = pgEnum('ENTERPRISE_ROLE', [
+  'SUPER_ADMIN',
+  'TRAINING_ADMIN',
+  'HR',
+  'DEPARTMENT_MANAGER',
+  'INSTRUCTOR',
+  'EMPLOYEE'
+]);
 
 export const organizationMemberEventType = pgEnum('ORGANIZATION_MEMBER_EVENT_TYPE', [
   'DEACTIVATED',
@@ -1970,6 +1980,14 @@ export const organizationmember = pgTable(
     roleId: bigint('role_id', { mode: 'number' }).notNull(),
     profileId: uuid('profile_id'),
     email: text(),
+    employeeNo: varchar('employee_no', { length: 64 }),
+    departmentId: uuid('department_id'),
+    position: varchar({ length: 128 }),
+    managerMemberId: bigint('manager_member_id', { mode: 'number' }),
+    employmentStatus: employmentStatus('employment_status'),
+    joinDate: date('join_date', { mode: 'string' }),
+    externalSource: varchar('external_source', { length: 64 }),
+    externalId: varchar('external_id', { length: 128 }),
     verified: boolean().default(false),
     status: organizationMemberStatus().default('ACTIVE').notNull(),
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true, mode: 'string' }),
@@ -2006,17 +2024,100 @@ export const organizationmember = pgTable(
       foreignColumns: [role.id],
       name: 'organizationmember_role_id_fkey'
     }),
+    foreignKey({
+      columns: [table.organizationId, table.departmentId],
+      foreignColumns: [department.organizationId, department.id],
+      name: 'organizationmember_department_fkey'
+    }),
+    foreignKey({
+      columns: [table.organizationId, table.managerMemberId],
+      foreignColumns: [table.organizationId, table.id],
+      name: 'organizationmember_manager_fkey'
+    }),
+    unique('organizationmember_org_id_unique').on(table.organizationId, table.id),
     index('idx_organizationmember_profile_id').on(table.profileId),
     index('idx_organizationmember_organization_id').on(table.organizationId),
     index('idx_organizationmember_profile_org').on(table.profileId, table.organizationId),
     index('idx_orgmember_org_role_status').on(table.organizationId, table.roleId, table.status),
     index('idx_orgmember_org_last_active').on(table.organizationId, table.lastActiveAt),
+    index('idx_orgmember_department').on(table.organizationId, table.departmentId),
+    uniqueIndex('organizationmember_org_employee_no_unique')
+      .on(table.organizationId, table.employeeNo)
+      .where(sql`${table.employeeNo} IS NOT NULL`),
+    uniqueIndex('organizationmember_org_external_id_unique')
+      .on(table.organizationId, table.externalSource, table.externalId)
+      .where(sql`${table.externalSource} IS NOT NULL AND ${table.externalId} IS NOT NULL`),
     uniqueIndex('organizationmember_org_profile_unique')
       .on(table.organizationId, table.profileId)
       .where(sql`${table.profileId} IS NOT NULL`),
     uniqueIndex('organizationmember_org_email_unique')
       .on(table.organizationId, table.email)
       .where(sql`${table.email} IS NOT NULL`)
+  ]
+);
+
+export const department = pgTable(
+  'department',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    parentId: uuid('parent_id'),
+    name: varchar({ length: 160 }).notNull(),
+    code: varchar({ length: 64 }).notNull(),
+    leaderMemberId: bigint('leader_member_id', { mode: 'number' }),
+    sort: integer().default(0).notNull(),
+    status: departmentStatus().default('ACTIVE').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'department_organization_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId, table.parentId],
+      foreignColumns: [table.organizationId, table.id],
+      name: 'department_parent_fkey'
+    }),
+    unique('department_org_id_unique').on(table.organizationId, table.id),
+    unique('department_org_code_unique').on(table.organizationId, table.code),
+    index('idx_department_org_parent').on(table.organizationId, table.parentId),
+    index('idx_department_org_leader').on(table.organizationId, table.leaderMemberId),
+    check('department_no_self_parent', sql`${table.parentId} IS NULL OR ${table.parentId} <> ${table.id}`)
+  ]
+);
+
+export const organizationMemberEnterpriseRole = pgTable(
+  'organization_member_enterprise_role',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    organizationId: uuid('organization_id').notNull(),
+    memberId: bigint('member_id', { mode: 'number' }).notNull(),
+    role: enterpriseRole().notNull(),
+    createdByProfileId: uuid('created_by_profile_id'),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'organization_member_enterprise_role_member_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.createdByProfileId],
+      foreignColumns: [profile.id],
+      name: 'organization_member_enterprise_role_created_by_fkey'
+    }).onDelete('set null'),
+    unique('organization_member_enterprise_role_unique').on(table.memberId, table.role),
+    index('idx_organization_member_enterprise_role_org').on(table.organizationId)
   ]
 );
 
