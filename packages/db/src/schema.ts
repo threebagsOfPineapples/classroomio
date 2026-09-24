@@ -2135,6 +2135,185 @@ export const organizationMemberEnterpriseRole = pgTable(
   ]
 );
 
+export const trainingPlanType = pgEnum('TRAINING_PLAN_TYPE', [
+  'ANNUAL',
+  'QUARTERLY',
+  'MONTHLY',
+  'ONBOARDING',
+  'SPECIAL',
+  'MANDATORY',
+  'CUSTOM'
+]);
+export const trainingPlanStatus = pgEnum('TRAINING_PLAN_STATUS', [
+  'DRAFT',
+  'PUBLISHED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CANCELLED'
+]);
+export const trainingTargetType = pgEnum('TRAINING_TARGET_TYPE', ['DEPARTMENT', 'POSITION', 'USER']);
+export const trainingEnrollmentStatus = pgEnum('TRAINING_ENROLLMENT_STATUS', [
+  'NOT_STARTED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'FAILED',
+  'EXPIRED',
+  'CANCELLED'
+]);
+export const trainingResult = pgEnum('TRAINING_RESULT', ['PENDING', 'PASS', 'FAIL', 'MAKEUP_REQUIRED']);
+
+export const trainingPlan = pgTable(
+  'training_plan',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    name: varchar({ length: 200 }).notNull(),
+    code: varchar({ length: 64 }).notNull(),
+    description: text(),
+    year: integer().notNull(),
+    planType: trainingPlanType('plan_type').notNull(),
+    ownerMemberId: bigint('owner_member_id', { mode: 'number' }).notNull(),
+    departmentId: uuid('department_id'),
+    startAt: timestamp('start_at', { withTimezone: true, mode: 'string' }).notNull(),
+    endAt: timestamp('end_at', { withTimezone: true, mode: 'string' }).notNull(),
+    status: trainingPlanStatus().default('DRAFT').notNull(),
+    passScore: integer('pass_score'),
+    publishedAt: timestamp('published_at', { withTimezone: true, mode: 'string' }),
+    publishedByProfileId: uuid('published_by_profile_id'),
+    createdByProfileId: uuid('created_by_profile_id').notNull(),
+    version: integer().default(1).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: 'training_plan_organization_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId, table.ownerMemberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'training_plan_owner_fkey'
+    }),
+    foreignKey({
+      columns: [table.organizationId, table.departmentId],
+      foreignColumns: [department.organizationId, department.id],
+      name: 'training_plan_department_fkey'
+    }),
+    foreignKey({
+      columns: [table.createdByProfileId],
+      foreignColumns: [profile.id],
+      name: 'training_plan_created_by_fkey'
+    }),
+    foreignKey({
+      columns: [table.publishedByProfileId],
+      foreignColumns: [profile.id],
+      name: 'training_plan_published_by_fkey'
+    }),
+    unique('training_plan_org_code_unique').on(table.organizationId, table.code),
+    index('idx_training_plan_org_status').on(table.organizationId, table.status),
+    check('training_plan_dates_valid', sql`${table.endAt} >= ${table.startAt}`),
+    check('training_plan_pass_score_valid', sql`${table.passScore} IS NULL OR ${table.passScore} BETWEEN 0 AND 100`)
+  ]
+);
+
+export const trainingPlanCourse = pgTable(
+  'training_plan_course',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    planId: uuid('plan_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    sort: integer().default(0).notNull(),
+    required: boolean().default(true).notNull(),
+    dueAt: timestamp('due_at', { withTimezone: true, mode: 'string' })
+  },
+  (table) => [
+    foreignKey({ columns: [table.planId], foreignColumns: [trainingPlan.id], name: 'training_plan_course_plan_fkey' }),
+    foreignKey({ columns: [table.courseId], foreignColumns: [course.id], name: 'training_plan_course_course_fkey' }),
+    unique('training_plan_course_unique').on(table.planId, table.courseId),
+    index('idx_training_plan_course_plan').on(table.planId)
+  ]
+);
+
+export const trainingPlanTarget = pgTable(
+  'training_plan_target',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    planId: uuid('plan_id').notNull(),
+    targetType: trainingTargetType('target_type').notNull(),
+    departmentId: uuid('department_id'),
+    position: varchar({ length: 128 }),
+    memberId: bigint('member_id', { mode: 'number' }),
+    includeDescendants: boolean('include_descendants').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({ columns: [table.planId], foreignColumns: [trainingPlan.id], name: 'training_plan_target_plan_fkey' }),
+    foreignKey({
+      columns: [table.departmentId],
+      foreignColumns: [department.id],
+      name: 'training_plan_target_department_fkey'
+    }),
+    foreignKey({
+      columns: [table.memberId],
+      foreignColumns: [organizationmember.id],
+      name: 'training_plan_target_member_fkey'
+    }),
+    index('idx_training_plan_target_plan').on(table.planId),
+    uniqueIndex('training_plan_target_department_unique')
+      .on(table.planId, table.departmentId)
+      .where(sql`${table.targetType} = 'DEPARTMENT'`),
+    uniqueIndex('training_plan_target_position_unique')
+      .on(table.planId, table.position)
+      .where(sql`${table.targetType} = 'POSITION'`),
+    uniqueIndex('training_plan_target_member_unique')
+      .on(table.planId, table.memberId)
+      .where(sql`${table.targetType} = 'USER'`),
+    check(
+      'training_plan_target_value_valid',
+      sql`(${table.targetType} = 'DEPARTMENT' AND ${table.departmentId} IS NOT NULL AND ${table.position} IS NULL AND ${table.memberId} IS NULL) OR (${table.targetType} = 'POSITION' AND ${table.departmentId} IS NULL AND ${table.position} IS NOT NULL AND ${table.memberId} IS NULL) OR (${table.targetType} = 'USER' AND ${table.departmentId} IS NULL AND ${table.position} IS NULL AND ${table.memberId} IS NOT NULL)`
+    )
+  ]
+);
+
+export const trainingEnrollment = pgTable(
+  'training_enrollment',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    planId: uuid('plan_id').notNull(),
+    memberId: bigint('member_id', { mode: 'number' }).notNull(),
+    status: trainingEnrollmentStatus().default('NOT_STARTED').notNull(),
+    result: trainingResult().default('PENDING').notNull(),
+    assignedAt: timestamp('assigned_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }),
+    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
+    progressPercent: integer('progress_percent'),
+    finalScore: doublePrecision('final_score'),
+    matchedTargetIds: uuid('matched_target_ids').array().notNull(),
+    planVersion: integer('plan_version').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'training_enrollment_member_fkey'
+    }),
+    foreignKey({ columns: [table.planId], foreignColumns: [trainingPlan.id], name: 'training_enrollment_plan_fkey' }),
+    unique('training_enrollment_plan_member_unique').on(table.planId, table.memberId),
+    index('idx_training_enrollment_org_member').on(table.organizationId, table.memberId),
+    index('idx_training_enrollment_plan_status').on(table.planId, table.status),
+    check(
+      'training_enrollment_progress_valid',
+      sql`${table.progressPercent} IS NULL OR ${table.progressPercent} BETWEEN 0 AND 100`
+    ),
+    check('training_enrollment_score_valid', sql`${table.finalScore} IS NULL OR ${table.finalScore} BETWEEN 0 AND 100`)
+  ]
+);
+
 export const organizationmemberEmailNotifications = pgTable(
   'organizationmember_email_notifications',
   {

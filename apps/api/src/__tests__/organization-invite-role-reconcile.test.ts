@@ -48,6 +48,7 @@ vi.mock('@cio/db/queries/organization', () => ({
 }));
 
 vi.mock('@cio/db/queries/course', () => ({ getCourseGroupIds: vi.fn() }));
+vi.mock('@cio/db/queries/training-plan', () => ({ listAssignedTrainingCoursesForProfile: vi.fn() }));
 vi.mock('@cio/db/queries/group', () => ({ enrollUsersInCourseGroups: vi.fn() }));
 vi.mock('@cio/core/utils/redis/org-stats-cache', () => ({ invalidateOrgStats: vi.fn() }));
 vi.mock('@cio/db/queries/cohort', () => ({
@@ -85,6 +86,8 @@ import {
   updateOrganizationMemberById
 } from '@cio/db/queries/organization';
 import { ROLE } from '@cio/utils/constants';
+import { listAssignedTrainingCoursesForProfile } from '@cio/db/queries/training-plan';
+import { enrollUsersInCourseGroups } from '@cio/db/queries/group';
 
 const ORG_ID = 'org-1';
 const USER = { id: 'user-1', email: 'Admin@Example.com' };
@@ -105,6 +108,7 @@ describe('acceptLinkInvite course-role reconciliation', () => {
       roleId: ROLE.ADMIN
     } as never);
     vi.mocked(updateOrganizationMemberById).mockResolvedValue(undefined as never);
+    vi.mocked(listAssignedTrainingCoursesForProfile).mockResolvedValue([] as never);
   });
 
   it('schedules reconciliation after the membership transaction commits', async () => {
@@ -122,5 +126,20 @@ describe('acceptLinkInvite course-role reconciliation', () => {
 
     expect(commitIndex).toBeGreaterThanOrEqual(0);
     expect(reconcileIndex).toBeGreaterThan(commitIndex);
+  });
+
+  it('grants assigned training courses when a pending employee accepts an invite', async () => {
+    vi.mocked(listAssignedTrainingCoursesForProfile).mockResolvedValue([
+      { courseId: 'course-1', groupId: 'group-1' }
+    ] as never);
+
+    await acceptLinkInvite('token-1', USER as never);
+
+    expect(enrollUsersInCourseGroups).toHaveBeenCalledWith(
+      ['group-1'],
+      [{ profileId: USER.id, email: 'admin@example.com' }],
+      ROLE.STUDENT,
+      expect.anything()
+    );
   });
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
@@ -138,6 +139,9 @@
         </div>
       </div>
     </Page.HeaderContent>
+    <Page.Action>
+      <Button variant="secondary" href={resolve('/admin/plans')}>{$t('enterprise.plans.title')}</Button>
+    </Page.Action>
   </Page.Header>
 
   <Page.Body>

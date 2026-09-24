@@ -18,6 +18,16 @@ import {
 } from '@cio/utils/validation/enterprise';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
+import { ZTrainingPlanDraft } from '@cio/utils/validation/training-plan';
+import {
+  addTrainingPlan,
+  editTrainingPlan,
+  getAvailableTrainingCourses,
+  getTrainingPlanById,
+  getTrainingPlans,
+  previewTrainingPlan,
+  publishTrainingPlan
+} from '@api/services/training-plan';
 
 function enterpriseRequest(c: {
   req: { header: (name: string) => string | undefined; param: (name: string) => string };
@@ -42,6 +52,13 @@ function memberIdParam(raw: string) {
 function departmentIdParam(raw: string) {
   const parsed = z.uuid().safeParse(raw);
   if (!parsed.success) throw new AppError('Invalid department ID', ErrorCodes.VALIDATION_ERROR, 400);
+
+  return parsed.data;
+}
+
+function planIdParam(raw: string) {
+  const parsed = z.uuid().safeParse(raw);
+  if (!parsed.success) throw new AppError('Invalid training plan ID', ErrorCodes.VALIDATION_ERROR, 400);
 
   return parsed.data;
 }
@@ -114,6 +131,73 @@ export const enterpriseRouter = new Hono()
       const departmentId = departmentIdParam(c.req.param('departmentId'));
       const values = c.req.valid('json');
       const data = await editEnterpriseDepartment(organizationId, profileId, departmentId, values);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/plans', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const data = await getTrainingPlans(organizationId, profileId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/training-courses', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const data = await getAvailableTrainingCourses(organizationId, profileId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .post('/plans', zValidator('json', ZTrainingPlanDraft), async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const data = await addTrainingPlan(organizationId, profileId, c.req.valid('json'));
+      return c.json({ success: true, data }, 201);
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/plans/:planId', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const planId = planIdParam(c.req.param('planId'));
+      const data = await getTrainingPlanById(organizationId, profileId, planId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .put('/plans/:planId', zValidator('json', ZTrainingPlanDraft), async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const planId = planIdParam(c.req.param('planId'));
+      const data = await editTrainingPlan(organizationId, profileId, planId, c.req.valid('json'));
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/plans/:planId/preview', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const planId = planIdParam(c.req.param('planId'));
+      const data = await previewTrainingPlan(organizationId, profileId, planId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .post('/plans/:planId/publish', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const planId = planIdParam(c.req.param('planId'));
+      const data = await publishTrainingPlan(organizationId, profileId, planId);
       return c.json({ success: true, data });
     } catch (error) {
       return handleError(c, error);

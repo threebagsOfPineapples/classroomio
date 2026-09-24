@@ -21,6 +21,7 @@ import {
   updateOrganizationMemberById
 } from '@cio/db/queries/organization';
 import { getCourseGroupIds } from '@cio/db/queries/course';
+import { listAssignedTrainingCoursesForProfile } from '@cio/db/queries/training-plan';
 import { enrollUsersInCourseGroups } from '@cio/db/queries/group';
 import { scheduleCourseRoleReconcile } from '@cio/core/services/organization/course-roles';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
@@ -104,6 +105,24 @@ function getExpiryLabel(expiresAtIso: string): string {
   });
 }
 
+async function enrollAssignedTrainingCourses(
+  tx: DbOrTxClient,
+  params: { organizationId: string; normalizedEmail: string; userId: string }
+) {
+  const courses = await listAssignedTrainingCoursesForProfile(params.organizationId, params.userId, tx);
+  if (courses.length === 0) return;
+
+  const groupIds = courses.map((course) => course.groupId);
+  const courseIds = courses.map((course) => course.courseId);
+  await enrollUsersInCourseGroups(
+    groupIds,
+    [{ profileId: params.userId, email: params.normalizedEmail }],
+    ROLE.STUDENT,
+    tx
+  );
+  await ensureComplianceEnrollmentRecordsForProfiles(courseIds, [params.userId], tx);
+}
+
 async function syncOrgMemberForOrgInvite(
   tx: DbOrTxClient,
   params: { organizationId: string; roleId: number; normalizedEmail: string; userId: string }
@@ -126,6 +145,8 @@ async function syncOrgMemberForOrgInvite(
       verified: true
     });
 
+    await enrollAssignedTrainingCourses(tx, params);
+
     return null;
   }
 
@@ -137,6 +158,8 @@ async function syncOrgMemberForOrgInvite(
       email: params.normalizedEmail,
       verified: true
     });
+
+    await enrollAssignedTrainingCourses(tx, params);
 
     return null;
   }
@@ -158,6 +181,8 @@ async function syncOrgMemberForOrgInvite(
     },
     tx
   );
+
+  await enrollAssignedTrainingCourses(tx, params);
 
   return studentMilestoneNotification;
 }

@@ -162,6 +162,13 @@
       "when": 1790245836135,
       "tag": "0022_enterprise_course",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790247197679,
+      "tag": "0023_training_plan",
+      "breakpoints": true
     }
   ]
 }

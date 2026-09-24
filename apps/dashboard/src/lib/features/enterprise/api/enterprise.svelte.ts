@@ -12,7 +12,7 @@ class EnterpriseApi {
   error = $state('');
   notice = $state('');
 
-  private async request<T>(organizationId: string, path: string, method = 'GET', body?: unknown): Promise<T> {
+  async request<T>(organizationId: string, path: string, method = 'GET', body?: unknown): Promise<T> {
     const response = await apiClient.request(`${getRequestBaseUrl()}/enterprise${path}`, {
       method,
       credentials: 'include',
