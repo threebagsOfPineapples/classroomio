@@ -5678,6 +5678,17 @@
     "role_department_manager": "Responsable de departamento",
     "role_instructor": "Instructor",
     "role_employee": "Empleado",
+    "my_training": {
+      "title": "Mi formación",
+      "subtitle": "Planes de formación asignados y progreso de los cursos",
+      "my_courses": "Mis cursos",
+      "empty": "Aún no se te ha asignado ninguna formación.",
+      "progress": "Progreso",
+      "pending": "Aún no disponible",
+      "due": "Vence",
+      "continue": "Continuar aprendiendo",
+      "load_failed": "No se pudo cargar la formación asignada"
+    },
     "plans": {
       "title": "Planes de formación",
       "subtitle": "Asigna cursos a departamentos, puestos y empleados",

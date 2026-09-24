@@ -5678,6 +5678,17 @@
     "role_department_manager": "Gerente de departamento",
     "role_instructor": "Instrutor",
     "role_employee": "Funcionário",
+    "my_training": {
+      "title": "Meus treinamentos",
+      "subtitle": "Planos de treinamento atribuídos e progresso dos cursos",
+      "my_courses": "Meus cursos",
+      "empty": "Nenhum treinamento foi atribuído ainda.",
+      "progress": "Progresso",
+      "pending": "Ainda não disponível",
+      "due": "Prazo",
+      "continue": "Continuar aprendendo",
+      "load_failed": "Não foi possível carregar os treinamentos atribuídos"
+    },
     "plans": {
       "title": "Planos de formação",
       "subtitle": "Atribua cursos a departamentos, cargos e funcionários",

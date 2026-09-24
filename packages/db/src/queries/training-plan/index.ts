@@ -8,7 +8,7 @@ import {
   trainingPlanCourse,
   trainingPlanTarget
 } from '@db/schema';
-import { and, asc, count, eq, inArray, isNull, ne, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, ne, or } from 'drizzle-orm';
 
 export function withTrainingPlanTransaction<T>(callback: (transaction: DbOrTxClient) => Promise<T>) {
   return db.transaction(callback);
@@ -169,6 +169,43 @@ export function listAssignedTrainingCoursesForProfile(organizationId: string, pr
         eq(group.organizationId, organizationId)
       )
     );
+}
+
+export function listMyTrainingAssignments(organizationId: string, profileId: string) {
+  return db
+    .select({
+      planId: trainingPlan.id,
+      planName: trainingPlan.name,
+      planCode: trainingPlan.code,
+      planDescription: trainingPlan.description,
+      planType: trainingPlan.planType,
+      planStatus: trainingPlan.status,
+      startAt: trainingPlan.startAt,
+      endAt: trainingPlan.endAt,
+      enrollmentStatus: trainingEnrollment.status,
+      assignedAt: trainingEnrollment.assignedAt,
+      courseId: course.id,
+      courseTitle: course.title,
+      courseSort: trainingPlanCourse.sort,
+      courseRequired: trainingPlanCourse.required,
+      courseDueAt: trainingPlanCourse.dueAt
+    })
+    .from(trainingEnrollment)
+    .innerJoin(organizationmember, eq(trainingEnrollment.memberId, organizationmember.id))
+    .innerJoin(trainingPlan, eq(trainingEnrollment.planId, trainingPlan.id))
+    .innerJoin(trainingPlanCourse, eq(trainingPlan.id, trainingPlanCourse.planId))
+    .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
+    .where(
+      and(
+        eq(trainingEnrollment.organizationId, organizationId),
+        eq(organizationmember.organizationId, organizationId),
+        eq(organizationmember.profileId, profileId),
+        eq(organizationmember.status, 'ACTIVE'),
+        or(isNull(organizationmember.employmentStatus), ne(organizationmember.employmentStatus, 'TERMINATED')),
+        eq(trainingPlan.organizationId, organizationId)
+      )
+    )
+    .orderBy(desc(trainingEnrollment.assignedAt), asc(trainingPlanCourse.sort));
 }
 
 export function insertTrainingEnrollments(values: Array<typeof trainingEnrollment.$inferInsert>, client: DbOrTxClient) {

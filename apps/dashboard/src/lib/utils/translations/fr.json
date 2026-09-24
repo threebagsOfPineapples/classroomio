@@ -5678,6 +5678,17 @@
     "role_department_manager": "Responsable de département",
     "role_instructor": "Formateur",
     "role_employee": "Employé",
+    "my_training": {
+      "title": "Mes formations",
+      "subtitle": "Plans de formation attribués et progression des cours",
+      "my_courses": "Mes cours",
+      "empty": "Aucune formation ne vous a encore été attribuée.",
+      "progress": "Progression",
+      "pending": "Pas encore disponible",
+      "due": "Échéance",
+      "continue": "Continuer à apprendre",
+      "load_failed": "Impossible de charger les formations attribuées"
+    },
     "plans": {
       "title": "Plans de formation",
       "subtitle": "Attribuez des cours aux services, postes et employés",

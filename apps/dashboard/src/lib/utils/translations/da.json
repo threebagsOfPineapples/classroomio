@@ -5678,6 +5678,17 @@
     "role_department_manager": "Afdelingsleder",
     "role_instructor": "Underviser",
     "role_employee": "Medarbejder",
+    "my_training": {
+      "title": "Min træning",
+      "subtitle": "Tildelte træningsplaner og kursusfremskridt",
+      "my_courses": "Mine kurser",
+      "empty": "Du har endnu ikke fået tildelt træning.",
+      "progress": "Fremskridt",
+      "pending": "Endnu ikke tilgængelig",
+      "due": "Frist",
+      "continue": "Fortsæt læring",
+      "load_failed": "Kunne ikke indlæse tildelt træning"
+    },
     "plans": {
       "title": "Uddannelsesplaner",
       "subtitle": "Tildel kurser til afdelinger, stillinger og medarbejdere",

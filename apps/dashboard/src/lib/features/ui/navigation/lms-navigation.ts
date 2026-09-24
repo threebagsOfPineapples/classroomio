@@ -61,6 +61,12 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/lms/mylearning(/.*)?$'
   },
   {
+    titleKey: 'enterprise.my_training.title',
+    path: '/training',
+    icon: GoalIcon,
+    matchPattern: '^/lms/training(/.*)?$'
+  },
+  {
     titleKey: 'lms_navigation.certificates',
     path: '/certificates',
     icon: CertificateIcon,

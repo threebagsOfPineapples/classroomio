@@ -5678,6 +5678,17 @@
     "role_department_manager": "Abteilungsleitung",
     "role_instructor": "Lehrkraft",
     "role_employee": "Mitarbeitende",
+    "my_training": {
+      "title": "Meine Schulungen",
+      "subtitle": "Zugewiesene Schulungspläne und Kursfortschritt",
+      "my_courses": "Meine Kurse",
+      "empty": "Es wurden noch keine Schulungen zugewiesen.",
+      "progress": "Fortschritt",
+      "pending": "Noch nicht verfügbar",
+      "due": "Fällig",
+      "continue": "Weiterlernen",
+      "load_failed": "Zugewiesene Schulungen konnten nicht geladen werden"
+    },
     "plans": {
       "title": "Schulungspläne",
       "subtitle": "Kurse Abteilungen, Positionen und Mitarbeitenden zuweisen",

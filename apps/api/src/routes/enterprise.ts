@@ -19,6 +19,7 @@ import {
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { ZTrainingPlanDraft } from '@cio/utils/validation/training-plan';
+import { getMyTraining } from '@api/services/my-training';
 import {
   addTrainingPlan,
   editTrainingPlan,
@@ -149,6 +150,15 @@ export const enterpriseRouter = new Hono()
     try {
       const { organizationId, profileId } = enterpriseRequest(c);
       const data = await getAvailableTrainingCourses(organizationId, profileId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/my-training', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const data = await getMyTraining(organizationId, profileId);
       return c.json({ success: true, data });
     } catch (error) {
       return handleError(c, error);

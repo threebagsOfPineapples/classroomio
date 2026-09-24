@@ -5661,6 +5661,17 @@
     "role_department_manager": "Department manager",
     "role_instructor": "Instructor",
     "role_employee": "Employee",
+    "my_training": {
+      "title": "My training",
+      "subtitle": "Assigned training plans and course progress",
+      "my_courses": "My courses",
+      "empty": "No training has been assigned yet.",
+      "progress": "Progress",
+      "pending": "Not available yet",
+      "due": "Due",
+      "continue": "Continue learning",
+      "load_failed": "Could not load assigned training"
+    },
     "plans": {
       "title": "Training plans",
       "subtitle": "Assign courses to departments, positions, and employees",

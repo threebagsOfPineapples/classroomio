@@ -8,6 +8,7 @@
   import { cn } from '../../tools';
   import type { PublicCourseOrgData, PublicCourseSidebarItem, PublicCourseSidebarSection } from './types';
   import { ModeSwitcher } from '../../base/dark-mode';
+  import { ScrollToTop } from '../scroll-to-top';
 
   interface Props {
     sections: PublicCourseSidebarSection[];
@@ -41,6 +42,7 @@
     /** Localized labels for the top-right header actions. */
     exploreLabel?: string;
     signInLabel?: string;
+    scrollToTopLabel?: string;
     /** Localized labels for the in-page footer nav. */
     footerPrevLabel?: string;
     footerNextLabel?: string;
@@ -87,6 +89,7 @@
     signInHref = '/login',
     exploreLabel = 'Explore courses',
     signInLabel = 'Sign in',
+    scrollToTopLabel,
     footerPrevLabel = 'Previous',
     footerNextLabel = 'Next',
     courseSlug = null,
@@ -270,4 +273,7 @@
       sheetOpen = false;
     }}
   />
+  {#if scrollToTopLabel}
+    <ScrollToTop label={scrollToTopLabel} clearance="mobile-nav" />
+  {/if}
 </div>

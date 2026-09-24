@@ -281,6 +281,14 @@ Each item owns its own handler, so the component carries no behaviour: the consu
 
 See `Molecules/ComboButton` in Storybook.
 
+### Scroll to top (`src/custom/scroll-to-top/`)
+
+Use `ScrollToTop` on a page or shell whose main column can overflow. It appears after scrolling one viewport and scrolls the current window to the top. Pass the translated `label` from the host. `target` selects an inner scroll container when needed; `clearance` is `default`, `mobile-nav`, or `ask-ai` for fixed bottom chrome. `class` adjusts placement when a preset is insufficient. `forceVisible` is for Storybook previews only.
+
+```svelte
+<ScrollToTop label={$t('common.scroll_to_top')} />
+```
+
 ### Hooks (`src/hooks/`)
 
 Reusable Svelte hooks are located in the `src/hooks/` directory. These are Svelte 5 runes-based utilities that can be used across components.

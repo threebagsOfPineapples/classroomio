@@ -29,6 +29,7 @@
   import { isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { CourseMobileBottomNav } from '$features/course/components/mobile';
+  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
   import { t } from '$lib/utils/functions/translations';
@@ -260,4 +261,8 @@
   </Sidebar.Inset>
 
   <SidePanelRail onWidthPreview={handleSidePanelWidthPreview} />
+  <ScrollToTop
+    label={$t('common.scroll_to_top')}
+    clearance={showMobileBottomNav ? 'mobile-nav' : showContentAskAiBar ? 'ask-ai' : 'default'}
+  />
 </Sidebar.Provider>

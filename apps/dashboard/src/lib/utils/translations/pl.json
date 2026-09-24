@@ -5678,6 +5678,17 @@
     "role_department_manager": "Kierownik działu",
     "role_instructor": "Instruktor",
     "role_employee": "Pracownik",
+    "my_training": {
+      "title": "Moje szkolenia",
+      "subtitle": "Przypisane plany szkoleń i postępy w kursach",
+      "my_courses": "Moje kursy",
+      "empty": "Nie przypisano jeszcze żadnego szkolenia.",
+      "progress": "Postęp",
+      "pending": "Jeszcze niedostępne",
+      "due": "Termin",
+      "continue": "Kontynuuj naukę",
+      "load_failed": "Nie udało się wczytać przypisanych szkoleń"
+    },
     "plans": {
       "title": "Plany szkoleń",
       "subtitle": "Przypisuj kursy działom, stanowiskom i pracownikom",

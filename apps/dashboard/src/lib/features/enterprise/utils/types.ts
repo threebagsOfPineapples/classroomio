@@ -23,3 +23,7 @@ export type AvailableTrainingCourses = Extract<
 export type TrainingPlanDetail = Extract<InferResponseType<GetTrainingPlanRequest>, { success: true }>['data'];
 export type TrainingPlanPreview = Extract<InferResponseType<PreviewTrainingPlanRequest>, { success: true }>['data'];
 export type TrainingPlanDraft = InferRequestType<CreateTrainingPlanRequest>['json'];
+
+export type GetMyTrainingRequest = (typeof classroomio.enterprise)['my-training']['$get'];
+export type MyTrainingAssignments = Extract<InferResponseType<GetMyTrainingRequest>, { success: true }>['data'];
+export type MyTrainingAssignment = MyTrainingAssignments[number];

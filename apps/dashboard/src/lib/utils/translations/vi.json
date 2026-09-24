@@ -5678,6 +5678,17 @@
     "role_department_manager": "Quản lý phòng ban",
     "role_instructor": "Giảng viên",
     "role_employee": "Nhân viên",
+    "my_training": {
+      "title": "Đào tạo của tôi",
+      "subtitle": "Kế hoạch đào tạo được giao và tiến độ khóa học",
+      "my_courses": "Khóa học của tôi",
+      "empty": "Bạn chưa được giao khóa đào tạo nào.",
+      "progress": "Tiến độ",
+      "pending": "Chưa có dữ liệu",
+      "due": "Hạn chót",
+      "continue": "Tiếp tục học",
+      "load_failed": "Không thể tải các khóa đào tạo được giao"
+    },
     "plans": {
       "title": "Kế hoạch đào tạo",
       "subtitle": "Phân công khóa học cho phòng ban, vị trí và nhân viên",

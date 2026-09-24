@@ -50,6 +50,7 @@
     signInHref="/login"
     exploreLabel={$t('public_course.header.explore_courses')}
     signInLabel={$t('public_course.header.sign_in')}
+    scrollToTopLabel={$t('common.scroll_to_top')}
     footerPrevLabel={$t('public_course.footer_nav.previous')}
     footerNextLabel={$t('public_course.footer_nav.next')}
     courseSlug={data.tree.course.slug}
