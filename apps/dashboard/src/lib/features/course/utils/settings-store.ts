@@ -13,6 +13,12 @@ type CourseSettings = {
   lessonDownload: boolean;
   allowMarkdownExport: boolean;
   isPublished: boolean;
+  status: 'ACTIVE' | 'ARCHIVED';
+  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null;
+  learningMinutes: number | null;
+  credit: number | null;
+  targetAudience: string;
+  required: boolean | null;
   isContentGroupingEnabled: boolean;
   progressionMode: 'free' | 'sequential';
   commentsEnabled: boolean;
@@ -42,6 +48,12 @@ export const settings = writable<CourseSettings>({
   lessonDownload: false,
   allowMarkdownExport: false,
   isPublished: false,
+  status: 'ACTIVE',
+  difficulty: null,
+  learningMinutes: null,
+  credit: null,
+  targetAudience: '',
+  required: null,
   isContentGroupingEnabled: true,
   progressionMode: 'free',
   commentsEnabled: true,

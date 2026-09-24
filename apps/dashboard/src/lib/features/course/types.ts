@@ -15,6 +15,7 @@ export type OrgCoursesQuery = {
   limit: number;
   search?: string;
   tags?: string;
+  status?: 'ACTIVE' | 'ARCHIVED';
 };
 
 // User Enrolled Courses types

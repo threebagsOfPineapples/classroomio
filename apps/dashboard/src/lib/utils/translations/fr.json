@@ -1045,6 +1045,19 @@
           "placeholder": "Rédigez le message de bienvenue que les étudiants reçoivent lors de leur inscription…"
         },
         "general_card_title": "Général",
+        "enterprise": {
+          "title": "Formation en entreprise",
+          "status": "Statut du cours",
+          "active": "Actif",
+          "archived": "Archivé",
+          "difficulty": "Difficulté",
+          "unspecified": "Non précisé",
+          "learning_minutes": "Durée estimée (minutes)",
+          "credit": "Crédits",
+          "target_audience": "Public cible",
+          "required": "Cours obligatoire",
+          "required_description": "Marquer ce cours comme obligatoire pour les futures affectations de formation."
+        },
         "content_card_title": "Contenu",
         "access_card_title": "Accès",
         "locked_content": {

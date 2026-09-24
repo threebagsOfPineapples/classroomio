@@ -155,6 +155,13 @@
       "when": 1790238967444,
       "tag": "0021_enterprise_organization",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1790245836135,
+      "tag": "0022_enterprise_course",
+      "breakpoints": true
     }
   ]
 }

@@ -38,11 +38,17 @@
     hasActiveFilters?: boolean;
     publishedStatus?: 'all' | 'published' | 'unpublished';
     courseType?: string;
+    courseStatus?: 'ACTIVE' | 'ARCHIVED';
+    difficulty?: string;
+    requiredOnly?: boolean;
     courseTypeOptions?: { value: string; label: string }[];
     onToggleTag?: (tagSlug: string, checked: boolean) => void;
     onClearFilters?: () => void | Promise<void>;
     onPublishedStatusChange?: (status: 'all' | 'published' | 'unpublished') => void;
     onCourseTypeChange?: (type: string) => void;
+    onCourseStatusChange?: (status: 'ACTIVE' | 'ARCHIVED') => void;
+    onDifficultyChange?: (difficulty: string) => void;
+    onRequiredOnlyChange?: (requiredOnly: boolean) => void;
   }
 
   let {
@@ -55,11 +61,17 @@
     hasActiveFilters: hasActiveFiltersOverride = undefined,
     publishedStatus = $bindable('all'),
     courseType = $bindable('all'),
+    courseStatus = $bindable('ACTIVE'),
+    difficulty = $bindable('all'),
+    requiredOnly = $bindable(false),
     courseTypeOptions = [],
     onToggleTag = () => {},
     onClearFilters = () => {},
     onPublishedStatusChange,
-    onCourseTypeChange
+    onCourseTypeChange,
+    onCourseStatusChange,
+    onDifficultyChange,
+    onRequiredOnlyChange
   }: Props = $props();
 
   const translatedSortOptions = $derived(
@@ -73,7 +85,10 @@
           selectedOrder !== DEFAULT_SORT_ORDER ||
           selectedTags.length > 0 ||
           publishedStatus !== 'all' ||
-          courseType !== 'all'
+          courseType !== 'all' ||
+          courseStatus !== 'ACTIVE' ||
+          difficulty !== 'all' ||
+          requiredOnly
   );
 
   function isTagSelected(tagSlug: string) {
@@ -147,6 +162,67 @@
             {/each}
           </div>
         </div>
+      {/if}
+
+      {#if onCourseStatusChange}
+        <div class="space-y-2">
+          <p class="ui:text-muted-foreground text-xs font-semibold uppercase">
+            {$t('course.navItem.settings.enterprise.status')}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={courseStatus === 'ACTIVE' ? 'secondary' : 'outline'}
+              onclick={() => onCourseStatusChange?.('ACTIVE')}
+            >
+              {$t('course.navItem.settings.enterprise.active')}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={courseStatus === 'ARCHIVED' ? 'secondary' : 'outline'}
+              onclick={() => onCourseStatusChange?.('ARCHIVED')}
+            >
+              {$t('course.navItem.settings.enterprise.archived')}
+            </Button>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="ui:text-muted-foreground text-xs font-semibold uppercase">
+            {$t('course.navItem.settings.enterprise.difficulty')}
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={difficulty === 'all' ? 'secondary' : 'outline'}
+              onclick={() => onDifficultyChange?.('all')}
+            >
+              {$t('widgets.filter.all')}
+            </Button>
+            {#each ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as level (level)}
+              <Button
+                type="button"
+                size="sm"
+                variant={difficulty === level ? 'secondary' : 'outline'}
+                onclick={() => onDifficultyChange?.(level)}
+              >
+                {$t(`course.creator.level.${level.toLowerCase()}`)}
+              </Button>
+            {/each}
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          size="sm"
+          variant={requiredOnly ? 'secondary' : 'outline'}
+          onclick={() => onRequiredOnlyChange?.(!requiredOnly)}
+        >
+          {$t('course.navItem.settings.enterprise.required')}
+        </Button>
       {/if}
 
       {#if tagGroups.length > 0}

@@ -3910,6 +3910,19 @@
           "placeholder": "Write the welcome message students get when they enroll…"
         },
         "general_card_title": "General",
+        "enterprise": {
+          "title": "Enterprise training",
+          "status": "Course status",
+          "active": "Active",
+          "archived": "Archived",
+          "difficulty": "Difficulty",
+          "unspecified": "Not specified",
+          "learning_minutes": "Estimated learning time (minutes)",
+          "credit": "Credits",
+          "target_audience": "Target audience",
+          "required": "Required course",
+          "required_description": "Mark this course as required for future training assignments."
+        },
         "content_card_title": "Content",
         "access_card_title": "Access",
         "content_grouping_title": "Content grouping",

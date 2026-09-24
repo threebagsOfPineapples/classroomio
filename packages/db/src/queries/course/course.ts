@@ -403,7 +403,8 @@ export type CourseWithRelations = TCourse & {
 export async function getCourseWithRelations(
   courseId?: string,
   slug?: string,
-  profileId?: string
+  profileId?: string,
+  includeArchived = false
 ): Promise<CourseWithRelations | null> {
   try {
     if (!courseId && !slug) {
@@ -411,15 +412,18 @@ export async function getCourseWithRelations(
     }
 
     // Get course
+    const statusCondition = includeArchived
+      ? inArray(schema.course.status, ['ACTIVE', 'ARCHIVED'])
+      : eq(schema.course.status, 'ACTIVE');
     const courseQuery = slug
       ? db
           .select()
           .from(schema.course)
-          .where(and(eq(schema.course.slug, slug), eq(schema.course.status, 'ACTIVE')))
+          .where(and(eq(schema.course.slug, slug), statusCondition))
       : db
           .select()
           .from(schema.course)
-          .where(and(eq(schema.course.id, courseId!), eq(schema.course.status, 'ACTIVE')));
+          .where(and(eq(schema.course.id, courseId!), statusCondition));
 
     const courses = await courseQuery.limit(1);
     if (courses.length === 0) {
@@ -771,6 +775,7 @@ interface GetOrgCoursesOptions {
   courseIds?: string[];
   /** Optional search query against the course title */
   search?: string;
+  status?: 'ACTIVE' | 'ARCHIVED';
   /** Page number (1-indexed) */
   page?: number;
   /** Page size */
@@ -789,14 +794,15 @@ export async function countOrgCourses({
   orgId,
   profileId,
   courseIds,
-  search
-}: Pick<GetOrgCoursesOptions, 'orgId' | 'profileId' | 'courseIds' | 'search'>): Promise<number> {
+  search,
+  status = 'ACTIVE'
+}: Pick<GetOrgCoursesOptions, 'orgId' | 'profileId' | 'courseIds' | 'search' | 'status'>): Promise<number> {
   try {
     if (courseIds && courseIds.length === 0) {
       return 0;
     }
 
-    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, 'ACTIVE')];
+    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, status)];
 
     if (courseIds && courseIds.length > 0) {
       conditions.push(inArray(schema.course.id, courseIds));
@@ -842,6 +848,7 @@ export const getOrgCourses = async ({
   profileId,
   courseIds,
   search,
+  status = 'ACTIVE',
   page = 1,
   limit = 20
 }: GetOrgCoursesOptions): Promise<GetOrgCoursesResult> => {
@@ -856,7 +863,7 @@ export const getOrgCourses = async ({
       };
     }
 
-    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, 'ACTIVE')];
+    const conditions = [eq(schema.group.organizationId, orgId), eq(schema.course.status, status)];
 
     if (courseIds && courseIds.length > 0) {
       conditions.push(inArray(schema.course.id, courseIds));
@@ -866,7 +873,7 @@ export const getOrgCourses = async ({
       conditions.push(ilike(schema.course.title, `%${search.trim()}%`));
     }
 
-    const total = await countOrgCourses({ orgId, profileId, courseIds, search });
+    const total = await countOrgCourses({ orgId, profileId, courseIds, search, status });
 
     const baseQuery = db
       .select({

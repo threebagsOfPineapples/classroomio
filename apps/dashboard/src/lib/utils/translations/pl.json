@@ -1045,6 +1045,19 @@
           "placeholder": "Napisz wiadomość powitalną, jaką otrzymają uczniowie po zarejestrowaniu się…"
         },
         "general_card_title": "Ogólne",
+        "enterprise": {
+          "title": "Szkolenia firmowe",
+          "status": "Status kursu",
+          "active": "Aktywny",
+          "archived": "Zarchiwizowany",
+          "difficulty": "Poziom trudności",
+          "unspecified": "Nie określono",
+          "learning_minutes": "Szacowany czas nauki (minuty)",
+          "credit": "Punkty",
+          "target_audience": "Grupa docelowa",
+          "required": "Kurs obowiązkowy",
+          "required_description": "Oznacz kurs jako obowiązkowy dla przyszłych przydziałów szkoleniowych."
+        },
         "content_card_title": "Treść",
         "access_card_title": "Dostęp",
         "locked_content": {

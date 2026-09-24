@@ -1045,6 +1045,19 @@
           "placeholder": "Viết lời chào mừng mà học viên nhận được khi đăng ký…"
         },
         "general_card_title": "Chung",
+        "enterprise": {
+          "title": "Đào tạo doanh nghiệp",
+          "status": "Trạng thái khóa học",
+          "active": "Đang hoạt động",
+          "archived": "Đã lưu trữ",
+          "difficulty": "Độ khó",
+          "unspecified": "Chưa xác định",
+          "learning_minutes": "Thời gian học ước tính (phút)",
+          "credit": "Tín chỉ",
+          "target_audience": "Đối tượng học viên",
+          "required": "Khóa học bắt buộc",
+          "required_description": "Đánh dấu khóa học này là bắt buộc cho các đợt phân công đào tạo sau."
+        },
         "content_card_title": "Nội dung",
         "access_card_title": "Truy cập",
         "locked_content": {

@@ -12,6 +12,7 @@ export const load = async ({ parent, locals, cookies, url }) => {
   const loadStart = performance.now();
 
   const tagsParam = url.searchParams.get('tags');
+  const status = url.searchParams.get('status') === 'ARCHIVED' ? 'ARCHIVED' : undefined;
   const { orgId } = await parent();
 
   if (!orgId || !locals.user?.id) {
@@ -30,13 +31,7 @@ export const load = async ({ parent, locals, cookies, url }) => {
   const [coursesResult, tagsResult] = await Promise.all([
     safeServerApi<GetOrganizationCoursesSuccess>(() =>
       classroomio.organization.courses.$get(
-        normalizedTagsQuery
-          ? {
-              query: {
-                tags: normalizedTagsQuery
-              }
-            }
-          : { query: {} },
+        { query: { tags: normalizedTagsQuery, status } },
         getApiHeaders(cookies, orgId)
       )
     ),

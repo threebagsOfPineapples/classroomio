@@ -19,6 +19,7 @@ import {
   getCourseOrgAdminAccess,
   getCourseProgramAccess,
   getGroupMemberIdByCourseAndProfile,
+  isCourseTeamMemberOrOrgAdmin,
   insertGroupMembersOnConflictDoNothing
 } from '@cio/db/queries/group';
 import {
@@ -215,7 +216,10 @@ export async function getCourse(courseId?: string, slug?: string, profileId?: st
       throw new AppError('Either courseId or slug must be provided', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
-    const course = await getCourseWithRelations(courseId, slug, profileId);
+    let course = await getCourseWithRelations(courseId, slug, profileId);
+    if (!course && courseId && !slug && profileId && (await isCourseTeamMemberOrOrgAdmin(courseId, profileId))) {
+      course = await getCourseWithRelations(courseId, undefined, profileId, true);
+    }
     if (!course) {
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
     }
@@ -394,6 +398,7 @@ export async function updateCourse(
 
     const sanitizedData: Partial<TCourse> = {
       ...data,
+      isPublished: data.status === 'ARCHIVED' ? false : data.isPublished,
       description: sanitizeOptionalHtml(data.description),
       overview: sanitizeOptionalHtml(data.overview),
       metadata: sanitizeCourseMetadata(mergedMetadata),
@@ -404,6 +409,10 @@ export async function updateCourse(
 
     const [currentCourse] = await getCourseById(courseId, dbClient);
     if (!currentCourse) {
+      throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
+    }
+
+    if (currentCourse.status === 'DELETED' && data.status !== undefined) {
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
     }
 
@@ -433,7 +442,7 @@ export async function updateCourse(
     }
 
     const nextType = sanitizedData.type ?? currentCourse.type;
-    const nextIsPublished = data.isPublished ?? currentCourse.isPublished;
+    const nextIsPublished = sanitizedData.isPublished ?? currentCourse.isPublished;
     const nextDeadline = resolveCourseCertificateDeadline(currentCourse.certificate?.deadline, data.certificate);
 
     if (

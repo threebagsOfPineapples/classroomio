@@ -27,6 +27,9 @@
 
   let selectedTags = $state<string[]>(getInitialSelectedTags());
   let courseType = $state<string>('all');
+  let courseStatus = $state<'ACTIVE' | 'ARCHIVED'>('ACTIVE');
+  let difficulty = $state('all');
+  let requiredOnly = $state(false);
 
   const courseTypeOptions = $derived([
     { value: 'SELF_PACED', label: $t('new_course_modal.self_paced_label') },
@@ -76,6 +79,24 @@
       nextUrl.searchParams.delete('type');
     }
 
+    if (courseStatus === 'ARCHIVED') {
+      nextUrl.searchParams.set('status', 'ARCHIVED');
+    } else {
+      nextUrl.searchParams.delete('status');
+    }
+
+    if (difficulty !== 'all') {
+      nextUrl.searchParams.set('difficulty', difficulty);
+    } else {
+      nextUrl.searchParams.delete('difficulty');
+    }
+
+    if (requiredOnly) {
+      nextUrl.searchParams.set('required', 'true');
+    } else {
+      nextUrl.searchParams.delete('required');
+    }
+
     const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
     window.history.replaceState(window.history.state, '', nextPath);
   }
@@ -101,7 +122,7 @@
     updateFiltersUrl();
     isFiltering = true;
     try {
-      await coursesApi.getOrgCourses(nextTags);
+      await coursesApi.getOrgCourses(nextTags, courseStatus);
     } finally {
       isFiltering = false;
     }
@@ -123,6 +144,14 @@
     sortKey = DEFAULT_COURSE_SORT;
     selectedOrder = DEFAULT_SORT_ORDER;
     courseType = 'all';
+    difficulty = 'all';
+    requiredOnly = false;
+
+    if (courseStatus === 'ARCHIVED') {
+      courseStatus = 'ACTIVE';
+      await applyTagFilters([]);
+      return;
+    }
 
     if (selectedTags.length === 0) {
       updateFiltersUrl();
@@ -137,6 +166,19 @@
     updateFiltersUrl();
   }
 
+  async function setCourseStatus(nextStatus: 'ACTIVE' | 'ARCHIVED') {
+    if (courseStatus === nextStatus) return;
+
+    courseStatus = nextStatus;
+    updateFiltersUrl();
+    isFiltering = true;
+    try {
+      await coursesApi.getOrgCourses(selectedTags, nextStatus);
+    } finally {
+      isFiltering = false;
+    }
+  }
+
   const filteredCourses = $derived.by(() => {
     const filteredCourses = (coursesApi.orgCourses ?? []).filter((course) => {
       const matchesSearch = !searchValue || course.title.toLowerCase().includes(searchValue.toLowerCase());
@@ -144,6 +186,10 @@
       if (!matchesSearch) return false;
 
       if (courseType !== 'all' && course.type !== courseType) return false;
+
+      if (difficulty !== 'all' && course.difficulty !== difficulty) return false;
+
+      if (requiredOnly && course.required !== true) return false;
 
       return true;
     });
@@ -205,6 +251,19 @@
       courseType = typeFromUrl;
     }
 
+    const statusFromUrl = searchParams.get('status');
+    if (statusFromUrl === 'ARCHIVED') {
+      courseStatus = 'ARCHIVED';
+      void coursesApi.getOrgCourses(selectedTags, 'ARCHIVED');
+    }
+
+    const difficultyFromUrl = searchParams.get('difficulty');
+    if (['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].includes(difficultyFromUrl ?? '')) {
+      difficulty = difficultyFromUrl ?? 'all';
+    }
+
+    requiredOnly = searchParams.get('required') === 'true';
+
     hasInitializedFilters = true;
   });
 </script>
@@ -231,12 +290,24 @@
             bind:sortKey
             bind:selectedOrder
             bind:courseType
+            bind:courseStatus
+            bind:difficulty
+            bind:requiredOnly
             {courseTypeOptions}
             {selectedTags}
             tagGroups={data.tagGroups}
             {isFiltering}
             onToggleTag={toggleTag}
             onCourseTypeChange={setCourseType}
+            onCourseStatusChange={setCourseStatus}
+            onDifficultyChange={(value) => {
+              difficulty = value;
+              updateFiltersUrl();
+            }}
+            onRequiredOnlyChange={(value) => {
+              requiredOnly = value;
+              updateFiltersUrl();
+            }}
             onClearFilters={clearFilters}
           />
         {/snippet}

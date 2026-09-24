@@ -1045,6 +1045,19 @@
           "placeholder": "Skriv den velkomstbesked, eleverne får, når de tilmelder sig..."
         },
         "general_card_title": "Generelt",
+        "enterprise": {
+          "title": "Virksomhedsuddannelse",
+          "status": "Kursusstatus",
+          "active": "Aktiv",
+          "archived": "Arkiveret",
+          "difficulty": "Sværhedsgrad",
+          "unspecified": "Ikke angivet",
+          "learning_minutes": "Anslået læringstid (minutter)",
+          "credit": "Point",
+          "target_audience": "Målgruppe",
+          "required": "Obligatorisk kursus",
+          "required_description": "Markér dette kursus som obligatorisk for fremtidige uddannelsestildelinger."
+        },
         "content_card_title": "Indhold",
         "access_card_title": "Adgang",
         "locked_content": {

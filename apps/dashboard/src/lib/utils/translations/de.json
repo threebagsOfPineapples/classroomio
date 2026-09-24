@@ -1045,6 +1045,19 @@
           "placeholder": "Schreiben Sie die Willkommensnachricht, die Studierende bei der Einschreibung erhalten …"
         },
         "general_card_title": "Allgemein",
+        "enterprise": {
+          "title": "Betriebliche Weiterbildung",
+          "status": "Kursstatus",
+          "active": "Aktiv",
+          "archived": "Archiviert",
+          "difficulty": "Schwierigkeitsgrad",
+          "unspecified": "Nicht angegeben",
+          "learning_minutes": "Geschätzte Lernzeit (Minuten)",
+          "credit": "Leistungspunkte",
+          "target_audience": "Zielgruppe",
+          "required": "Pflichtkurs",
+          "required_description": "Diesen Kurs für künftige Schulungszuweisungen als verpflichtend markieren."
+        },
         "content_card_title": "Inhalt",
         "access_card_title": "Zugriff",
         "locked_content": {

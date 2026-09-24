@@ -198,6 +198,7 @@
 
     // Otherwise, publish normally
     $settings.isPublished = true;
+    $settings.status = 'ACTIVE';
     $settings.allowSelfEnrollment = true;
     hasUnsavedChanges = true;
   }
@@ -267,6 +268,12 @@
         type: $settings.type,
         logo: logoUrl,
         isPublished: $settings.isPublished,
+        status: $settings.status,
+        difficulty: $settings.difficulty,
+        learningMinutes: $settings.learningMinutes,
+        credit: $settings.credit,
+        targetAudience: $settings.targetAudience.trim() || null,
+        required: $settings.required,
         metadata: metadataPayload,
         slug: courseApi.course.slug ?? undefined,
         compliance:
@@ -347,6 +354,15 @@
         lessonDownload: !!course.metadata?.lessonDownload,
         allowMarkdownExport: !!course.metadata?.allowMarkdownExport,
         isPublished: !!course.isPublished,
+        status: course.status === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE',
+        difficulty:
+          course.difficulty === 'BEGINNER' || course.difficulty === 'INTERMEDIATE' || course.difficulty === 'ADVANCED'
+            ? course.difficulty
+            : null,
+        learningMinutes: course.learningMinutes ?? null,
+        credit: course.credit ?? null,
+        targetAudience: course.targetAudience ?? '',
+        required: course.required ?? null,
         allowSelfEnrollment: isSelfEnrollmentAllowed(course.metadata),
         isContentGroupingEnabled: course.metadata?.isContentGroupingEnabled ?? true,
         progressionMode: course.metadata?.progressionMode ?? 'free',
@@ -743,6 +759,127 @@
           editorClass="h-auto! max-h-[200px] min-h-[120px]"
           onChange={(text) => {
             $settings.welcomeEmailMessage = text;
+            hasUnsavedChanges = true;
+          }}
+        />
+      </Field.Field>
+    </Field.Group>
+  </SettingsCard>
+
+  <SettingsCard id="enterprise-course" title={$t('course.navItem.settings.enterprise.title')}>
+    <Field.Group>
+      <Field.Field>
+        <Field.Label>{$t('course.navItem.settings.enterprise.status')}</Field.Label>
+        <Select.Root
+          type="single"
+          value={$settings.status}
+          onValueChange={(value) => {
+            if (value !== 'ACTIVE' && value !== 'ARCHIVED') return;
+
+            $settings.status = value;
+            if (value === 'ARCHIVED') $settings.isPublished = false;
+            hasUnsavedChanges = true;
+          }}
+        >
+          <Select.Trigger class="w-full">
+            {$t(`course.navItem.settings.enterprise.${$settings.status.toLowerCase()}`)}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="ACTIVE" label={$t('course.navItem.settings.enterprise.active')}>
+              {$t('course.navItem.settings.enterprise.active')}
+            </Select.Item>
+            <Select.Item value="ARCHIVED" label={$t('course.navItem.settings.enterprise.archived')}>
+              {$t('course.navItem.settings.enterprise.archived')}
+            </Select.Item>
+          </Select.Content>
+        </Select.Root>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label>{$t('course.navItem.settings.enterprise.difficulty')}</Field.Label>
+        <Select.Root
+          type="single"
+          value={$settings.difficulty ?? 'none'}
+          onValueChange={(value) => {
+            if (value !== 'none' && value !== 'BEGINNER' && value !== 'INTERMEDIATE' && value !== 'ADVANCED') return;
+
+            $settings.difficulty = value === 'none' ? null : value;
+            hasUnsavedChanges = true;
+          }}
+        >
+          <Select.Trigger class="w-full">
+            {$settings.difficulty
+              ? $t(`course.creator.level.${$settings.difficulty.toLowerCase()}`)
+              : $t('course.navItem.settings.enterprise.unspecified')}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="none" label={$t('course.navItem.settings.enterprise.unspecified')}>
+              {$t('course.navItem.settings.enterprise.unspecified')}
+            </Select.Item>
+            <Select.Item value="BEGINNER" label={$t('course.creator.level.beginner')}>
+              {$t('course.creator.level.beginner')}
+            </Select.Item>
+            <Select.Item value="INTERMEDIATE" label={$t('course.creator.level.intermediate')}>
+              {$t('course.creator.level.intermediate')}
+            </Select.Item>
+            <Select.Item value="ADVANCED" label={$t('course.creator.level.advanced')}>
+              {$t('course.creator.level.advanced')}
+            </Select.Item>
+          </Select.Content>
+        </Select.Root>
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label for="course-learning-minutes"
+          >{$t('course.navItem.settings.enterprise.learning_minutes')}</Field.Label
+        >
+        <Input
+          id="course-learning-minutes"
+          type="number"
+          min={0}
+          max={100000}
+          value={$settings.learningMinutes?.toString() ?? ''}
+          oninput={(event) => {
+            const value = event.currentTarget.value;
+            $settings.learningMinutes = value === '' ? null : Number(value);
+            hasUnsavedChanges = true;
+          }}
+        />
+      </Field.Field>
+
+      <Field.Field>
+        <Field.Label for="course-credit">{$t('course.navItem.settings.enterprise.credit')}</Field.Label>
+        <Input
+          id="course-credit"
+          type="number"
+          min={0}
+          max={1000}
+          step="0.1"
+          value={$settings.credit?.toString() ?? ''}
+          oninput={(event) => {
+            const value = event.currentTarget.value;
+            $settings.credit = value === '' ? null : Number(value);
+            hasUnsavedChanges = true;
+          }}
+        />
+      </Field.Field>
+
+      <TextareaField
+        label={$t('course.navItem.settings.enterprise.target_audience')}
+        bind:value={$settings.targetAudience}
+        oninput={() => (hasUnsavedChanges = true)}
+      />
+
+      <Field.Field orientation="horizontal">
+        <Field.Content>
+          <Field.Label for="course-required">{$t('course.navItem.settings.enterprise.required')}</Field.Label>
+          <Field.Description>{$t('course.navItem.settings.enterprise.required_description')}</Field.Description>
+        </Field.Content>
+        <Switch
+          id="course-required"
+          checked={$settings.required ?? false}
+          onCheckedChange={(checked) => {
+            $settings.required = checked;
             hasUnsavedChanges = true;
           }}
         />

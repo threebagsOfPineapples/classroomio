@@ -1044,6 +1044,19 @@
           "placeholder": "Escribe el mensaje de bienvenida que reciben los estudiantes cuando se matriculan..."
         },
         "general_card_title": "General",
+        "enterprise": {
+          "title": "Formación empresarial",
+          "status": "Estado del curso",
+          "active": "Activo",
+          "archived": "Archivado",
+          "difficulty": "Dificultad",
+          "unspecified": "Sin especificar",
+          "learning_minutes": "Tiempo estimado de aprendizaje (minutos)",
+          "credit": "Créditos",
+          "target_audience": "Público objetivo",
+          "required": "Curso obligatorio",
+          "required_description": "Marcar este curso como obligatorio para futuras asignaciones de formación."
+        },
         "content_card_title": "Contenido",
         "access_card_title": "Acceso",
         "course_type_learn_more": "Más información",

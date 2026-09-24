@@ -767,6 +767,11 @@ export const course = pgTable(
     currency: varchar().default('USD').notNull(),
     bannerImage: text('banner_image'),
     isPublished: boolean('is_published').default(false),
+    difficulty: varchar('difficulty', { length: 16 }),
+    learningMinutes: integer('learning_minutes'),
+    credit: doublePrecision('credit'),
+    targetAudience: text('target_audience'),
+    required: boolean('required'),
     /** Manual display position on public surfaces; NULL = not curated (sorts by createdAt DESC). */
     displayOrder: integer('display_order'),
     certificate: jsonb().default({}).$type<{
@@ -817,7 +822,16 @@ export const course = pgTable(
       name: 'course_group_id_fkey'
     }),
     unique('course_slug_key').on(table.slug),
-    index('idx_course_group_id').on(table.groupId)
+    index('idx_course_group_id').on(table.groupId),
+    check(
+      'course_difficulty_valid',
+      sql`${table.difficulty} IS NULL OR ${table.difficulty} IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED')`
+    ),
+    check(
+      'course_learning_minutes_nonnegative',
+      sql`${table.learningMinutes} IS NULL OR ${table.learningMinutes} >= 0`
+    ),
+    check('course_credit_nonnegative', sql`${table.credit} IS NULL OR ${table.credit} >= 0`)
   ]
 );
 

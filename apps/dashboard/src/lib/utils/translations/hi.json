@@ -1045,6 +1045,19 @@
           "placeholder": "नामांकन के समय विद्यार्थियों को मिलने वाला स्वागत संदेश लिखें..."
         },
         "general_card_title": "सामान्य",
+        "enterprise": {
+          "title": "कर्मचारी प्रशिक्षण",
+          "status": "पाठ्यक्रम की स्थिति",
+          "active": "सक्रिय",
+          "archived": "संग्रहीत",
+          "difficulty": "कठिनाई स्तर",
+          "unspecified": "निर्दिष्ट नहीं",
+          "learning_minutes": "अनुमानित अध्ययन समय (मिनट)",
+          "credit": "क्रेडिट",
+          "target_audience": "लक्षित शिक्षार्थी",
+          "required": "अनिवार्य पाठ्यक्रम",
+          "required_description": "भविष्य के प्रशिक्षण आवंटन के लिए इस पाठ्यक्रम को अनिवार्य चिह्नित करें।"
+        },
         "content_card_title": "सामग्री",
         "access_card_title": "पहुँच",
         "locked_content": {
