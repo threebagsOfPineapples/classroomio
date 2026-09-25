@@ -4,6 +4,7 @@ import {
   group,
   organizationmember,
   trainingEnrollment,
+  trainingEvaluation,
   trainingPlan,
   trainingPlanCourse,
   trainingPlanTarget
@@ -174,6 +175,7 @@ export function listAssignedTrainingCoursesForProfile(organizationId: string, pr
 export function listMyTrainingAssignments(organizationId: string, profileId: string) {
   return db
     .select({
+      enrollmentId: trainingEnrollment.id,
       planId: trainingPlan.id,
       planName: trainingPlan.name,
       planCode: trainingPlan.code,
@@ -183,6 +185,10 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
       startAt: trainingPlan.startAt,
       endAt: trainingPlan.endAt,
       enrollmentStatus: trainingEnrollment.status,
+      result: trainingEnrollment.result,
+      finalScore: trainingEnrollment.finalScore,
+      progressPercent: trainingEnrollment.progressPercent,
+      evaluatedAt: trainingEvaluation.createdAt,
       assignedAt: trainingEnrollment.assignedAt,
       courseId: course.id,
       courseTitle: course.title,
@@ -195,6 +201,7 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
     .innerJoin(trainingPlan, eq(trainingEnrollment.planId, trainingPlan.id))
     .innerJoin(trainingPlanCourse, eq(trainingPlan.id, trainingPlanCourse.planId))
     .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
+    .leftJoin(trainingEvaluation, eq(trainingEvaluation.enrollmentId, trainingEnrollment.id))
     .where(
       and(
         eq(trainingEnrollment.organizationId, organizationId),

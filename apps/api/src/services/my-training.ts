@@ -6,6 +6,7 @@ export function groupMyTrainingAssignments(rows: TrainingAssignmentRow[]) {
   const plans = new Map<
     string,
     {
+      enrollmentId: string;
       id: string;
       name: string;
       code: string;
@@ -15,6 +16,10 @@ export function groupMyTrainingAssignments(rows: TrainingAssignmentRow[]) {
       startAt: string;
       endAt: string;
       enrollmentStatus: TrainingAssignmentRow['enrollmentStatus'];
+      result: TrainingAssignmentRow['result'];
+      finalScore: number | null;
+      progressPercent: number | null;
+      evaluatedAt: string | null;
       assignedAt: string;
       courses: Array<{
         id: string;
@@ -29,6 +34,7 @@ export function groupMyTrainingAssignments(rows: TrainingAssignmentRow[]) {
     let plan = plans.get(row.planId);
     if (!plan) {
       plan = {
+        enrollmentId: row.enrollmentId,
         id: row.planId,
         name: row.planName,
         code: row.planCode,
@@ -38,6 +44,10 @@ export function groupMyTrainingAssignments(rows: TrainingAssignmentRow[]) {
         startAt: row.startAt,
         endAt: row.endAt,
         enrollmentStatus: row.enrollmentStatus,
+        result: row.result,
+        finalScore: row.finalScore,
+        progressPercent: row.progressPercent,
+        evaluatedAt: row.evaluatedAt,
         assignedAt: row.assignedAt,
         courses: []
       };

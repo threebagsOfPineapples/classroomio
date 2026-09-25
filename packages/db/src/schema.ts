@@ -2370,6 +2370,189 @@ export const trainingEnrollment = pgTable(
   ]
 );
 
+export const assessmentScheme = pgTable(
+  'assessment_scheme',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    planId: uuid('plan_id').notNull(),
+    name: varchar({ length: 200 }).notNull(),
+    description: text(),
+    passScore: integer('pass_score').notNull(),
+    status: varchar({ length: 16 }).default('DRAFT').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({ columns: [table.planId], foreignColumns: [trainingPlan.id], name: 'assessment_scheme_plan_fkey' }),
+    unique('assessment_scheme_plan_unique').on(table.planId),
+    check('assessment_scheme_pass_score_valid', sql`${table.passScore} BETWEEN 0 AND 100`),
+    check('assessment_scheme_status_valid', sql`${table.status} IN ('DRAFT', 'PUBLISHED')`)
+  ]
+);
+
+export const assessmentItem = pgTable(
+  'assessment_item',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    schemeId: uuid('scheme_id').notNull(),
+    type: varchar({ length: 16 }).notNull(),
+    name: varchar({ length: 200 }).notNull(),
+    weight: integer().notNull(),
+    maxScore: doublePrecision('max_score').notNull(),
+    required: boolean().default(true).notNull(),
+    sort: integer().notNull(),
+    exerciseId: uuid('exercise_id')
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.schemeId],
+      foreignColumns: [assessmentScheme.id],
+      name: 'assessment_item_scheme_fkey'
+    }),
+    foreignKey({ columns: [table.exerciseId], foreignColumns: [exercise.id], name: 'assessment_item_exercise_fkey' }),
+    index('assessment_item_scheme_idx').on(table.schemeId),
+    check(
+      'assessment_item_type_valid',
+      sql`${table.type} IN ('EXAM', 'ASSIGNMENT', 'INSTRUCTOR', 'ATTENDANCE', 'PROGRESS', 'CUSTOM')`
+    ),
+    check('assessment_item_weight_valid', sql`${table.weight} BETWEEN 0 AND 100`),
+    check('assessment_item_max_score_valid', sql`${table.maxScore} > 0`)
+  ]
+);
+
+export const assessmentInput = pgTable(
+  'assessment_input',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    enrollmentId: uuid('enrollment_id').notNull(),
+    itemId: uuid('item_id').notNull(),
+    score: doublePrecision().notNull(),
+    enteredByProfileId: uuid('entered_by_profile_id').notNull(),
+    enteredAt: timestamp('entered_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.enrollmentId],
+      foreignColumns: [trainingEnrollment.id],
+      name: 'assessment_input_enrollment_fkey'
+    }),
+    foreignKey({ columns: [table.itemId], foreignColumns: [assessmentItem.id], name: 'assessment_input_item_fkey' }),
+    foreignKey({
+      columns: [table.enteredByProfileId],
+      foreignColumns: [profile.id],
+      name: 'assessment_input_profile_fkey'
+    }),
+    index('assessment_input_enrollment_item_idx').on(table.enrollmentId, table.itemId),
+    check('assessment_input_score_valid', sql`${table.score} >= 0`)
+  ]
+);
+
+export const assessmentScore = pgTable(
+  'assessment_score',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    enrollmentId: uuid('enrollment_id').notNull(),
+    rawCalculatedScore: doublePrecision('raw_calculated_score'),
+    manualAdjustment: doublePrecision('manual_adjustment').default(0).notNull(),
+    finalScore: doublePrecision('final_score'),
+    result: trainingResult().default('PENDING').notNull(),
+    calculatedAt: timestamp('calculated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.enrollmentId],
+      foreignColumns: [trainingEnrollment.id],
+      name: 'assessment_score_enrollment_fkey'
+    }),
+    unique('assessment_score_enrollment_unique').on(table.enrollmentId),
+    check('assessment_score_final_valid', sql`${table.finalScore} IS NULL OR ${table.finalScore} BETWEEN 0 AND 100`)
+  ]
+);
+
+export const assessmentScoreDetail = pgTable(
+  'assessment_score_detail',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    scoreId: uuid('score_id').notNull(),
+    itemId: uuid('item_id').notNull(),
+    sourceId: uuid('source_id'),
+    rawScore: doublePrecision('raw_score'),
+    maxScore: doublePrecision('max_score').notNull(),
+    normalizedScore: doublePrecision('normalized_score'),
+    weight: integer().notNull(),
+    weightedScore: doublePrecision('weighted_score')
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.scoreId],
+      foreignColumns: [assessmentScore.id],
+      name: 'assessment_score_detail_score_fkey'
+    }),
+    foreignKey({
+      columns: [table.itemId],
+      foreignColumns: [assessmentItem.id],
+      name: 'assessment_score_detail_item_fkey'
+    }),
+    unique('assessment_score_detail_item_unique').on(table.scoreId, table.itemId)
+  ]
+);
+
+export const assessmentAdjustment = pgTable(
+  'assessment_adjustment',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    scoreId: uuid('score_id').notNull(),
+    amount: doublePrecision().notNull(),
+    reason: text().notNull(),
+    adjustedByProfileId: uuid('adjusted_by_profile_id').notNull(),
+    adjustedAt: timestamp('adjusted_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.scoreId],
+      foreignColumns: [assessmentScore.id],
+      name: 'assessment_adjustment_score_fkey'
+    }),
+    foreignKey({
+      columns: [table.adjustedByProfileId],
+      foreignColumns: [profile.id],
+      name: 'assessment_adjustment_profile_fkey'
+    }),
+    index('assessment_adjustment_score_idx').on(table.scoreId),
+    check('assessment_adjustment_amount_valid', sql`${table.amount} <> 0`)
+  ]
+);
+
+export const trainingEvaluation = pgTable(
+  'training_evaluation',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    enrollmentId: uuid('enrollment_id').notNull(),
+    contentRating: integer('content_rating').notNull(),
+    instructorRating: integer('instructor_rating').notNull(),
+    usefulnessRating: integer('usefulness_rating').notNull(),
+    difficultyRating: integer('difficulty_rating').notNull(),
+    satisfactionRating: integer('satisfaction_rating').notNull(),
+    helpfulContent: text('helpful_content'),
+    improvements: text(),
+    suggestions: text(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.enrollmentId],
+      foreignColumns: [trainingEnrollment.id],
+      name: 'training_evaluation_enrollment_fkey'
+    }),
+    unique('training_evaluation_enrollment_unique').on(table.enrollmentId),
+    check('training_evaluation_content_valid', sql`${table.contentRating} BETWEEN 1 AND 5`),
+    check('training_evaluation_instructor_valid', sql`${table.instructorRating} BETWEEN 1 AND 5`),
+    check('training_evaluation_usefulness_valid', sql`${table.usefulnessRating} BETWEEN 1 AND 5`),
+    check('training_evaluation_difficulty_valid', sql`${table.difficultyRating} BETWEEN 1 AND 5`),
+    check('training_evaluation_satisfaction_valid', sql`${table.satisfactionRating} BETWEEN 1 AND 5`)
+  ]
+);
+
 export const organizationmemberEmailNotifications = pgTable(
   'organizationmember_email_notifications',
   {
