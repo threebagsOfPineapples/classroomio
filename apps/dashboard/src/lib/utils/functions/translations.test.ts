@@ -12,6 +12,7 @@ describe('Chinese translations', () => {
     expect(messages.course.navItem.lessons.exercises.all_exercises.view_mode.attempt_counter).toBe(
       '第 {current} 次尝试，共 {total} 次'
     );
+    expect(messages.certificates.empty_title).toBe('暂无证书');
     expect(messages.aiTutor.page.org.title).toBe('AI Tutor settings');
   });
 });

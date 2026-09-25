@@ -135,6 +135,9 @@
     "notifications": {
       "heading": "通知设置",
       "page_subtitle": "选择要接收的邮件通知，以及组织向成员发送的邮件。"
+    },
+    "integrations": {
+      "heading": "Telegram 集成"
     }
   },
   "org_navigation": {
@@ -590,7 +593,8 @@
           "link_label": "加入链接（Zoom、Meet 等）",
           "save": "保存课时安排",
           "timezone_helper": "提醒和日历邀请将按此时区显示。",
-          "timezone_label": "时区"
+          "timezone_label": "时区",
+          "join": "加入直播课时"
         },
         "settings": {
           "comments": {
@@ -675,6 +679,15 @@
           "in_progress": "进行中",
           "submitted": "已提交"
         }
+      },
+      "landing_page": {
+        "pricing_section": {
+          "buy": "立即购买",
+          "enroll": "立即报名",
+          "free": "免费",
+          "not_accepting": "本课程暂不接受新学员报名。"
+        },
+        "requirement": "学习要求"
       }
     },
     "sidebar": {
@@ -889,7 +902,13 @@
   },
   "certificates": {
     "description": "查看并下载完成课程后获得的证书。",
-    "heading": "证书"
+    "heading": "证书",
+    "empty_description": "完成课程后可获得证书，获得的证书会显示在这里。",
+    "empty_title": "暂无证书",
+    "go_to_my_learning": "前往我的学习",
+    "no_results_description": "请尝试其他搜索词。",
+    "no_results_title": "未找到证书",
+    "search": "搜索证书"
   },
   "cohorts": {
     "lms": {
@@ -898,13 +917,24 @@
     }
   },
   "community": {
-    "title": "交流社区"
+    "title": "交流社区",
+    "ask": {
+      "ask_the": "向社区提问",
+      "go_back": "返回"
+    }
   },
   "exercises": {
-    "heading": "练习与考试"
+    "heading": "练习与考试",
+    "graded": "已评分",
+    "in_progress": "评分中",
+    "lesson": "课时",
+    "not_submitted": "未提交",
+    "submitted": "已提交"
   },
   "explore": {
-    "heading": "探索课程"
+    "heading": "探索课程",
+    "empty_description": "目前没有已发布的课程。",
+    "empty_heading": "暂无课程"
   },
   "new_course_modal": {
     "compliance_label": "合规课程",
