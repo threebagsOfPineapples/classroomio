@@ -62,6 +62,7 @@ vi.mock('@cio/db/queries/training-plan', () => ({
 
 import {
   getTrainingArchiveSummary,
+  getTrainingStatistics,
   publishPlanAssessment,
   submitTrainingEvaluation,
   syncAssessmentsForSubmission
@@ -119,6 +120,39 @@ describe('assessment publication and evaluation', () => {
     expect(summary.trainingCount).toBe(0);
     expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7]);
     expect(mocks.listArchiveCourseEvidence).toHaveBeenCalledWith('org', undefined, [7]);
+  });
+
+  it('counts assignments and completions in their actual Beijing months', async () => {
+    mocks.listAssessmentEnrollments.mockResolvedValue([
+      {
+        enrollment: {
+          id: 'enrollment',
+          assignedAt: '2026-09-25T00:00:00.000Z',
+          completedAt: '2026-10-02T00:00:00.000Z',
+          status: 'COMPLETED',
+          progressPercent: 100
+        },
+        plan: {
+          id: 'plan',
+          name: 'Training',
+          planType: 'MANDATORY',
+          endAt: '2026-12-31T00:00:00.000Z',
+          status: 'PUBLISHED'
+        },
+        member: { id: 7, email: 'learner@example.com', departmentId: null },
+        score: null,
+        evaluation: null
+      }
+    ]);
+
+    const statistics = await getTrainingStatistics('org', 'admin');
+    expect(statistics.monthlyTrend).toEqual([
+      { month: '2026-09', assigned: 1, completed: 0 },
+      { month: '2026-10', assigned: 0, completed: 1 }
+    ]);
+
+    const october = await getTrainingStatistics('org', 'admin', undefined, '2026-10-01', '2026-10-31');
+    expect(october.monthlyTrend).toEqual([{ month: '2026-10', assigned: 0, completed: 1 }]);
   });
 
   it('updates the assigned learner score when a native submission changes', async () => {

@@ -600,7 +600,7 @@ export async function getTrainingStatistics(
   const scored = rows.filter((row) => row.finalScore !== null);
   const evaluated = rows.filter((row) => row.satisfactionRating !== null);
   const departmentGroups = new Map<string, typeof rows>();
-  const monthlyGroups = new Map<string, typeof rows>();
+  const monthlyGroups = new Map<string, { assigned: number; completed: number }>();
   const planTypeGroups = new Map<string, number>();
   const courseGroups = new Map<string, { title: string; assigned: number }>();
   const unfinishedGroups = new Map<string, { name: string; count: number }>();
@@ -609,14 +609,27 @@ export async function getTrainingStatistics(
     year: 'numeric',
     month: '2-digit'
   });
-  for (const row of rows) {
-    const departmentKey = row.departmentId ?? 'unassigned';
-    departmentGroups.set(departmentKey, [...(departmentGroups.get(departmentKey) ?? []), row]);
-    const monthParts = monthFormatter.formatToParts(new Date(row.assignedAt));
+  function countMonthlyEvent(timestamp: string, event: 'assigned' | 'completed') {
+    const eventTime = Date.parse(timestamp);
+    if (eventTime < fromTime || eventTime >= toTime) return;
+
+    const monthParts = monthFormatter.formatToParts(new Date(timestamp));
     const year = monthParts.find((part) => part.type === 'year')?.value;
     const month = monthParts.find((part) => part.type === 'month')?.value;
     const monthKey = `${year}-${month}`;
-    monthlyGroups.set(monthKey, [...(monthlyGroups.get(monthKey) ?? []), row]);
+    const group = monthlyGroups.get(monthKey) ?? { assigned: 0, completed: 0 };
+    group[event] += 1;
+    monthlyGroups.set(monthKey, group);
+  }
+
+  for (const row of records) {
+    countMonthlyEvent(row.assignedAt, 'assigned');
+    if (row.status === 'COMPLETED' && row.completedAt) countMonthlyEvent(row.completedAt, 'completed');
+  }
+
+  for (const row of rows) {
+    const departmentKey = row.departmentId ?? 'unassigned';
+    departmentGroups.set(departmentKey, [...(departmentGroups.get(departmentKey) ?? []), row]);
     planTypeGroups.set(row.planType, (planTypeGroups.get(row.planType) ?? 0) + 1);
     for (const course of row.courses) {
       const group = courseGroups.get(course.id);
@@ -665,11 +678,7 @@ export async function getTrainingStatistics(
     }),
     monthlyTrend: [...monthlyGroups]
       .sort(([left], [right]) => left.localeCompare(right))
-      .map(([month, group]) => ({
-        month,
-        assigned: group.length,
-        completed: group.filter((row) => row.status === 'COMPLETED').length
-      })),
+      .map(([month, group]) => ({ month, ...group })),
     byPlanType: [...planTypeGroups].map(([type, count]) => ({ type, count })),
     popularCourses: [...courseGroups]
       .map(([courseId, group]) => ({ courseId, ...group }))
