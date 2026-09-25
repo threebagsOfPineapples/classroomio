@@ -26,7 +26,8 @@
   let toDate = $state('');
 
   const departmentChartConfig = $derived({
-    completionRate: { label: $t('enterprise.assessment.completion_rate'), color: 'var(--chart-1)' }
+    completionRate: { label: $t('enterprise.assessment.completion_rate'), color: 'var(--chart-1)' },
+    averageScore: { label: $t('enterprise.assessment.average_score'), color: 'var(--chart-2)' }
   } satisfies ChartConfig);
   const departmentSeries = $derived([
     {
@@ -34,6 +35,14 @@
       value: 'completionRate',
       label: departmentChartConfig.completionRate.label,
       color: 'var(--color-completionRate)'
+    }
+  ]);
+  const departmentScoreSeries = $derived([
+    {
+      key: 'averageScore',
+      value: 'averageScore',
+      label: departmentChartConfig.averageScore.label,
+      color: 'var(--color-averageScore)'
     }
   ]);
   const departmentChartData = $derived(
@@ -46,8 +55,12 @@
           (department.departmentId === 'unassigned'
             ? $t('enterprise.assessment.not_assigned')
             : department.departmentId),
-        completionRate: department.completionRate
+        completionRate: department.completionRate,
+        averageScore: department.averageScore
       }))
+  );
+  const departmentScoreChartData = $derived(
+    departmentChartData.filter((department) => department.averageScore !== null)
   );
   const monthlyChartConfig = $derived({
     assigned: { label: $t('enterprise.assessment.training_count'), color: 'var(--chart-2)' },
@@ -153,6 +166,20 @@
                   </Chart.ChartContainer>
                 {/await}
               {/if}
+              {#if browser && departmentScoreChartData.length > 0}
+                <h3 class="text-sm font-medium">{$t('enterprise.assessment.average_score')}</h3>
+                {#await loadChart() then Chart}
+                  <Chart.ChartContainer class="h-[260px] w-full" config={departmentChartConfig}>
+                    <Chart.BarChart
+                      data={departmentScoreChartData}
+                      x="name"
+                      axis="x"
+                      yDomain={[0, 100]}
+                      series={departmentScoreSeries}
+                    />
+                  </Chart.ChartContainer>
+                {/await}
+              {/if}
               {#each assessmentApi.statistics.byDepartment as department (department.departmentId)}
                 <div>
                   <p class="text-sm">
@@ -182,10 +209,11 @@
                 {/await}
               {/if}
               {#each assessmentApi.statistics.monthlyTrend as month (month.month)}
-                <div>
-                  <p class="text-sm">{month.month} · {month.completed}/{month.assigned}</p>
-                  <Progress value={month.assigned ? (month.completed / month.assigned) * 100 : 0} max={100} />
-                </div>
+                <p class="text-sm">
+                  {month.month} · {$t('enterprise.assessment.training_count')}: {month.assigned} · {$t(
+                    'enterprise.assessment.completed'
+                  )}: {month.completed}
+                </p>
               {/each}
             </div>
             <div class="space-y-2">
