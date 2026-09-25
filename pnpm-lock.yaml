@@ -765,6 +765,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.675.0
         version: 3.958.0
+      '@cio/api':
+        specifier: workspace:*
+        version: link:../api
       '@cio/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics

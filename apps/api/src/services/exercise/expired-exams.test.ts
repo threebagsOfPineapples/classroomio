@@ -43,7 +43,11 @@ it('finalizes a saved objective answer once with its score and course', async ()
     ]
   });
 
-  expect((await finalizeExpiredExams()).finalized).toBe(1);
+  expect(await finalizeExpiredExams()).toEqual({
+    finalized: 1,
+    inspected: 1,
+    affectedLearners: [{ courseId: 'course-1', groupMemberId: 'member-1' }]
+  });
   expect((await finalizeExpiredExams()).finalized).toBe(0);
   expect(queries.createExpiredExamSubmission).toHaveBeenCalledTimes(1);
   expect(queries.createExpiredExamSubmission).toHaveBeenCalledWith(

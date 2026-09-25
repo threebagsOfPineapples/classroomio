@@ -33,6 +33,10 @@
   },
   "homepage": "https://github.com/classroomio/classroomio#readme",
   "exports": {
+    "./services/assessment": {
+      "types": "./dist/services/assessment.d.ts",
+      "default": "./dist/services/assessment.js"
+    },
     "./rpc-types": {
       "types": "./dist/rpc-types.d.ts",
       "default": "./dist/rpc-types.js"

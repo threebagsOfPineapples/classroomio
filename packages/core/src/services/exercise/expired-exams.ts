@@ -19,6 +19,7 @@ import type { TNewQuestionAnswer, TNewSubmission } from '@cio/db/types';
 export async function finalizeExpiredExams(limit = 100) {
   const attempts = await listExpiredExamAttempts(limit);
   let finalized = 0;
+  const affectedLearners: Array<{ courseId: string; groupMemberId: string }> = [];
 
   for (const attempt of attempts) {
     const exercise = await getExerciseWithRelationsOptimized(attempt.exerciseId);
@@ -131,7 +132,8 @@ export async function finalizeExpiredExams(limit = 100) {
     }
 
     finalized += 1;
+    affectedLearners.push({ courseId, groupMemberId: attempt.groupMemberId });
   }
 
-  return { finalized, inspected: attempts.length };
+  return { finalized, inspected: attempts.length, affectedLearners };
 }

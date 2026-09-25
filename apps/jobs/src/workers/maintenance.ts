@@ -6,6 +6,7 @@ import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
 import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
 import { finalizeExpiredExams } from '@cio/core/services/exercise/expired-exams';
+import { syncAssessmentsForSubmission } from '@cio/api/services/assessment';
 import { pruneDeadLetterJobsOlderThan, reapStuckMediaJobs } from '@cio/db/queries';
 import { reconcileMemberLastActive } from '@cio/db/queries/organization';
 import { capAutoLessonVersionsPerLanguage, pruneAutoLessonVersions } from '@cio/db/queries/lesson/version';
@@ -127,8 +128,20 @@ const worker = new Worker(
 
     if (job.name === JOB_NAMES.maintenance.examAttemptFinalize) {
       const result = await finalizeExpiredExams();
-      if (result.finalized > 0) log.info('exam-attempt-finalize-done', result);
-      return result;
+      for (const learner of result.affectedLearners) {
+        try {
+          await syncAssessmentsForSubmission(learner.courseId, learner.groupMemberId);
+        } catch (error) {
+          log.error('exam-assessment-sync-failed', {
+            courseId: learner.courseId,
+            groupMemberId: learner.groupMemberId,
+            error: errorMessage(error)
+          });
+        }
+      }
+
+      if (result.finalized > 0) log.info('exam-attempt-finalize-done', { finalized: result.finalized });
+      return { finalized: result.finalized, inspected: result.inspected };
     }
 
     throw new Error(`Unknown maintenance job: ${job.name}`);
