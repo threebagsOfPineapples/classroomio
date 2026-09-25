@@ -92,26 +92,23 @@
         <a
           href={resolve(ROUTE.HOME, {})}
           class="inline-flex"
-          aria-label={$currentOrg.name ? $currentOrg.name : 'ClassroomIO'}
+          aria-label={$currentOrg.name || $t('enterprise.company_name')}
         >
           <Avatar.Root>
             <Avatar.Image
-              src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
-              alt={$currentOrg.name ? $currentOrg.name : 'ClassroomIO'}
+              src={$currentOrg.avatarUrl || '/enterprise-training-icon.png'}
+              alt={$currentOrg.name || $t('enterprise.company_name')}
             />
-            <Avatar.Fallback>{$currentOrg.name ? $currentOrg.name : 'ClassroomIO'}</Avatar.Fallback>
+            <Avatar.Fallback>{$currentOrg.name || $t('enterprise.company_name')}</Avatar.Fallback>
           </Avatar.Root>
         </a>
 
         {#if !showOnlyContent}
-          <a href="/">
+          <a href={resolve('/', {})}>
             <Card.Title class="text-2xl font-normal!">
               {isLogin ? $t('login.welcome') : $t('login.create_account')}
             </Card.Title>
           </a>
-          {#if isLogin}
-            <Card.Description class="text-center">Sign in to continue</Card.Description>
-          {/if}
         {/if}
       </Card.Header>
     {/if}
