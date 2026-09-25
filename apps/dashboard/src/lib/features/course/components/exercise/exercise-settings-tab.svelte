@@ -28,6 +28,20 @@
 
   const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
 
+  function localDateTime(value: string | null | undefined) {
+    if (!value) return '';
+
+    const date = new Date(value);
+    const localTime = date.getTime() - date.getTimezoneOffset() * 60_000;
+    return new Date(localTime).toISOString().slice(0, 16);
+  }
+
+  function updateExamDate(field: 'opensAt' | 'closesAt', value: string) {
+    const date = value ? new Date(value) : null;
+    const isoValue = date && !Number.isNaN(date.getTime()) ? date.toISOString() : null;
+    questionnaire.update((state) => ({ ...state, [field]: isoValue }));
+  }
+
   async function saveSettings() {
     if (!courseApi.course?.id) return;
     const canSave = await onBeforeSave();
@@ -38,10 +52,16 @@
     const allowMultipleAttempts = !!$questionnaire.allowMultipleAttempts;
     const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
     const passThreshold = $questionnaire.passThreshold ?? 100;
+    const isExam = !!$questionnaire.isExam;
+    const opensAt = $questionnaire.opensAt ?? null;
+    const closesAt = $questionnaire.closesAt ?? null;
     const slugPayload = isPublicCourse && slug ? slug : undefined;
 
     await exerciseApi.update(courseApi.course.id, exerciseId, {
       allowMultipleAttempts,
+      isExam,
+      opensAt,
+      closesAt,
       completionPolicy,
       passThreshold,
       slug: slugPayload
@@ -55,6 +75,38 @@
 </script>
 
 <div class="max-w-xl space-y-6">
+  {#if !isPublicCourse || $questionnaire.isExam}
+    <div class="space-y-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+      <div class="flex items-center justify-between gap-4">
+        <Label for="exam-mode" class="text-sm font-medium dark:text-gray-100">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_exam_mode')}
+        </Label>
+        <Switch
+          id="exam-mode"
+          checked={!!$questionnaire.isExam}
+          onCheckedChange={(checked) => questionnaire.update((state) => ({ ...state, isExam: checked }))}
+        />
+      </div>
+      {#if $questionnaire.isExam}
+        <InputField
+          type="datetime-local"
+          label={$t('course.navItem.lessons.exercises.all_exercises.settings_exam_opens')}
+          value={localDateTime($questionnaire.opensAt)}
+          onInputChange={(event) => updateExamDate('opensAt', event.currentTarget.value)}
+        />
+        <InputField
+          type="datetime-local"
+          label={$t('course.navItem.lessons.exercises.all_exercises.settings_exam_closes')}
+          value={localDateTime($questionnaire.closesAt)}
+          onInputChange={(event) => updateExamDate('closesAt', event.currentTarget.value)}
+        />
+        <p class="ui:text-muted-foreground text-sm">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_exam_window_helper')}
+        </p>
+      {/if}
+    </div>
+  {/if}
+
   <div class="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
     <div class="space-y-1">
       <Label for="allow-multiple" class="text-sm font-medium dark:text-gray-100">

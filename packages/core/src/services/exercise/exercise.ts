@@ -26,7 +26,7 @@ import {
   updateOptions,
   updateQuestions
 } from '@cio/db/queries/exercise';
-import { touchCourseUpdatedAt } from '@cio/db/queries/course';
+import { getCourseById, touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
 
@@ -369,6 +369,20 @@ export async function updateExerciseService(exerciseId: string, data: TExerciseU
     validateSectionQuestionAssignments(sanitizedData);
 
     const existing = await getExerciseById(exerciseId);
+
+    const isExam = sanitizedData.isExam ?? existing?.isExam;
+    const opensAt = sanitizedData.opensAt === undefined ? existing?.opensAt : sanitizedData.opensAt;
+    const closesAt = sanitizedData.closesAt === undefined ? existing?.closesAt : sanitizedData.closesAt;
+    if (isExam && (!opensAt || !closesAt || Date.parse(closesAt) <= Date.parse(opensAt))) {
+      throw new AppError('Exam requires an end time after its start time', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    if (isExam && existing?.courseId) {
+      const [course] = await getCourseById(existing.courseId);
+      if (course?.type === 'PUBLIC') {
+        throw new AppError('Exam mode is unavailable for public courses', ErrorCodes.VALIDATION_ERROR, 400);
+      }
+    }
 
     if (existing?.courseId) {
       await guardNonAutoGradableQuestionsForCourseType({

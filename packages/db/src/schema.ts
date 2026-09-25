@@ -1284,6 +1284,9 @@ export const exercise = pgTable(
     isUnlocked: boolean('is_unlocked').default(true),
     dueBy: timestamp('due_by', { mode: 'string' }),
     allowMultipleAttempts: boolean('allow_multiple_attempts').default(false).notNull(),
+    isExam: boolean('is_exam').default(false).notNull(),
+    opensAt: timestamp('opens_at', { withTimezone: true, mode: 'string' }),
+    closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }),
     sectionDisplayMode: varchar('section_display_mode').default('one_question'),
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),
@@ -1305,7 +1308,11 @@ export const exercise = pgTable(
       foreignColumns: [courseSection.id],
       name: 'exercise_section_id_fkey'
     }),
-    index('idx_exercise_course_slug').on(table.courseId, table.slug)
+    index('idx_exercise_course_slug').on(table.courseId, table.slug),
+    check(
+      'exercise_exam_window_valid',
+      sql`NOT ${table.isExam} OR (${table.opensAt} IS NOT NULL AND ${table.closesAt} IS NOT NULL AND ${table.closesAt} > ${table.opensAt})`
+    )
   ]
 );
 

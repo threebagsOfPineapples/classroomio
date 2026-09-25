@@ -169,6 +169,13 @@
       "when": 1790247197679,
       "tag": "0023_training_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790296798169,
+      "tag": "0024_exam_window",
+      "breakpoints": true
     }
   ]
 }

@@ -69,6 +69,9 @@ export interface QuestionnaireState {
   sectionDisplayMode: ExerciseSectionDisplayMode;
   totalSubmissions: number;
   allowMultipleAttempts?: boolean;
+  isExam?: boolean;
+  opensAt?: string | null;
+  closesAt?: string | null;
   completionPolicy?: 'submitted' | 'passed';
   passThreshold?: number | null;
   slug?: string | null;
@@ -104,6 +107,9 @@ export const questionnaire: Writable<QuestionnaireState> = writable({
   sectionDisplayMode: 'one_question',
   totalSubmissions: 0,
   allowMultipleAttempts: false,
+  isExam: false,
+  opensAt: null,
+  closesAt: null,
   completionPolicy: 'submitted',
   passThreshold: 100,
   slug: ''

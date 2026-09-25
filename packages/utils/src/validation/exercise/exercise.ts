@@ -233,6 +233,9 @@ export const ZExerciseUpdate = z.object({
   isUnlocked: z.boolean().optional(),
   dueBy: z.string().optional(), // Changed from iso.datetime() to string to match frontend format
   allowMultipleAttempts: z.boolean().optional(),
+  isExam: z.boolean().optional(),
+  opensAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  closesAt: z.iso.datetime({ offset: true }).nullable().optional(),
   slug: ZSlug.optional(),
   questions: z.array(ZExerciseUpdateQuestion).optional(),
   sections: z.array(ZExerciseSection).optional(),

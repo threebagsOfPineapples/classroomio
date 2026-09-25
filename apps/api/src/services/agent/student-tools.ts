@@ -13,6 +13,7 @@ import { listCourseSections } from '@cio/core/services/course/section';
 import { AppError } from '@api/utils/errors';
 import { AgentEvent, trackAgentEvent } from '@cio/core/utils/tinybird';
 import { verifyExerciseBelongsToCourse, verifyLessonBelongsToCourse } from '@cio/core/services/agent/chat-context';
+import { assertExamOpen } from '@api/services/exercise/exam-policy';
 
 /**
  * Student agent tools — read-only, course-scoped.
@@ -213,6 +214,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
         return executeStudentTool('read_exercise', { orgId, userId, courseId, args }, async () => {
           await verifyExerciseBelongsToCourse(args.exerciseId, courseId);
           const exercise = await getExercise(args.exerciseId);
+          assertExamOpen(exercise);
 
           const questions = (exercise.questions ?? []).map((q) =>
             stripAnswerKeysFromQuestion({

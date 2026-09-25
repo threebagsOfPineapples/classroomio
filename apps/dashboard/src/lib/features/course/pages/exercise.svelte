@@ -457,6 +457,9 @@
         sections: shouldSyncSections ? sectionsPayload : undefined,
         sectionDisplayMode: $questionnaire.sectionDisplayMode,
         allowMultipleAttempts,
+        isExam: $questionnaire.isExam,
+        opensAt: $questionnaire.opensAt,
+        closesAt: $questionnaire.closesAt,
         completionPolicy,
         passThreshold
       });

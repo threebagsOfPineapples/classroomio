@@ -46,6 +46,7 @@ import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUr
 import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExerciseCompletedForMember } from '@cio/db/queries/course/progression';
+import { assertExamOpen } from '@api/services/exercise/exam-policy';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
@@ -558,6 +559,8 @@ export async function createSubmissionService(
       getCourseById(courseId)
     ]);
     const course = courseRows[0];
+
+    assertExamOpen(exerciseWithRelations.exercise);
 
     if (!exerciseWithRelations.exercise.allowMultipleAttempts) {
       const alreadySubmitted = await hasSubmission(exerciseId, submittedBy);
