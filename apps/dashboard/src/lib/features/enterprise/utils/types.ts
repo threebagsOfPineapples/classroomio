@@ -27,3 +27,31 @@ export type TrainingPlanDraft = InferRequestType<CreateTrainingPlanRequest>['jso
 export type GetMyTrainingRequest = (typeof classroomio.enterprise)['my-training']['$get'];
 export type MyTrainingAssignments = Extract<InferResponseType<GetMyTrainingRequest>, { success: true }>['data'];
 export type MyTrainingAssignment = MyTrainingAssignments[number];
+
+export type GetAssessmentRequest = (typeof classroomio.enterprise.plans)[':planId']['assessment']['$get'];
+export type GetAssessmentExercisesRequest = (typeof classroomio.enterprise.plans)[':planId']['exercises']['$get'];
+export type GetEnrollmentAssessmentRequest =
+  (typeof classroomio.enterprise.enrollments)[':enrollmentId']['assessment']['$get'];
+export type GetTrainingArchiveRequest = (typeof classroomio.enterprise.archive)['$get'];
+export type GetTrainingArchiveSummaryRequest = (typeof classroomio.enterprise.archive)['summary']['$get'];
+export type GetTrainingStatisticsRequest = (typeof classroomio.enterprise.statistics)['$get'];
+export type GetTrainingMatrixRequest = (typeof classroomio.enterprise.matrix)['$get'];
+export type UpdateAssessmentRequest = (typeof classroomio.enterprise.plans)[':planId']['assessment']['$put'];
+export type SubmitTrainingEvaluationRequest =
+  (typeof classroomio.enterprise.enrollments)[':enrollmentId']['evaluation']['$post'];
+
+export type AssessmentScheme = Extract<InferResponseType<GetAssessmentRequest>, { success: true }>['data'];
+export type AssessmentExercises = Extract<InferResponseType<GetAssessmentExercisesRequest>, { success: true }>['data'];
+export type EnrollmentAssessment = Extract<
+  InferResponseType<GetEnrollmentAssessmentRequest>,
+  { success: true }
+>['data'];
+export type TrainingArchive = Extract<InferResponseType<GetTrainingArchiveRequest>, { success: true }>['data'];
+export type TrainingArchiveSummary = Extract<
+  InferResponseType<GetTrainingArchiveSummaryRequest>,
+  { success: true }
+>['data'];
+export type TrainingStatistics = Extract<InferResponseType<GetTrainingStatisticsRequest>, { success: true }>['data'];
+export type TrainingMatrix = Extract<InferResponseType<GetTrainingMatrixRequest>, { success: true }>['data'];
+export type AssessmentDraft = InferRequestType<UpdateAssessmentRequest>['json'];
+export type TrainingEvaluationDraft = InferRequestType<SubmitTrainingEvaluationRequest>['json'];

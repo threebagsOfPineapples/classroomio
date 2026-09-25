@@ -141,6 +141,9 @@
     </Page.HeaderContent>
     <Page.Action>
       <Button variant="secondary" href={resolve('/admin/plans')}>{$t('enterprise.plans.title')}</Button>
+      <Button variant="secondary" href={resolve('/admin/assessment')}>{$t('enterprise.assessment.title')}</Button>
+      <Button variant="secondary" href={resolve('/admin/matrix')}>{$t('enterprise.assessment.matrix')}</Button>
+      <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('enterprise.assessment.subtitle')}</Button>
     </Page.Action>
   </Page.Header>
 

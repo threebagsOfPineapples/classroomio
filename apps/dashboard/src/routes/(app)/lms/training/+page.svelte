@@ -47,6 +47,7 @@
     </Page.HeaderContent>
     <Page.Action>
       <Button href="/lms/mylearning" variant="secondary">{$t('enterprise.my_training.my_courses')}</Button>
+      <Button href="/lms/training/archive" variant="secondary">{$t('enterprise.assessment.archive')}</Button>
     </Page.Action>
   </Page.Header>
   <Page.Body>
@@ -87,6 +88,12 @@
               </summary>
               <div class="mt-5 space-y-4 border-t pt-4">
                 {#if assignment.description}<p class="text-sm">{assignment.description}</p>{/if}
+                <p class="text-sm">
+                  {$t('enterprise.assessment.score')}: {assignment.finalScore ?? '—'} · {assignment.result}
+                </p>
+                <Button href={`/lms/training/${assignment.enrollmentId}`} variant="secondary" size="sm">
+                  {$t('enterprise.assessment.details')}
+                </Button>
                 {#each assignment.courses as course (course.id)}
                   {@const enrolledCourse = courseDataReady
                     ? coursesApi.enrolledCourses.find((item) => item.id === course.id)
