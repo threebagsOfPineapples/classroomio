@@ -8,6 +8,10 @@
   </p>
 </a>
 
+## 河南至臻数字生活科技有限公司企业培训系统
+
+本仓库在 ClassroomIO 基础上扩展企业内部培训、学习、考核与统计功能。Based on ClassroomIO；原项目许可证与版权信息予以保留。
+
 ## ✨ About ClassroomIO.com
 
 <img alt="ClassroomIO Courses page" src="https://assets.cdn.clsrio.com/www/home/ai-course-builder.jpeg" />

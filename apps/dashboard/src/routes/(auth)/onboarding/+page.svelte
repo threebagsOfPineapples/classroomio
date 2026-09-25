@@ -39,10 +39,7 @@
     if (!orgName || isTouched) return;
 
     untrack(() => {
-      fields.siteName = orgName
-        ?.toLowerCase()
-        ?.replace(/\s+/g, '-')
-        ?.replace(/[^a-zA-Z0-9-]/g, '');
+      fields.siteName = generateSitename(orgName);
     });
   }
 
@@ -57,8 +54,14 @@
       <!-- Header With Logo -->
       <div class="flex flex-col items-center">
         <div class="mb-4 flex w-full items-center justify-center">
-          <img src="/enterprise-training-icon.png" alt={$t('enterprise.title')} height="50" width="50" data-atf="1" />
-          <h4 class="text-xl dark:text-white">{$t('enterprise.title')}</h4>
+          <img
+            src="/enterprise-training-icon.png"
+            alt={$t('enterprise.company_name')}
+            height="50"
+            width="50"
+            data-atf="1"
+          />
+          <h4 class="text-xl dark:text-white">{$t('enterprise.company_name')}</h4>
         </div>
 
         <!-- Loggedin Email -->

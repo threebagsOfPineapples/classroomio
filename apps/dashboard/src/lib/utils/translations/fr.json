@@ -5656,6 +5656,7 @@
     }
   },
   "enterprise": {
+    "company_name": "河南至臻数字生活科技有限公司",
     "title": "Gestion de l’entreprise",
     "subtitle": "Départements et employés",
     "request_failed": "Échec de la requête",

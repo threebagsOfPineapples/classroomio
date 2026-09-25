@@ -226,7 +226,7 @@
 </script>
 
 <svelte:head>
-  <title>Join ClassroomIO</title>
+  <title>{$t('login.create_account')} · {$currentOrg.name || $t('enterprise.company_name')}</title>
 </svelte:head>
 
 {#if !$globalStore.isOrgSite || $isFreePlan}

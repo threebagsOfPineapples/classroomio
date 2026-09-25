@@ -1,12 +1,13 @@
 import * as z from 'zod';
 
-const fullnameValidation = z.string().min(5);
+const fullnameValidation = z.string().trim().min(2);
 
 export const ZOnboardingCreateOrg = z.object({
   fullname: fullnameValidation,
   orgName: z
     .string()
-    .min(5)
+    .trim()
+    .min(2)
     .refine((val) => !/^[-]|[-]$/.test(val), {
       message: 'validations.organization_name.hyphen_rule'
     }),

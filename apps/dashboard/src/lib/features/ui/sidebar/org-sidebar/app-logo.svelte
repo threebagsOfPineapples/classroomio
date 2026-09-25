@@ -17,7 +17,7 @@
             <Avatar.Image src="/enterprise-training-icon.png" alt="" />
           </Avatar.Root>
 
-          <span class="truncate font-normal">{$t('enterprise.title')}</span>
+          <span class="truncate font-normal">{$t('enterprise.company_name')}</span>
         </a>
       {/snippet}
     </Sidebar.MenuButton>

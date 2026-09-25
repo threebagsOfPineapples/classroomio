@@ -124,7 +124,7 @@
 </script>
 
 <svelte:head>
-  <title>Welcome back to {$currentOrg.name || 'ClassroomIO'}</title>
+  <title>{$t('login.welcome')} · {$currentOrg.name || $t('enterprise.company_name')}</title>
 </svelte:head>
 
 {#snippet getPasswordAuthAlternative()}
