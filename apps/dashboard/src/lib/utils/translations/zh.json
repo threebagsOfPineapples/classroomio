@@ -65,6 +65,84 @@
       "expires": "到期日期"
     }
   },
+  "add_org": {
+    "create_org": "创建企业",
+    "name": "企业名称",
+    "org_sitename": "企业访问地址",
+    "create": "创建",
+    "sitename": "企业访问地址已存在",
+    "error_organization": "创建企业时出错，请刷新后重试"
+  },
+  "validations": {
+    "user_profile": {
+      "email": "电子邮箱地址无效",
+      "username": "用户名不能为空",
+      "fullname": "姓名至少需要 5 个字符"
+    },
+    "organization_name": {
+      "min_char": "企业名称至少需要 5 个字符",
+      "hyphen_rule": "企业名称不能以连字符开头或结尾"
+    },
+    "site_name": {
+      "min_char": "企业访问地址至少需要 5 个字符",
+      "hyphen_rule": "企业访问地址不能以连字符开头或结尾"
+    },
+    "news_feed": { "min_char": "至少需要 5 个字符" },
+    "lesson_schema": { "empty_title": "标题不能为空" },
+    "create_quiz": { "min_char": "至少需要 6 个字符" },
+    "ask_community": {
+      "title": { "min_char": "至少需要 6 个字符" },
+      "body": { "min_char": "至少需要 10 个字符" },
+      "course_id": { "select_course": "请选择课程" }
+    },
+    "comment_in_community": { "min_char": "至少需要 6 个字符" },
+    "org_landing_page": {
+      "name": { "min_char": "至少需要 6 个字符" },
+      "email": { "invalid_email": "电子邮箱地址无效" },
+      "phone": { "min_char": "至少需要 6 个字符" },
+      "message": { "min_char": "至少需要 20 个字符" }
+    },
+    "forgot": { "invalid_email": "电子邮箱地址无效" },
+    "auth": {
+      "email": { "invalid_email": "电子邮箱地址无效" },
+      "password": { "min_char": "密码至少需要 8 个字符" }
+    },
+    "reset": { "password": { "min_char": "密码至少需要 8 个字符" } },
+    "onboarding": {
+      "step_one": { "full_name": { "min_char": "姓名至少需要 2 个字符" } },
+      "step_two": {
+        "goal": { "required": "请选择一个选项" },
+        "source": { "required": "请选择一个选项" }
+      }
+    },
+    "confirm_password": { "not_match": "两次输入的密码不一致" },
+    "course_payment": {
+      "full_name": { "min_char": "至少需要 6 个字符" },
+      "email": { "invalid_email": "电子邮箱地址无效" }
+    },
+    "email": { "not_valid": "电子邮箱地址无效" },
+    "exercise": {
+      "question": { "too_small": "请输入题目标题" },
+      "label": { "too_small": "请输入选项内容" },
+      "points": { "too_small": "分值至少为 1" },
+      "options": { "custom": "{message}" }
+    },
+    "generic": {
+      "invalid_type": "类型无效{expected, select, undefined{} other{，应为 {expected}}}{received, select, undefined{} other{（收到 {received}）}}",
+      "too_big": "数值过大{maximum, select, undefined{} other{，最大值为 {maximum}}}",
+      "too_small": "数值过小{minimum, select, undefined{} other{，最小值为 {minimum}}}",
+      "invalid_format": "格式无效{validation, select, undefined{} other{：{validation}}}",
+      "not_multiple_of": "数值必须是 {multipleOf} 的倍数",
+      "unrecognized_keys": "包含未识别的字段{keys, select, undefined{} other{：{keys}}}",
+      "invalid_union": "不符合可选值{unionErrors, select, undefined{} other{，{unionErrors} 个选项校验失败}}",
+      "invalid_key": "字段名无效{key, select, undefined{} other{：{key}}}",
+      "invalid_element": "元素无效{index, select, undefined{} other{，位置 {index}}}",
+      "invalid_value": "数值无效{expected, select, undefined{} other{，应为 {expected}}}{received, select, undefined{} other{（收到 {received}）}}",
+      "custom": "{message}",
+      "required_field": "此项为必填项",
+      "invalid_field": "输入值无效"
+    }
+  },
   "onboarding": {
     "expanding": "从其他平台迁入",
     "employees": "培训企业员工",
