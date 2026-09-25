@@ -5,6 +5,7 @@ describe('employee training assignments', () => {
   it('groups courses under the published assignment without inventing progress', () => {
     const rows = [
       {
+        enrollmentId: 'enrollment-1',
         planId: 'plan-1',
         planName: 'Operations onboarding',
         planCode: 'OPS-1',
@@ -14,6 +15,10 @@ describe('employee training assignments', () => {
         startAt: '2026-09-01T00:00:00Z',
         endAt: '2026-10-01T00:00:00Z',
         enrollmentStatus: 'NOT_STARTED',
+        result: 'PENDING',
+        finalScore: null,
+        progressPercent: null,
+        evaluatedAt: null,
         assignedAt: '2026-09-02T00:00:00Z',
         courseId: 'course-1',
         courseTitle: 'Safety',
@@ -22,6 +27,7 @@ describe('employee training assignments', () => {
         courseDueAt: null
       },
       {
+        enrollmentId: 'enrollment-1',
         planId: 'plan-1',
         planName: 'Operations onboarding',
         planCode: 'OPS-1',
@@ -31,6 +37,10 @@ describe('employee training assignments', () => {
         startAt: '2026-09-01T00:00:00Z',
         endAt: '2026-10-01T00:00:00Z',
         enrollmentStatus: 'NOT_STARTED',
+        result: 'PENDING',
+        finalScore: null,
+        progressPercent: null,
+        evaluatedAt: null,
         assignedAt: '2026-09-02T00:00:00Z',
         courseId: 'course-2',
         courseTitle: 'Practice',
@@ -44,6 +54,6 @@ describe('employee training assignments', () => {
 
     expect(assignments).toHaveLength(1);
     expect(assignments[0].courses.map((course) => course.id)).toEqual(['course-1', 'course-2']);
-    expect(assignments[0]).not.toHaveProperty('progressPercent');
+    expect(assignments[0].progressPercent).toBeNull();
   });
 });
