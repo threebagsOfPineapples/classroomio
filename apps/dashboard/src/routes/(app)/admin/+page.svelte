@@ -3,6 +3,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
+  import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
@@ -12,6 +13,7 @@
   import * as Page from '@cio/ui/base/page';
 
   let search = $state('');
+  const assessmentApi = new AssessmentApi();
   let editingDepartmentId = $state<string | null>(null);
   let departmentForm = $state({ name: '', code: '', parentId: '', leaderMemberId: '', sort: 0, status: 'ACTIVE' });
   let employeeForm = $state({
@@ -24,6 +26,7 @@
   });
   let selectedRoles = $state<EnterpriseRole[]>([]);
   const overview = $derived(enterpriseApi.overview);
+  const statistics = $derived(assessmentApi.statistics);
   const employees = $derived(enterpriseApi.employees);
   const selectedEmployee = $derived(enterpriseApi.selectedEmployee);
   const loading = $derived(enterpriseApi.loading);
@@ -47,7 +50,13 @@
 
   $effect(() => {
     const organizationId = $currentOrg.id;
-    if (organizationId) void enterpriseApi.load(organizationId);
+    if (!organizationId) return;
+
+    void enterpriseApi.load(organizationId).then((loaded) => {
+      if (loaded && $currentOrg.id === organizationId && enterpriseApi.overview?.canManage) {
+        void assessmentApi.loadStatistics(organizationId);
+      }
+    });
   });
 
   function editDepartment(department?: EnterpriseDepartment) {
@@ -154,6 +163,54 @@
       {#if loading}<p>{$t('enterprise.loading')}</p>{/if}
 
       {#if overview}
+        {#if overview.canManage}
+          <section aria-label={$t('enterprise.assessment.title')} class="space-y-4 rounded-lg border p-5">
+            {#if assessmentApi.error}<p role="alert">{assessmentApi.error}</p>{/if}
+            {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
+            {#if statistics}
+              <div class="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                <p>{$t('enterprise.assessment.learners')}: <strong>{statistics.learners}</strong></p>
+                <p>
+                  {$t('enterprise.assessment.completion_rate')}:
+                  <strong>{statistics.completionRate === null ? '—' : `${statistics.completionRate}%`}</strong>
+                </p>
+                <p>
+                  {$t('enterprise.assessment.pass_rate')}:
+                  <strong>{statistics.passRate === null ? '—' : `${statistics.passRate}%`}</strong>
+                </p>
+                <p>
+                  {$t('enterprise.assessment.average_score')}: <strong>{statistics.averageScore ?? '—'}</strong>
+                </p>
+              </div>
+              <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
+                <div>
+                  <h2 class="mb-2 font-medium">{$t('enterprise.assessment.unfinished_plans')}</h2>
+                  <ol class="space-y-1 text-sm">
+                    {#each statistics.unfinishedPlans.slice(0, 5) as plan (plan.planId)}
+                      <li class="flex justify-between gap-3"><span>{plan.name}</span><span>{plan.count}</span></li>
+                    {/each}
+                  </ol>
+                </div>
+                <div>
+                  <h2 class="mb-2 font-medium">{$t('enterprise.assessment.by_department')}</h2>
+                  <ol class="space-y-1 text-sm">
+                    {#each [...statistics.byDepartment]
+                      .sort((left, right) => right.assigned - left.assigned)
+                      .slice(0, 5) as department (department.departmentId)}
+                      <li class="flex justify-between gap-3">
+                        <span
+                          >{overview.departments.find((item) => item.id === department.departmentId)?.name ??
+                            $t('enterprise.assessment.not_assigned')}</span
+                        >
+                        <span>{department.completionRate}%</span>
+                      </li>
+                    {/each}
+                  </ol>
+                </div>
+              </div>
+            {/if}
+          </section>
+        {/if}
         <section class="space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">{$t('enterprise.departments')}</h2>
