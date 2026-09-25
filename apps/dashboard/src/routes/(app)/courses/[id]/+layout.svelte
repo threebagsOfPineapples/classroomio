@@ -25,7 +25,8 @@
   import { get } from 'svelte/store';
   import { page } from '$app/state';
   import { profile } from '$lib/utils/store/user';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { currentOrg, isOrgAdmin } from '$lib/utils/store/org';
+  import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
   import { isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { CourseMobileBottomNav } from '$features/course/components/mobile';
@@ -100,6 +101,35 @@
   const exerciseId = $derived((page.params.exerciseId as string | undefined) ?? data.exerciseId);
   const isLessonOrExercisePage = $derived(Boolean(lessonId || exerciseId));
   const isLessonEditMode = $derived(page.url.searchParams.get('mode') === 'edit');
+
+  $effect(() => {
+    const organizationId = $currentOrg.id;
+    if (!organizationId || !isCourseReady || !isPermitted || !$isCourseLearnerView) return;
+    if (!isLessonOrExercisePage || isLessonEditMode) return;
+
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const syncTimer = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+      if (document.hidden || !document.hasFocus()) return;
+
+      timer = setInterval(() => {
+        void enterpriseApi.request(organizationId, '/learning/heartbeat', 'POST', { courseId }).catch(() => {});
+      }, 60000);
+    };
+
+    document.addEventListener('visibilitychange', syncTimer);
+    window.addEventListener('focus', syncTimer);
+    window.addEventListener('blur', syncTimer);
+    syncTimer();
+
+    return () => {
+      if (timer) clearInterval(timer);
+      document.removeEventListener('visibilitychange', syncTimer);
+      window.removeEventListener('focus', syncTimer);
+      window.removeEventListener('blur', syncTimer);
+    };
+  });
 
   const contentAskAiWidthClass = $derived(getContentAskAiBarWidthClass({ lessonId, isLessonEditMode }));
 

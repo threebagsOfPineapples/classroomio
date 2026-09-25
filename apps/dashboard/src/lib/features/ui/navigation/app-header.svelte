@@ -55,7 +55,11 @@
     <Search />
 
     <div class="relative">
-      <Popover.Root>
+      <Popover.Root
+        onOpenChange={(open) => {
+          if (open) void notificationsApi.refresh();
+        }}
+      >
         <Popover.Trigger>
           {#snippet child({ props })}
             <Button {...props} variant="secondary" size="icon" testId="app-notifications-trigger">

@@ -39,6 +39,7 @@
   let departmentTargets = $state<Array<{ departmentId: string; includeDescendants: boolean }>>([]);
   let positionTargets = $state<string[]>([]);
   let employeeTargets = $state<number[]>([]);
+  let supplementMemberIds = $state<number[]>([]);
   let positionInput = $state('');
   let planSearch = $state('');
   let message = $state('');
@@ -90,6 +91,12 @@
     trainingPlansApi.preview = null;
   }
 
+  function toggleSupplementMember(memberId: number) {
+    supplementMemberIds = supplementMemberIds.includes(memberId)
+      ? supplementMemberIds.filter((id) => id !== memberId)
+      : [...supplementMemberIds, memberId];
+  }
+
   function addPosition() {
     const position = positionInput.trim();
     if (!position || positionTargets.some((value) => value.toLowerCase() === position.toLowerCase())) return;
@@ -118,6 +125,7 @@
     departmentTargets = [];
     positionTargets = [];
     employeeTargets = [];
+    supplementMemberIds = [];
     message = '';
     savedFingerprint = getDraftFingerprint();
   }
@@ -152,6 +160,7 @@
     employeeTargets = detail.targets
       .filter((target) => target.targetType === 'USER' && target.memberId)
       .map((target) => target.memberId!);
+    supplementMemberIds = [];
     message = '';
     savedFingerprint = getDraftFingerprint();
   }
@@ -215,6 +224,18 @@
     const published = await trainingPlansApi.publish($currentOrg.id, selected.plan.id);
     if (published) message = $t('enterprise.plans.published');
   }
+
+  async function supplementPlan() {
+    if (!$currentOrg.id || !selected || supplementMemberIds.length === 0) return;
+
+    const supplemented = await trainingPlansApi.supplement($currentOrg.id, selected.plan.id, {
+      memberIds: supplementMemberIds
+    });
+    if (supplemented) {
+      supplementMemberIds = [];
+      message = $t('enterprise.plans.supplemented');
+    }
+  }
 </script>
 
 <svelte:head>
@@ -262,6 +283,31 @@
                   {$t(`enterprise.plans.status_${selected.plan.status.toLowerCase()}`)}
                 </p>
                 <p class="mt-3 text-sm">{$t('enterprise.plans.assigned')}: {selected.enrollmentCount}</p>
+                {#if selected.plan.status === 'PUBLISHED'}
+                  <Field.Group class="mt-5">
+                    <Field.Set>
+                      <Field.Legend>{$t('enterprise.plans.supplement')}</Field.Legend>
+                      <Field.Group class="grid max-h-64 gap-2 overflow-auto sm:grid-cols-2">
+                        {#each enterpriseApi.employees.filter((employee) => employee.member.status === 'ACTIVE' && employee.member.employmentStatus !== 'TERMINATED' && !selected.enrolledMemberIds.includes(employee.member.id)) as employee (employee.member.id)}
+                          <CheckboxField
+                            label={employee.fullname ??
+                              employee.email ??
+                              employee.member.email ??
+                              String(employee.member.id)}
+                            checked={supplementMemberIds.includes(employee.member.id)}
+                            onclick={() => toggleSupplementMember(employee.member.id)}
+                          />
+                        {/each}
+                      </Field.Group>
+                    </Field.Set>
+                    <Button
+                      disabled={trainingPlansApi.busy || supplementMemberIds.length === 0}
+                      onclick={supplementPlan}
+                    >
+                      {$t('enterprise.plans.supplement')}
+                    </Button>
+                  </Field.Group>
+                {/if}
               </section>
             {:else}
               <Field.Group>

@@ -14,6 +14,7 @@ export type GetAvailableTrainingCoursesRequest = (typeof classroomio.enterprise)
 export type CreateTrainingPlanRequest = typeof classroomio.enterprise.plans.$post;
 export type GetTrainingPlanRequest = (typeof classroomio.enterprise.plans)[':planId']['$get'];
 export type PreviewTrainingPlanRequest = (typeof classroomio.enterprise.plans)[':planId']['preview']['$get'];
+export type SupplementTrainingPlanRequest = (typeof classroomio.enterprise.plans)[':planId']['supplement']['$post'];
 
 export type TrainingPlans = Extract<InferResponseType<GetTrainingPlansRequest>, { success: true }>['data'];
 export type AvailableTrainingCourses = Extract<
@@ -23,6 +24,7 @@ export type AvailableTrainingCourses = Extract<
 export type TrainingPlanDetail = Extract<InferResponseType<GetTrainingPlanRequest>, { success: true }>['data'];
 export type TrainingPlanPreview = Extract<InferResponseType<PreviewTrainingPlanRequest>, { success: true }>['data'];
 export type TrainingPlanDraft = InferRequestType<CreateTrainingPlanRequest>['json'];
+export type TrainingPlanSupplement = InferRequestType<SupplementTrainingPlanRequest>['json'];
 
 export type GetMyTrainingRequest = (typeof classroomio.enterprise)['my-training']['$get'];
 export type MyTrainingAssignments = Extract<InferResponseType<GetMyTrainingRequest>, { success: true }>['data'];

@@ -1,4 +1,32 @@
 {
+  "app": {
+    "search": {
+      "placeholder": "搜索",
+      "command_palette": {
+        "title": "快捷搜索",
+        "description": "搜索并前往企业页面",
+        "placeholder": "搜索课程、培训班、员工和设置…",
+        "org_placeholder": "搜索课程、培训班、员工和设置…",
+        "lms_placeholder": "搜索课程、培训班和学习页面…",
+        "lms_description": "搜索并前往学习页面",
+        "empty": "没有找到结果",
+        "loading": "正在搜索…",
+        "clear_recents": "清除最近记录",
+        "groups": {
+          "recent": "最近使用",
+          "suggested": "推荐",
+          "courses": "课程",
+          "cohorts": "培训班",
+          "widgets": "组件",
+          "tags": "标签",
+          "students": "学员",
+          "settings": "设置"
+        },
+        "result_types": { "page": "页面" }
+      }
+    }
+  },
+  "lms": { "view_landing_page": "企业首页" },
   "common": {
     "unsaved_changes": {
       "message": "有未保存的修改，确定要离开吗？",
@@ -304,6 +332,11 @@
     "add_organization": "＋新增组织"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "近期培训",
+      "upcoming_exams": "待参加考试",
+      "recent_certificates": "最近获得证书"
+    },
     "morning_heading": "早上好",
     "afternoon_heading": "下午好",
     "evening_heading": "晚上好",
@@ -1024,6 +1057,8 @@
       "publish": "发布并分配",
       "published": "计划已发布",
       "assigned": "已分配员工",
+      "supplement": "补录员工",
+      "supplemented": "员工补录成功",
       "complete_fields": "请选择培训日期和至少一门课程。",
       "select_targets": "请选择至少一类培训对象。",
       "status_draft": "草稿",
@@ -1091,7 +1126,10 @@
   "explore": {
     "heading": "探索课程",
     "empty_description": "目前没有已发布的课程。",
-    "empty_heading": "暂无课程"
+    "empty_heading": "暂无课程",
+    "course_requirement": "课程类型",
+    "required": "必修",
+    "optional": "选修"
   },
   "new_course_modal": {
     "compliance_label": "合规课程",
@@ -1113,6 +1151,30 @@
     "training_assignment": {
       "heading": "培训任务已分配",
       "body": "您已加入“{planName}”培训计划。"
+    },
+    "training_deadline": {
+      "heading": "培训即将截止",
+      "body": "“{planName}”培训计划即将截止，请及时完成。"
+    },
+    "training_start": {
+      "heading": "培训即将开始",
+      "body": "“{planName}”培训计划即将开始，请做好准备。"
+    },
+    "training_score": {
+      "heading": "培训成绩已发布",
+      "body": "“{planName}”培训成绩为 {score} 分。"
+    },
+    "training_certificate": {
+      "heading": "培训证书已生成",
+      "body": "“{courseName}”课程证书已生成，可前往培训档案查看。"
+    },
+    "training_course_deadline": {
+      "heading": "课程即将截止",
+      "body": "“{courseName}”课程即将截止，请及时完成。"
+    },
+    "training_exam": {
+      "heading": "考试即将开始",
+      "body": "“{examName}”考试即将开始，请准时参加。"
     },
     "title": "通知",
     "empty_title": "暂无通知",

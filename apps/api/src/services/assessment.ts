@@ -31,7 +31,12 @@ import {
   updateAssessmentScheme,
   withAssessmentTransaction
 } from '@cio/db/queries/assessment';
-import { getTrainingPlan, listTrainingPlans, lockTrainingPlan } from '@cio/db/queries/training-plan';
+import {
+  countLearningMinutesForMembers,
+  getTrainingPlan,
+  listTrainingPlans,
+  lockTrainingPlan
+} from '@cio/db/queries/training-plan';
 import { getProfileByGroupMemberId } from '@cio/db/queries/course/people';
 import type { TAssessmentSchemeDraft, TTrainingEvaluation } from '@cio/utils/validation/assessment';
 import { ROLE } from '@cio/utils/constants';
@@ -533,22 +538,24 @@ export async function getTrainingArchiveSummary(organizationId: string, profileI
   const records = await getTrainingArchive(organizationId, profileId, memberId ?? overview.memberId);
   const scored = records.filter((record) => record.finalScore !== null);
   const courseIds = new Set(records.flatMap((record) => record.courses.map((course) => course.id)));
+  const learningMinutes = await countLearningMinutesForMembers(
+    organizationId,
+    [memberId ?? overview.memberId],
+    [...courseIds]
+  );
   const certifiedCourseIds = new Set(
     records.flatMap((record) => record.courses.filter((course) => course.certificateAt).map((course) => course.id))
   );
-  const nearestCertificateExpiry =
-    records
-      .flatMap((record) =>
-        record.courses.filter((course) => course.certificateStatus === 'valid').map((course) => course.expiresAt)
-      )
-      .filter((expiry): expiry is string => !!expiry && Date.parse(expiry) > Date.now())
-      .sort((left, right) => Date.parse(left) - Date.parse(right))[0] ?? null;
+  const nearestCertificateExpiry = getNearestCertificateExpiry(
+    records.flatMap((record) => record.courses),
+    Date.now()
+  );
   return {
     trainingCount: records.length,
     courseCount: courseIds.size,
     certificateCount: certifiedCourseIds.size,
     nearestCertificateExpiry,
-    actualLearningHours: null,
+    actualLearningHours: Math.round((learningMinutes / 60) * 100) / 100,
     trainingPoints: null,
     averageScore: scored.length
       ? Math.round((scored.reduce((sum, record) => sum + record.finalScore!, 0) / scored.length) * 10) / 10
@@ -558,6 +565,19 @@ export async function getTrainingArchiveSummary(organizationId: string, profileI
       : null,
     records
   };
+}
+
+function getNearestCertificateExpiry(
+  courses: Array<{ certificateStatus: string | null; expiresAt: string | null }>,
+  now: number
+) {
+  return (
+    courses
+      .filter((course) => course.certificateStatus === 'valid' && course.expiresAt)
+      .map((course) => course.expiresAt!)
+      .filter((expiry) => Date.parse(expiry) > now)
+      .sort((left, right) => Date.parse(left) - Date.parse(right))[0] ?? null
+  );
 }
 
 export async function getTrainingMatrix(organizationId: string, profileId: string) {
@@ -573,6 +593,7 @@ export async function getTrainingMatrix(organizationId: string, profileId: strin
       plan.status !== 'DRAFT' && plan.status !== 'CANCELLED' && (overview.canManage || visiblePlanIds.has(plan.id))
   );
   const byMemberAndPlan = new Map(records.map((record) => [`${record.memberId}:${record.planId}`, record]));
+  const now = Date.now();
   return {
     plans: publishedPlans.map((plan) => ({ id: plan.id, name: plan.name })),
     employees: employees
@@ -583,11 +604,15 @@ export async function getTrainingMatrix(organizationId: string, profileId: strin
         departmentId: employee.member.departmentId,
         cells: publishedPlans.map((plan) => {
           const record = byMemberAndPlan.get(`${employee.member.id}:${plan.id}`);
+          const nearestCertificateExpiry = getNearestCertificateExpiry(record?.courses ?? [], now);
           return {
             planId: plan.id,
             enrollmentId: record?.enrollmentId ?? null,
             status: record?.status ?? null,
-            finalScore: record?.finalScore ?? null
+            finalScore: record?.finalScore ?? null,
+            nearestCertificateExpiry,
+            certificateExpiringSoon:
+              nearestCertificateExpiry !== null && Date.parse(nearestCertificateExpiry) <= now + 30 * 86400000
           };
         })
       }))
@@ -611,6 +636,15 @@ export async function getTrainingStatistics(
     const assignedAt = Date.parse(record.assignedAt);
     return assignedAt >= fromTime && assignedAt < toTime;
   });
+  const memberIds = [...new Set(rows.map((row) => row.memberId))];
+  const courseIds = [...new Set(rows.flatMap((row) => row.courses.map((course) => course.id)))];
+  const learningMinutes = await countLearningMinutesForMembers(
+    organizationId,
+    memberIds,
+    courseIds,
+    from ? new Date(fromTime).toISOString() : undefined,
+    to ? new Date(toTime).toISOString() : undefined
+  );
   const scored = rows.filter((row) => row.finalScore !== null);
   const evaluated = rows.filter((row) => row.satisfactionRating !== null);
   const departmentGroups = new Map<string, typeof rows>();
@@ -674,7 +708,7 @@ export async function getTrainingStatistics(
     averageSatisfaction: evaluated.length
       ? Math.round((evaluated.reduce((sum, row) => sum + row.satisfactionRating!, 0) / evaluated.length) * 10) / 10
       : null,
-    actualLearningHours: null,
+    actualLearningHours: Math.round((learningMinutes / 60) * 100) / 100,
     byDepartment: [...departmentGroups].map(([departmentId, group]) => {
       const departmentScored = group.filter((row) => row.finalScore !== null);
       return {

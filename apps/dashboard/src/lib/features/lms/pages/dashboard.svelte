@@ -17,6 +17,9 @@
   import { currentOrg, currentOrgDomain } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { coursesApi } from '$features/course/api';
+  import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
+  import { myTrainingApi } from '$features/enterprise/api/my-training.svelte';
+  import { AssessmentApi } from '$features/enterprise/api/assessment.svelte';
   import * as ResourceListRow from '@cio/ui/custom/resource-list-row';
   import { CourseListRow } from '$features/course/components';
   import UpcomingSessionsCard from '$features/lms/components/upcoming-sessions-card.svelte';
@@ -43,6 +46,53 @@
   let hasLoadedLoginStreak = $state(false);
   let selectedCourse = $state<RecommendedCourses[number] | null>(null);
   let previewOpen = $state(false);
+  let trainingLoadKey = '';
+  const assessmentApi = new AssessmentApi();
+
+  let ownEmployee = $derived(
+    enterpriseApi.employees.find((employee) => employee.member.id === enterpriseApi.overview?.memberId)
+  );
+  let ownDepartment = $derived(
+    enterpriseApi.overview?.departments.find((department) => department.id === ownEmployee?.member.departmentId)
+  );
+  let pendingTraining = $derived(
+    myTrainingApi.assignments.filter(
+      (assignment) =>
+        assignment.planStatus === 'PUBLISHED' &&
+        !['COMPLETED', 'CANCELLED', 'EXPIRED'].includes(assignment.enrollmentStatus)
+    )
+  );
+  let upcomingTraining = $derived(
+    [...pendingTraining]
+      .filter((assignment) => Date.parse(assignment.startAt) > Date.now())
+      .sort((left, right) => Date.parse(left.startAt) - Date.parse(right.startAt))
+      .slice(0, 3)
+  );
+  let upcomingExams = $derived(
+    [
+      ...new Map(
+        myTrainingApi.assignments.flatMap((assignment) => assignment.exams).map((exam) => [exam.id, exam])
+      ).values()
+    ]
+      .filter((exam) => Date.parse(exam.opensAt) > Date.now())
+      .sort((left, right) => Date.parse(left.opensAt) - Date.parse(right.opensAt))
+      .slice(0, 3)
+  );
+  let recentCertificates = $derived.by(() => {
+    const seen = new Set<string>();
+    return (assessmentApi.archiveSummary?.records ?? [])
+      .flatMap((record) => record.courses)
+      .filter((course) => course.certificateAt)
+      .sort((left, right) => Date.parse(right.certificateAt!) - Date.parse(left.certificateAt!))
+      .filter((course) => {
+        const key = `${course.id}:${course.certificateAt}`;
+        if (seen.has(key)) return false;
+
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 3);
+  });
 
   let totalCompleted = $derived(
     coursesApi.enrolledCourses.reduce((acc, course) => acc + getCourseCompletedItems(course), 0)
@@ -89,6 +139,20 @@
 
     coursesApi.getEnrolledCourses();
     coursesApi.getRecommendedCourses({ limit: 3 });
+  });
+
+  $effect(() => {
+    const organizationId = $currentOrg.id;
+    const profileId = $profile.id;
+    if (!organizationId || !profileId) return;
+
+    const loadKey = `${organizationId}:${profileId}`;
+    if (trainingLoadKey === loadKey) return;
+
+    trainingLoadKey = loadKey;
+    void enterpriseApi.load(organizationId);
+    void myTrainingApi.load(organizationId, profileId);
+    void assessmentApi.loadArchiveSummary(organizationId);
   });
 
   $effect(() => {
@@ -268,6 +332,77 @@
       </div>
     </section>
   </BlurFade>
+
+  {#if enterpriseApi.overview}
+    <section class="space-y-4 rounded border p-4 md:p-6" aria-label={$t('enterprise.my_training.title')}>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">{$profile.fullname}</h2>
+          <p class="ui:text-muted-foreground text-sm">
+            {$t('enterprise.department')}: {ownDepartment?.name ?? '—'} · {$t('enterprise.position')}:
+            {ownEmployee?.member.position ?? '—'}
+          </p>
+        </div>
+        <Button href="/lms/training" variant="outline" size="sm">{$t('enterprise.my_training.title')}</Button>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div class="ui:bg-muted/30 rounded border p-3">
+          <p class="ui:text-muted-foreground text-xs">{$t('enterprise.assessment.unfinished_plans')}</p>
+          <p class="mt-1 text-xl font-semibold">{myTrainingApi.loading ? '—' : pendingTraining.length}</p>
+        </div>
+        <div class="ui:bg-muted/30 rounded border p-3">
+          <p class="ui:text-muted-foreground text-xs">{$t('dashboard.currently_learning')}</p>
+          <p class="mt-1 text-xl font-semibold">{coursesApi.isLoading ? '—' : inProgressCourses.length}</p>
+        </div>
+        <div class="ui:bg-muted/30 rounded border p-3">
+          <p class="ui:text-muted-foreground text-xs">{$t('enterprise.assessment.average_score')}</p>
+          <p class="mt-1 text-xl font-semibold">{assessmentApi.archiveSummary?.averageScore ?? '—'}</p>
+        </div>
+        <div class="ui:bg-muted/30 rounded border p-3">
+          <p class="ui:text-muted-foreground text-xs">{$t('enterprise.assessment.training_count')}</p>
+          <p class="mt-1 text-xl font-semibold">{assessmentApi.archiveSummary?.trainingCount ?? '—'}</p>
+        </div>
+        <div class="ui:bg-muted/30 rounded border p-3">
+          <p class="ui:text-muted-foreground text-xs">{$t('enterprise.assessment.learning_hours')}</p>
+          <p class="mt-1 text-xl font-semibold">{assessmentApi.archiveSummary?.actualLearningHours ?? '—'}</p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 border-t pt-4 md:grid-cols-3">
+        <div class="space-y-2">
+          <h3 class="font-semibold">{$t('dashboard.enterprise_home.upcoming_training')}</h3>
+          {#each upcomingTraining as assignment (assignment.enrollmentId)}
+            <a class="ui:hover:text-primary block text-sm" href={`/lms/training/${assignment.enrollmentId}`}>
+              {assignment.name} · {new Date(assignment.startAt).toLocaleDateString()}
+            </a>
+          {:else}
+            <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
+          {/each}
+        </div>
+        <div class="space-y-2">
+          <h3 class="font-semibold">{$t('dashboard.enterprise_home.upcoming_exams')}</h3>
+          {#each upcomingExams as exam (exam.id)}
+            <a class="ui:hover:text-primary block text-sm" href={`/courses/${exam.courseId}/exercises/${exam.id}`}>
+              {exam.title} · {new Date(exam.opensAt).toLocaleDateString()}
+            </a>
+          {:else}
+            <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
+          {/each}
+        </div>
+        <div class="space-y-2">
+          <h3 class="font-semibold">{$t('dashboard.enterprise_home.recent_certificates')}</h3>
+          {#each recentCertificates as course (`${course.id}:${course.certificateAt}`)}
+            <a class="ui:hover:text-primary block text-sm" href="/lms/training/archive">
+              {course.title} · {new Date(course.certificateAt!).toLocaleDateString()}
+            </a>
+          {:else}
+            <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
+          {/each}
+        </div>
+      </div>
+    </section>
+  {/if}
 
   <section class="mb-10 flex flex-wrap items-start">
     <div class="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

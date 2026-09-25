@@ -191,7 +191,7 @@
 </script>
 
 <svelte:head>
-  <title>Home - ClassroomIO</title>
+  <title>{$t('org_navigation.home')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 {#if creatingState === 'creating'}

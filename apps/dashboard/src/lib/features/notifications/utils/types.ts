@@ -1,4 +1,12 @@
-export type NotificationKind = 'org_invite' | 'training_assignment';
+export type NotificationKind =
+  | 'org_invite'
+  | 'training_assignment'
+  | 'training_start'
+  | 'training_deadline'
+  | 'training_score'
+  | 'training_certificate'
+  | 'training_course_deadline'
+  | 'training_exam';
 
 /** Translation key plus its params, resolved at render so a locale switch re-renders. */
 export type NotificationText = {
@@ -28,4 +36,5 @@ export type NotificationItem = {
   unread: boolean;
   /** Identifier the panel needs to act on the item, e.g. the invite id. */
   sourceId: string;
+  href?: string;
 };

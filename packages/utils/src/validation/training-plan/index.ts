@@ -30,5 +30,11 @@ export const ZTrainingPlanDraft = z
     message: 'End time must be after start time'
   });
 
+export const ZTrainingPlanSupplement = z.object({
+  memberIds: z.array(z.number().int().positive()).min(1).max(100)
+});
+
+export const ZLearningHeartbeat = z.object({ courseId: z.uuid() });
+
 export type TTrainingPlanDraft = z.infer<typeof ZTrainingPlanDraft>;
 export type TTrainingPlanTarget = z.infer<typeof ZTrainingPlanTarget>;

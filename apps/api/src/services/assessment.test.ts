@@ -23,7 +23,8 @@ const mocks = vi.hoisted(() => ({
   getProfileByGroupMemberId: vi.fn(),
   getBatchStudentCourseMembership: vi.fn(),
   getCourseTrackableContentCounts: vi.fn(),
-  getCourseMemberProgressSummaries: vi.fn()
+  getCourseMemberProgressSummaries: vi.fn(),
+  countLearningMinutesForMembers: vi.fn()
 }));
 
 vi.mock('@api/services/enterprise', () => ({
@@ -59,7 +60,8 @@ vi.mock('@api/services/course/member-progress', () => ({
 vi.mock('@cio/db/queries/training-plan', () => ({
   lockTrainingPlan: mocks.lockTrainingPlan,
   getTrainingPlan: mocks.getTrainingPlan,
-  listTrainingPlans: mocks.listTrainingPlans
+  listTrainingPlans: mocks.listTrainingPlans,
+  countLearningMinutesForMembers: mocks.countLearningMinutesForMembers
 }));
 
 import {
@@ -79,6 +81,7 @@ describe('assessment publication and evaluation', () => {
     mocks.listAssessmentEnrollments.mockResolvedValue([]);
     mocks.listArchiveCourseEvidence.mockResolvedValue([]);
     mocks.listTrainingPlans.mockResolvedValue([]);
+    mocks.countLearningMinutesForMembers.mockResolvedValue(0);
     mocks.withAssessmentTransaction.mockImplementation((callback) => callback({}));
     mocks.lockTrainingPlan.mockResolvedValue({ id: 'plan', status: 'PUBLISHED' });
     mocks.getTrainingPlan.mockResolvedValue({ id: 'plan' });
@@ -124,6 +127,7 @@ describe('assessment publication and evaluation', () => {
     expect(summary.trainingCount).toBe(0);
     expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7]);
     expect(mocks.listArchiveCourseEvidence).toHaveBeenCalledWith('org', undefined, [7]);
+    expect(mocks.countLearningMinutesForMembers).toHaveBeenCalledWith('org', [7], []);
   });
 
   it('counts assignments and completions in their actual Beijing months', async () => {
@@ -150,6 +154,24 @@ describe('assessment publication and evaluation', () => {
     ]);
 
     const statistics = await getTrainingStatistics('org', 'admin');
+    mocks.listArchiveCourseEvidence.mockResolvedValue([
+      {
+        enrollmentId: 'enrollment',
+        courseId: 'course',
+        courseTitle: 'Training course',
+        certificateEarnedAt: null,
+        certificateIssuedAt: null,
+        certificateExpiresAt: null,
+        certificateStatus: null
+      }
+    ]);
+    mocks.countLearningMinutesForMembers.mockResolvedValueOnce(90);
+    const summary = await getTrainingArchiveSummary('org', 'admin');
+    expect(summary.actualLearningHours).toBe(1.5);
+    expect(mocks.countLearningMinutesForMembers).toHaveBeenLastCalledWith('org', [7], ['course']);
+    mocks.countLearningMinutesForMembers.mockResolvedValueOnce(1);
+    const oneMinute = await getTrainingArchiveSummary('org', 'admin');
+    expect(oneMinute.actualLearningHours).toBe(0.02);
     expect(statistics.monthlyTrend).toEqual([
       { month: '2026-09', assigned: 1, completed: 0 },
       { month: '2026-10', assigned: 0, completed: 1 }
@@ -176,6 +198,7 @@ describe('assessment publication and evaluation', () => {
   });
 
   it('shows department managers only plans assigned to their visible employees in the matrix', async () => {
+    const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
     mocks.getEnterpriseOverview.mockResolvedValue({
       canManage: false,
       roles: ['DEPARTMENT_MANAGER'],
@@ -210,10 +233,25 @@ describe('assessment publication and evaluation', () => {
         evaluation: null
       }
     ]);
+    mocks.listArchiveCourseEvidence.mockResolvedValue([
+      {
+        enrollmentId: 'enrollment',
+        courseId: 'course',
+        courseTitle: 'Security',
+        certificateEarnedAt: null,
+        certificateIssuedAt: '2026-09-01T00:00:00.000Z',
+        certificateExpiresAt: expiresAt,
+        certificateStatus: 'valid'
+      }
+    ]);
 
     const matrix = await getTrainingMatrix('org', 'manager');
     expect(matrix.plans).toEqual([{ id: 'visible-plan', name: 'Visible' }]);
     expect(matrix.employees).toHaveLength(2);
+    expect(matrix.employees.find((employee) => employee.memberId === 8)?.cells[0]).toMatchObject({
+      nearestCertificateExpiry: expiresAt,
+      certificateExpiringSoon: true
+    });
     expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7, 8]);
   });
 

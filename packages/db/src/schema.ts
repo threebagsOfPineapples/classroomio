@@ -2370,6 +2370,28 @@ export const trainingEnrollment = pgTable(
   ]
 );
 
+export const learningActivityMinute = pgTable(
+  'learning_activity_minute',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    minuteAt: timestamp('minute_at', { withTimezone: true, mode: 'string' }).notNull()
+  },
+  (table) => [
+    foreignKey({ columns: [table.organizationId], foreignColumns: [organization.id] }).onDelete('cascade'),
+    foreignKey({ columns: [table.profileId], foreignColumns: [profile.id] }).onDelete('cascade'),
+    foreignKey({ columns: [table.courseId], foreignColumns: [course.id] }).onDelete('cascade'),
+    unique('learning_activity_minute_org_profile_time_unique').on(
+      table.organizationId,
+      table.profileId,
+      table.minuteAt
+    ),
+    index('idx_learning_activity_minute_course').on(table.courseId)
+  ]
+);
+
 export const assessmentScheme = pgTable(
   'assessment_scheme',
   {

@@ -5,7 +5,8 @@ import { ROLE } from '@cio/utils/constants';
 
 const serviceMocks = vi.hoisted(() => ({
   getOrgAudience: vi.fn(),
-  getOrgTeam: vi.fn()
+  getOrgTeam: vi.fn(),
+  getRecommendedCourses: vi.fn()
 }));
 
 const audienceMocks = vi.hoisted(() => ({
@@ -89,6 +90,7 @@ describe('organization roster authorization', () => {
     vi.clearAllMocks();
     serviceMocks.getOrgTeam.mockResolvedValue([]);
     serviceMocks.getOrgAudience.mockResolvedValue({ items: [], pagination: {}, query: {} });
+    serviceMocks.getRecommendedCourses.mockResolvedValue({ data: [], total: 0 });
     audienceExportMocks.getAudienceExportRows.mockResolvedValue([]);
     audienceMocks.assignAudienceToCourses.mockResolvedValue({ enrolled: 1 });
     audienceMocks.importAudienceMembers.mockResolvedValue({ imported: 1 });
@@ -104,6 +106,24 @@ describe('organization roster authorization', () => {
     const response = await rosterRequest(path, ROLE.ADMIN);
 
     expect(response.status).toBe(200);
+  });
+
+  it('passes course search and filters through the paginated explore route', async () => {
+    const response = await rosterRequest(
+      '/courses/recommended?limit=12&page=2&search=%20安全%20&tagSlug=%20new-staff%20&required=false',
+      ROLE.STUDENT
+    );
+
+    expect(response.status).toBe(200);
+    expect(serviceMocks.getRecommendedCourses).toHaveBeenCalledWith(
+      orgId,
+      'profile-1',
+      12,
+      2,
+      '安全',
+      'new-staff',
+      false
+    );
   });
 
   it('rejects tutors from GET /audience/export', async () => {

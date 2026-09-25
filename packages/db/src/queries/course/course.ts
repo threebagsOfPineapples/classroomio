@@ -11,7 +11,7 @@ import {
   TNewCourseSection,
   TProfile
 } from '@db/types';
-import { and, asc, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, exists, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
@@ -1162,6 +1162,9 @@ interface GetExploreCoursesOptions {
   profileId: string;
   limit?: number;
   page?: number;
+  search?: string;
+  tagSlug?: string;
+  required?: boolean;
 }
 
 export interface GetExploreCoursesResult {
@@ -1182,9 +1185,25 @@ export const getExploreCourses = async ({
   orgId,
   profileId,
   limit,
-  page = 1
+  page = 1,
+  search,
+  tagSlug,
+  required
 }: GetExploreCoursesOptions): Promise<GetExploreCoursesResult> => {
   try {
+    const searchValue = search?.trim();
+    const pattern = `%${searchValue}%`;
+    const matchingTags = db
+      .select({ id: schema.tagAssignment.id })
+      .from(schema.tagAssignment)
+      .innerJoin(schema.tag, eq(schema.tagAssignment.tagId, schema.tag.id))
+      .where(
+        and(
+          eq(schema.tagAssignment.courseId, schema.course.id),
+          eq(schema.tag.organizationId, orgId),
+          ilike(schema.tag.name, pattern)
+        )
+      );
     const whereCondition = and(
       eq(schema.group.organizationId, orgId),
       eq(schema.course.status, 'ACTIVE'),
@@ -1193,7 +1212,35 @@ export const getExploreCourses = async ({
       // Mirrors isSelfEnrollmentAllowed in @cio/utils: current key, then the
       // legacy allowNewStudent, then open. `->>` yields NULL for a JSON null,
       // so COALESCE falls through exactly as `??` does.
-      sql`COALESCE(${schema.course.metadata}->>'allowSelfEnrollment', ${schema.course.metadata}->>'allowNewStudent', 'true') != 'false'`
+      sql`COALESCE(${schema.course.metadata}->>'allowSelfEnrollment', ${schema.course.metadata}->>'allowNewStudent', 'true') != 'false'`,
+      searchValue
+        ? or(
+            ilike(schema.course.title, pattern),
+            ilike(schema.course.description, pattern),
+            ilike(sql`${schema.course.metadata}->'instructor'->>'name'`, pattern),
+            exists(matchingTags)
+          )
+        : undefined,
+      tagSlug
+        ? exists(
+            db
+              .select({ id: schema.tagAssignment.id })
+              .from(schema.tagAssignment)
+              .innerJoin(schema.tag, eq(schema.tagAssignment.tagId, schema.tag.id))
+              .where(
+                and(
+                  eq(schema.tagAssignment.courseId, schema.course.id),
+                  eq(schema.tag.organizationId, orgId),
+                  eq(schema.tag.slug, tagSlug)
+                )
+              )
+          )
+        : undefined,
+      required === true
+        ? eq(schema.course.required, true)
+        : required === false
+          ? or(eq(schema.course.required, false), isNull(schema.course.required))
+          : undefined
     );
 
     const courseSelect = {

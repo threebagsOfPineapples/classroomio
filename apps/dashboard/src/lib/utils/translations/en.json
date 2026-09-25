@@ -1877,6 +1877,11 @@
     "no": "No Lesson on this day"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "Upcoming training",
+      "upcoming_exams": "Upcoming exams",
+      "recent_certificates": "Recent certificates"
+    },
     "morning_heading": "Good Morning",
     "afternoon_heading": "Good Afternoon",
     "evening_heading": "Good Evening",
@@ -4643,7 +4648,10 @@
   "explore": {
     "heading": "Explore our courses",
     "empty_heading": "No course available",
-    "empty_description": "There are currently no published course available"
+    "empty_description": "There are currently no published course available",
+    "course_requirement": "Course requirement",
+    "required": "Required",
+    "optional": "Optional"
   },
   "snackbar": {
     "success": "Success",
@@ -5609,6 +5617,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "Training starts soon",
+      "body": "The {planName} training plan starts soon."
+    },
+    "training_score": {
+      "heading": "Training result available",
+      "body": "Your result for {planName} is {score}."
+    },
+    "training_certificate": {
+      "heading": "Certificate available",
+      "body": "Your certificate for {courseName} is ready."
+    },
+    "training_course_deadline": {
+      "heading": "Course deadline approaching",
+      "body": "The {courseName} course is due soon."
+    },
+    "training_exam": {
+      "heading": "Exam starts soon",
+      "body": "The {examName} exam starts soon."
     }
   },
   "report": {
@@ -5791,6 +5823,8 @@
       "publish": "Publish and assign",
       "published": "Plan published",
       "assigned": "Assigned employees",
+      "supplement": "Add employees to this plan",
+      "supplemented": "Employees added to the plan",
       "complete_fields": "Choose dates and at least one course.",
       "select_targets": "Choose at least one training audience.",
       "status_draft": "Draft",

@@ -30,7 +30,7 @@ vi.mock('@cio/db/queries/group', () => ({
   insertGroupMembersOnConflictDoNothing: mocks.insertGroupMembersOnConflictDoNothing
 }));
 
-import { publishTrainingPlan } from './training-plan';
+import { publishTrainingPlan, supplementTrainingPlan } from './training-plan';
 
 const transaction = { id: 'transaction' };
 const plan = { id: 'plan-1', status: 'DRAFT', version: 2 };
@@ -130,6 +130,46 @@ describe('training plan publication', () => {
     mocks.getOrgTrainingCourses.mockResolvedValue([]);
 
     await expect(publishTrainingPlan('org-1', 'admin-1', 'plan-1')).rejects.toThrow('unavailable course');
+    expect(mocks.insertTrainingEnrollments).not.toHaveBeenCalled();
+  });
+});
+
+describe('training plan supplementation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getEnterpriseOverview.mockResolvedValue({ canManage: true, memberId: 1 });
+    mocks.withTrainingPlanTransaction.mockImplementation((callback) => callback(transaction));
+    mocks.lockTrainingPlan.mockResolvedValue({ ...plan, status: 'PUBLISHED' });
+    mocks.getPlanItems.mockResolvedValue([[{ courseId: 'course-1' }], []]);
+    mocks.getEligibleTrainingMembers.mockResolvedValue([
+      { id: 2, profileId: 'profile-2' },
+      { id: 3, profileId: 'profile-3' }
+    ]);
+    mocks.getOrgTrainingCourses.mockResolvedValue([{ id: 'course-1', groupId: 'group-1' }]);
+    mocks.insertTrainingEnrollments.mockResolvedValue([{ memberId: 3 }]);
+    mocks.getTrainingPlanDetail.mockResolvedValue({ plan, courses: [], targets: [], enrollmentCount: 2 });
+  });
+
+  it('grants course access only to newly enrolled employees when some were already assigned', async () => {
+    await supplementTrainingPlan('org-1', 'admin-1', 'plan-1', [2, 3]);
+
+    expect(mocks.insertTrainingEnrollments).toHaveBeenCalledWith(
+      [
+        { organizationId: 'org-1', planId: 'plan-1', memberId: 2, matchedTargetIds: [], planVersion: 2 },
+        { organizationId: 'org-1', planId: 'plan-1', memberId: 3, matchedTargetIds: [], planVersion: 2 }
+      ],
+      transaction
+    );
+    expect(mocks.insertGroupMembersOnConflictDoNothing).toHaveBeenCalledWith(
+      [{ groupId: 'group-1', roleId: 3, profileId: 'profile-3', email: undefined }],
+      transaction
+    );
+  });
+
+  it('rejects members outside the active organization set without assigning anyone', async () => {
+    await expect(supplementTrainingPlan('org-1', 'admin-1', 'plan-1', [2, 99])).rejects.toThrow(
+      'outside this organization'
+    );
     expect(mocks.insertTrainingEnrollments).not.toHaveBeenCalled();
   });
 });

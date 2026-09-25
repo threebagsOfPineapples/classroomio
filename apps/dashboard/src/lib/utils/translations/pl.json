@@ -480,7 +480,10 @@
   "explore": {
     "heading": "Poznaj nasze kursy",
     "empty_heading": "Brak kursu",
-    "empty_description": "Obecnie nie ma dostępnych żadnych opublikowanych kursów"
+    "empty_description": "Obecnie nie ma dostępnych żadnych opublikowanych kursów",
+    "course_requirement": "Rodzaj kursu",
+    "required": "Obowiązkowy",
+    "optional": "Opcjonalny"
   },
   "exercises": {
     "heading": "Ćwiczenia",
@@ -3079,6 +3082,11 @@
     "can_you": "Czy możesz to przeformułować"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "Nadchodzące szkolenia",
+      "upcoming_exams": "Nadchodzące egzaminy",
+      "recent_certificates": "Ostatnie certyfikaty"
+    },
     "morning_heading": "Dzień dobry",
     "afternoon_heading": "Dzień dobry",
     "evening_heading": "Dobry wieczór",
@@ -5626,6 +5634,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "Szkolenie rozpocznie się wkrótce",
+      "body": "Plan szkoleniowy {planName} rozpocznie się wkrótce."
+    },
+    "training_score": {
+      "heading": "Wynik szkolenia jest dostępny",
+      "body": "Twój wynik dla {planName} to {score}."
+    },
+    "training_certificate": {
+      "heading": "Certyfikat jest dostępny",
+      "body": "Twój certyfikat za {courseName} jest gotowy."
+    },
+    "training_course_deadline": {
+      "heading": "Zbliża się termin ukończenia kursu",
+      "body": "Termin ukończenia kursu {courseName} wkrótce minie."
+    },
+    "training_exam": {
+      "heading": "Egzamin rozpocznie się wkrótce",
+      "body": "Egzamin {examName} rozpocznie się wkrótce."
     }
   },
   "export": {
@@ -5746,6 +5778,8 @@
       "publish": "Opublikuj i przydziel",
       "published": "Plan opublikowany",
       "assigned": "Przypisani pracownicy",
+      "supplement": "Dodaj pracowników do planu",
+      "supplemented": "Dodano pracowników do planu",
       "complete_fields": "Wybierz daty i co najmniej jeden kurs.",
       "select_targets": "Wybierz co najmniej jedną grupę docelową.",
       "status_draft": "Szkic",

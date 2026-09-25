@@ -25,6 +25,7 @@ export class CoursesApi extends BaseApiWithErrors {
     null
   );
   private activeOrgCoursesRequestController: AbortController | null = null;
+  private recommendedRequestId = 0;
 
   cancelOrgCoursesRequest() {
     this.activeOrgCoursesRequestController?.abort();
@@ -139,10 +140,20 @@ export class CoursesApi extends BaseApiWithErrors {
    * Fetches recommended courses (published courses user isn't enrolled in) for the current organization
    * Org ID is automatically added from currentOrg store
    */
-  async getRecommendedCourses(options?: { limit?: number; page?: number }) {
+  async getRecommendedCourses(options?: {
+    limit?: number;
+    page?: number;
+    search?: string;
+    tagSlug?: string;
+    required?: boolean;
+  }) {
+    const requestId = ++this.recommendedRequestId;
     const query: Record<string, string> = {};
     if (options?.limit) query.limit = String(options.limit);
     if (options?.page) query.page = String(options.page);
+    if (options?.search) query.search = options.search;
+    if (options?.tagSlug) query.tagSlug = options.tagSlug;
+    if (options?.required !== undefined) query.required = String(options.required);
 
     await this.execute<GetRecommendedCoursesRequest>({
       requestFn: () =>
@@ -151,6 +162,8 @@ export class CoursesApi extends BaseApiWithErrors {
         }),
       logContext: 'fetching recommended courses',
       onSuccess: (response) => {
+        if (requestId !== this.recommendedRequestId) return;
+
         if (response.data) {
           this.recommendedCourses = response.data;
         }
@@ -160,6 +173,8 @@ export class CoursesApi extends BaseApiWithErrors {
         this.errors = {};
       },
       onError: (result) => {
+        if (requestId !== this.recommendedRequestId) return;
+
         if (typeof result === 'string') {
           console.error('Failed to fetch recommended courses:', result);
           return;

@@ -4,10 +4,17 @@
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import { trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
+  import { CheckboxField } from '@cio/ui/custom/checkbox-field';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
 
   const assessmentApi = new AssessmentApi();
+  let expiringOnly = $state(false);
+  const visibleEmployees = $derived(
+    assessmentApi.matrix?.employees.filter(
+      (employee) => !expiringOnly || employee.cells.some((cell) => cell.certificateExpiringSoon)
+    ) ?? []
+  );
 
   let lastOrganizationId = '';
   $effect(() => {
@@ -41,6 +48,11 @@
         </p>{/if}
       {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
       {#if assessmentApi.matrix}
+        <CheckboxField
+          label={$t('compliance.filter.expiring_soon')}
+          checked={expiringOnly}
+          onclick={() => (expiringOnly = !expiringOnly)}
+        />
         <div class="overflow-x-auto rounded-lg border">
           <table class="min-w-full text-left text-sm">
             <thead class="ui:bg-muted">
@@ -52,7 +64,14 @@
               </tr>
             </thead>
             <tbody>
-              {#each assessmentApi.matrix.employees as employee (employee.memberId)}
+              {#if visibleEmployees.length === 0}
+                <tr
+                  ><td colspan={assessmentApi.matrix.plans.length + 1} class="p-4 text-center">
+                    {$t('compliance.learners.empty')}
+                  </td></tr
+                >
+              {/if}
+              {#each visibleEmployees as employee (employee.memberId)}
                 <tr class="border-t">
                   <th scope="row" class="p-3 font-medium">{employee.name}</th>
                   {#each employee.cells as cell (cell.planId)}
@@ -61,6 +80,17 @@
                       {#if cell.finalScore !== null}<span class="ui:text-muted-foreground">
                           · {cell.finalScore}</span
                         >{/if}
+                      {#if cell.nearestCertificateExpiry}
+                        <span
+                          class={cell.certificateExpiringSoon
+                            ? 'block text-xs text-amber-700'
+                            : 'ui:text-muted-foreground block text-xs'}
+                        >
+                          {$t('enterprise.assessment.nearest_expiry')}:
+                          {new Date(cell.nearestCertificateExpiry).toLocaleDateString()}
+                          {#if cell.certificateExpiringSoon}· {$t('compliance.status.expiring_soon')}{/if}
+                        </span>
+                      {/if}
                     </td>
                   {/each}
                 </tr>

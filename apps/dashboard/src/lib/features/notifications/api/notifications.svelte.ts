@@ -1,10 +1,18 @@
 import { pendingInvitesApi } from '$features/invite/api/pending-invites.svelte';
 import { toInviteNotifications } from '$features/invite/utils/invite-notification-utils';
 import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
-import { toTrainingNotifications } from '$features/enterprise/utils/training-notifications';
-import type { MyTrainingAssignments } from '$features/enterprise/utils/types';
+import {
+  toCertificateNotifications,
+  toCourseDeadlineNotifications,
+  toExamNotifications,
+  toTrainingNotifications
+} from '$features/enterprise/utils/training-notifications';
+import type { MyTrainingAssignments, TrainingArchiveSummary } from '$features/enterprise/utils/types';
+import type { UserEnrolledCourses } from '$features/course/types';
+import { classroomio } from '$lib/utils/services/api';
 import { SvelteSet } from 'svelte/reactivity';
 import { sortNewestFirst } from '../utils/notification-utils';
+import type { NotificationItem } from '../utils/types';
 
 /**
  * Single seam the bell badge and the panel list both read, so a new notification kind
@@ -16,13 +24,18 @@ class NotificationsApi {
   private trainingProfileId = '';
   private readTrainingIds = new SvelteSet<string>();
   private trainingAssignments = $state<MyTrainingAssignments>([]);
+  private trainingArchiveRecords = $state<TrainingArchiveSummary['records']>([]);
+  private enrolledCourses = $state<UserEnrolledCourses>([]);
   private trainingLoading = $state(false);
   private trainingHasLoaded = $state(false);
 
   items = $derived(
     sortNewestFirst([
       ...toInviteNotifications(pendingInvitesApi.invites),
-      ...toTrainingNotifications(this.trainingAssignments, this.readTrainingIds)
+      ...toTrainingNotifications(this.trainingAssignments, this.readTrainingIds),
+      ...toCertificateNotifications(this.trainingArchiveRecords, this.readTrainingIds),
+      ...toCourseDeadlineNotifications(this.trainingAssignments, this.enrolledCourses, this.readTrainingIds),
+      ...toExamNotifications(this.trainingAssignments, this.readTrainingIds)
     ])
   );
   unreadCount = $derived(this.items.filter((item) => item.unread).length);
@@ -49,6 +62,8 @@ class NotificationsApi {
     this.trainingProfileId = profileId;
     if (contextChanged) {
       this.trainingAssignments = [];
+      this.trainingArchiveRecords = [];
+      this.enrolledCourses = [];
       this.trainingHasLoaded = false;
       this.readTrainingIds.clear();
     }
@@ -68,23 +83,36 @@ class NotificationsApi {
       }
     }
 
-    try {
-      const assignments = await enterpriseApi.request<MyTrainingAssignments>(organizationId, '/my-training');
-      if (this.trainingContext === context) this.trainingAssignments = assignments;
-    } catch {
-      if (this.trainingContext === context) this.trainingAssignments = [];
-    } finally {
-      if (this.trainingContext === context) {
-        this.trainingLoading = false;
-        this.trainingHasLoaded = true;
-      }
+    const [assignmentResult, archiveResult, courseResult] = await Promise.allSettled([
+      enterpriseApi.request<MyTrainingAssignments>(organizationId, '/my-training'),
+      enterpriseApi.request<TrainingArchiveSummary>(organizationId, '/archive/summary'),
+      classroomio.organization.courses.enrolled.$get({}).then(async (response) => {
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error('Failed to load enrolled courses');
+
+        return result.data;
+      })
+    ]);
+    if (this.trainingContext === context) {
+      this.trainingAssignments = assignmentResult.status === 'fulfilled' ? assignmentResult.value : [];
+      this.trainingArchiveRecords = archiveResult.status === 'fulfilled' ? archiveResult.value.records : [];
+      this.enrolledCourses = courseResult.status === 'fulfilled' ? courseResult.value : [];
+      this.trainingLoading = false;
+      this.trainingHasLoaded = true;
     }
   }
 
-  markTrainingRead(enrollmentId: string) {
-    if (!this.trainingContext || !this.trainingAssignments.some((item) => item.enrollmentId === enrollmentId)) return;
+  markTrainingRead(notification: NotificationItem) {
+    if (
+      !this.trainingContext ||
+      !(
+        this.trainingAssignments.some((item) => item.enrollmentId === notification.sourceId) ||
+        this.trainingArchiveRecords.some((item) => item.enrollmentId === notification.sourceId)
+      )
+    )
+      return;
 
-    this.readTrainingIds.add(enrollmentId);
+    this.readTrainingIds.add(notification.id);
     try {
       window.localStorage.setItem(
         `classroomio_training_notifications_read:${this.trainingContext}`,

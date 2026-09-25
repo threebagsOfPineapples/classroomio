@@ -480,7 +480,10 @@
   "explore": {
     "heading": "Udforsk vores kurser",
     "empty_heading": "Intet kursus tilgængeligt",
-    "empty_description": "Der er i øjeblikket ingen offentliggjorte kurser tilgængelige"
+    "empty_description": "Der er i øjeblikket ingen offentliggjorte kurser tilgængelige",
+    "course_requirement": "Kursuskrav",
+    "required": "Obligatorisk",
+    "optional": "Valgfri"
   },
   "exercises": {
     "heading": "Øvelser",
@@ -3079,6 +3082,11 @@
     "can_you": "Kan du venligst omformulere dette"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "Kommende træning",
+      "upcoming_exams": "Kommende eksamener",
+      "recent_certificates": "Seneste certifikater"
+    },
     "morning_heading": "Godmorgen",
     "afternoon_heading": "God eftermiddag",
     "evening_heading": "God aften",
@@ -5626,6 +5634,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "Træningen starter snart",
+      "body": "Træningsplanen {planName} starter snart."
+    },
+    "training_score": {
+      "heading": "Træningsresultat tilgængeligt",
+      "body": "Dit resultat for {planName} er {score}."
+    },
+    "training_certificate": {
+      "heading": "Certifikat tilgængeligt",
+      "body": "Dit certifikat for {courseName} er klar."
+    },
+    "training_course_deadline": {
+      "heading": "Kursusfristen nærmer sig",
+      "body": "Kurset {courseName} skal snart være afsluttet."
+    },
+    "training_exam": {
+      "heading": "Eksamen starter snart",
+      "body": "Eksamen {examName} starter snart."
     }
   },
   "export": {
@@ -5746,6 +5778,8 @@
       "publish": "Udgiv og tildel",
       "published": "Plan udgivet",
       "assigned": "Tildelte medarbejdere",
+      "supplement": "Tilføj medarbejdere til planen",
+      "supplemented": "Medarbejdere føjet til planen",
       "complete_fields": "Vælg datoer og mindst ét kursus.",
       "select_targets": "Vælg mindst én målgruppe.",
       "status_draft": "Kladde",

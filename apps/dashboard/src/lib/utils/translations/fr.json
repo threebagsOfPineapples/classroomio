@@ -480,7 +480,10 @@
   "explore": {
     "heading": "Découvrez nos cours",
     "empty_heading": "Aucun cours disponible",
-    "empty_description": "Il n'y a actuellement aucun cours publié disponible"
+    "empty_description": "Il n'y a actuellement aucun cours publié disponible",
+    "course_requirement": "Type de cours",
+    "required": "Obligatoire",
+    "optional": "Facultatif"
   },
   "exercises": {
     "heading": "Exercices",
@@ -3079,6 +3082,11 @@
     "can_you": "Pouvez-vous s'il vous plaît reformuler ceci"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "Formations à venir",
+      "upcoming_exams": "Examens à venir",
+      "recent_certificates": "Certificats récents"
+    },
     "morning_heading": "Bonjour",
     "afternoon_heading": "Bon après-midi",
     "evening_heading": "Bonsoir",
@@ -5626,6 +5634,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "La formation commence bientôt",
+      "body": "Le programme de formation {planName} commence bientôt."
+    },
+    "training_score": {
+      "heading": "Résultat de formation disponible",
+      "body": "Votre résultat pour {planName} est de {score}."
+    },
+    "training_certificate": {
+      "heading": "Certificat disponible",
+      "body": "Votre certificat pour {courseName} est prêt."
+    },
+    "training_course_deadline": {
+      "heading": "La date limite du cours approche",
+      "body": "Le cours {courseName} arrive bientôt à échéance."
+    },
+    "training_exam": {
+      "heading": "L'examen commence bientôt",
+      "body": "L'examen {examName} commence bientôt."
     }
   },
   "export": {
@@ -5746,6 +5778,8 @@
       "publish": "Publier et attribuer",
       "published": "Plan publié",
       "assigned": "Employés inscrits",
+      "supplement": "Ajouter des employés au plan",
+      "supplemented": "Employés ajoutés au plan",
       "complete_fields": "Choisissez les dates et au moins un cours.",
       "select_targets": "Choisissez au moins un public cible.",
       "status_draft": "Brouillon",

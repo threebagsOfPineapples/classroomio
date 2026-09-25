@@ -480,7 +480,10 @@
   "explore": {
     "heading": "Khám phá các khóa học của chúng tôi",
     "empty_heading": "Không có khóa học nào",
-    "empty_description": "Hiện tại chưa có khóa học nào được xuất bản"
+    "empty_description": "Hiện tại chưa có khóa học nào được xuất bản",
+    "course_requirement": "Loại khóa học",
+    "required": "Bắt buộc",
+    "optional": "Tự chọn"
   },
   "exercises": {
     "heading": "Bài tập",
@@ -3079,6 +3082,11 @@
     "can_you": "Bạn có thể vui lòng viết lại điều này"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "Đào tạo sắp tới",
+      "upcoming_exams": "Bài thi sắp tới",
+      "recent_certificates": "Chứng chỉ gần đây"
+    },
     "morning_heading": "Chào buổi sáng",
     "afternoon_heading": "Chào buổi chiều",
     "evening_heading": "Chào buổi tối",
@@ -5626,6 +5634,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "Khóa đào tạo sắp bắt đầu",
+      "body": "Kế hoạch đào tạo {planName} sắp bắt đầu."
+    },
+    "training_score": {
+      "heading": "Đã có kết quả đào tạo",
+      "body": "Kết quả của bạn cho {planName} là {score}."
+    },
+    "training_certificate": {
+      "heading": "Đã có chứng chỉ",
+      "body": "Chứng chỉ của bạn cho {courseName} đã sẵn sàng."
+    },
+    "training_course_deadline": {
+      "heading": "Khóa học sắp đến hạn",
+      "body": "Thời hạn hoàn thành khóa học {courseName} sắp tới."
+    },
+    "training_exam": {
+      "heading": "Bài thi sắp bắt đầu",
+      "body": "Bài thi {examName} sắp bắt đầu."
     }
   },
   "export": {
@@ -5746,6 +5778,8 @@
       "publish": "Xuất bản và phân công",
       "published": "Đã xuất bản kế hoạch",
       "assigned": "Nhân viên được phân công",
+      "supplement": "Thêm nhân viên vào kế hoạch",
+      "supplemented": "Đã thêm nhân viên vào kế hoạch",
       "complete_fields": "Chọn ngày và ít nhất một khóa học.",
       "select_targets": "Chọn ít nhất một đối tượng đào tạo.",
       "status_draft": "Bản nháp",

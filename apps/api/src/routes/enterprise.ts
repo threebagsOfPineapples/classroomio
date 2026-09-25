@@ -18,8 +18,8 @@ import {
 } from '@cio/utils/validation/enterprise';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { ZTrainingPlanDraft } from '@cio/utils/validation/training-plan';
-import { getMyTraining } from '@api/services/my-training';
+import { ZLearningHeartbeat, ZTrainingPlanDraft, ZTrainingPlanSupplement } from '@cio/utils/validation/training-plan';
+import { getMyTraining, recordCourseLearning } from '@api/services/my-training';
 import {
   adjustAssessmentScore,
   enterAssessmentInput,
@@ -48,7 +48,8 @@ import {
   getTrainingPlanById,
   getTrainingPlans,
   previewTrainingPlan,
-  publishTrainingPlan
+  publishTrainingPlan,
+  supplementTrainingPlan
 } from '@api/services/training-plan';
 
 function enterpriseRequest(c: {
@@ -208,6 +209,16 @@ export const enterpriseRouter = new Hono()
       return handleError(c, error);
     }
   })
+  .post('/learning/heartbeat', zValidator('json', ZLearningHeartbeat), async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const { courseId } = c.req.valid('json');
+      await recordCourseLearning(organizationId, profileId, courseId);
+      return c.json({ success: true, data: { recorded: true } });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .post('/plans', zValidator('json', ZTrainingPlanDraft), async (c) => {
     try {
       const { organizationId, profileId } = enterpriseRequest(c);
@@ -252,6 +263,16 @@ export const enterpriseRouter = new Hono()
       const { organizationId, profileId } = enterpriseRequest(c);
       const planId = planIdParam(c.req.param('planId'));
       const data = await publishTrainingPlan(organizationId, profileId, planId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .post('/plans/:planId/supplement', zValidator('json', ZTrainingPlanSupplement), async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const planId = planIdParam(c.req.param('planId'));
+      const data = await supplementTrainingPlan(organizationId, profileId, planId, c.req.valid('json').memberIds);
       return c.json({ success: true, data });
     } catch (error) {
       return handleError(c, error);

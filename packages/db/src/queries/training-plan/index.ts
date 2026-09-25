@@ -1,15 +1,23 @@
 import { db, type DbOrTxClient } from '@db/drizzle';
 import {
+  assessmentScore,
+  assessmentItem,
+  assessmentScheme,
   course,
   group,
+  groupmember,
+  exercise,
+  lesson,
+  learningActivityMinute,
   organizationmember,
+  submission,
   trainingEnrollment,
   trainingEvaluation,
   trainingPlan,
   trainingPlanCourse,
   trainingPlanTarget
 } from '@db/schema';
-import { and, asc, count, desc, eq, inArray, isNull, ne, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lt, ne, notExists, or, sql } from 'drizzle-orm';
 
 export function withTrainingPlanTransaction<T>(callback: (transaction: DbOrTxClient) => Promise<T>) {
   return db.transaction(callback);
@@ -48,7 +56,7 @@ export async function getTrainingPlanDetail(organizationId: string, planId: stri
   const plan = await getTrainingPlan(organizationId, planId);
   if (!plan) return null;
 
-  const [courses, targets, enrollmentCount] = await Promise.all([
+  const [courses, targets, enrollments] = await Promise.all([
     db
       .select({
         id: trainingPlanCourse.id,
@@ -61,10 +69,19 @@ export async function getTrainingPlanDetail(organizationId: string, planId: stri
       .where(eq(trainingPlanCourse.planId, planId))
       .orderBy(asc(trainingPlanCourse.sort)),
     db.select().from(trainingPlanTarget).where(eq(trainingPlanTarget.planId, planId)),
-    db.select({ count: count() }).from(trainingEnrollment).where(eq(trainingEnrollment.planId, planId))
+    db
+      .select({ memberId: trainingEnrollment.memberId })
+      .from(trainingEnrollment)
+      .where(eq(trainingEnrollment.planId, planId))
   ]);
 
-  return { plan, courses, targets, enrollmentCount: enrollmentCount[0]?.count ?? 0 };
+  return {
+    plan,
+    courses,
+    targets,
+    enrollmentCount: enrollments.length,
+    enrolledMemberIds: enrollments.map((item) => item.memberId)
+  };
 }
 
 export function createTrainingPlan(values: typeof trainingPlan.$inferInsert, client: DbOrTxClient) {
@@ -187,6 +204,7 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
       enrollmentStatus: trainingEnrollment.status,
       result: trainingEnrollment.result,
       finalScore: trainingEnrollment.finalScore,
+      scoreCalculatedAt: assessmentScore.calculatedAt,
       progressPercent: trainingEnrollment.progressPercent,
       evaluatedAt: trainingEvaluation.createdAt,
       assignedAt: trainingEnrollment.assignedAt,
@@ -201,6 +219,7 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
     .innerJoin(trainingPlan, eq(trainingEnrollment.planId, trainingPlan.id))
     .innerJoin(trainingPlanCourse, eq(trainingPlan.id, trainingPlanCourse.planId))
     .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
+    .leftJoin(assessmentScore, eq(assessmentScore.enrollmentId, trainingEnrollment.id))
     .leftJoin(trainingEvaluation, eq(trainingEvaluation.enrollmentId, trainingEnrollment.id))
     .where(
       and(
@@ -213,6 +232,103 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
       )
     )
     .orderBy(desc(trainingEnrollment.assignedAt), asc(trainingPlanCourse.sort));
+}
+
+export function listMyTrainingExams(organizationId: string, profileId: string) {
+  const submitted = db
+    .select({ id: submission.id })
+    .from(submission)
+    .innerJoin(groupmember, eq(submission.submittedBy, groupmember.id))
+    .where(and(eq(submission.exerciseId, exercise.id), eq(groupmember.profileId, profileId)));
+
+  return db
+    .select({
+      enrollmentId: trainingEnrollment.id,
+      exerciseId: exercise.id,
+      courseId: trainingPlanCourse.courseId,
+      title: exercise.title,
+      opensAt: exercise.opensAt,
+      closesAt: exercise.closesAt
+    })
+    .from(trainingEnrollment)
+    .innerJoin(organizationmember, eq(trainingEnrollment.memberId, organizationmember.id))
+    .innerJoin(trainingPlan, eq(trainingEnrollment.planId, trainingPlan.id))
+    .innerJoin(
+      assessmentScheme,
+      and(eq(assessmentScheme.planId, trainingPlan.id), eq(assessmentScheme.status, 'PUBLISHED'))
+    )
+    .innerJoin(assessmentItem, and(eq(assessmentItem.schemeId, assessmentScheme.id), eq(assessmentItem.type, 'EXAM')))
+    .innerJoin(exercise, eq(assessmentItem.exerciseId, exercise.id))
+    .leftJoin(lesson, eq(exercise.lessonId, lesson.id))
+    .innerJoin(
+      trainingPlanCourse,
+      and(
+        eq(trainingPlanCourse.planId, trainingPlan.id),
+        or(eq(exercise.courseId, trainingPlanCourse.courseId), eq(lesson.courseId, trainingPlanCourse.courseId))
+      )
+    )
+    .where(
+      and(
+        eq(trainingEnrollment.organizationId, organizationId),
+        eq(organizationmember.organizationId, organizationId),
+        eq(organizationmember.profileId, profileId),
+        eq(organizationmember.status, 'ACTIVE'),
+        or(isNull(organizationmember.employmentStatus), ne(organizationmember.employmentStatus, 'TERMINATED')),
+        eq(trainingPlan.organizationId, organizationId),
+        eq(trainingPlan.status, 'PUBLISHED'),
+        ne(trainingEnrollment.status, 'COMPLETED'),
+        ne(trainingEnrollment.status, 'CANCELLED'),
+        ne(trainingEnrollment.status, 'EXPIRED'),
+        eq(exercise.isExam, true),
+        isNotNull(exercise.opensAt),
+        isNotNull(exercise.closesAt),
+        notExists(submitted)
+      )
+    );
+}
+
+export function recordLearningMinute(organizationId: string, profileId: string, courseId: string) {
+  return db
+    .insert(learningActivityMinute)
+    .values({
+      organizationId,
+      profileId,
+      courseId,
+      minuteAt: sql`date_trunc('minute', now())`
+    })
+    .onConflictDoNothing();
+}
+
+export async function countLearningMinutesForMembers(
+  organizationId: string,
+  memberIds: number[],
+  courseIds?: string[],
+  from?: string,
+  to?: string
+) {
+  if (memberIds.length === 0 || courseIds?.length === 0) return 0;
+
+  const conditions = [
+    eq(learningActivityMinute.organizationId, organizationId),
+    inArray(organizationmember.id, memberIds)
+  ];
+  if (courseIds) conditions.push(inArray(learningActivityMinute.courseId, courseIds));
+  if (from) conditions.push(gte(learningActivityMinute.minuteAt, from));
+  if (to) conditions.push(lt(learningActivityMinute.minuteAt, to));
+
+  const [result] = await db
+    .select({ minutes: count() })
+    .from(learningActivityMinute)
+    .innerJoin(
+      organizationmember,
+      and(
+        eq(organizationmember.organizationId, learningActivityMinute.organizationId),
+        eq(organizationmember.profileId, learningActivityMinute.profileId)
+      )
+    )
+    .where(and(...conditions));
+
+  return result?.minutes ?? 0;
 }
 
 export function insertTrainingEnrollments(values: Array<typeof trainingEnrollment.$inferInsert>, client: DbOrTxClient) {

@@ -7,7 +7,10 @@ import { ZCourseType } from './course-type';
 
 export const ZGetRecommendedCourses = z.object({
   limit: z.string().transform(Number).pipe(z.number().min(1).max(50)).optional(),
-  page: z.string().transform(Number).pipe(z.number().min(1)).optional()
+  page: z.string().transform(Number).pipe(z.number().min(1)).optional(),
+  search: z.string().trim().max(120).optional(),
+  tagSlug: z.string().trim().max(120).optional(),
+  required: z.enum(['true', 'false']).optional()
 });
 export type TGetRecommendedCourses = z.infer<typeof ZGetRecommendedCourses>;
 

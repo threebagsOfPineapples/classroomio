@@ -33,7 +33,17 @@
       return;
     }
 
-    notificationsApi.markTrainingRead(item.sourceId);
+    notificationsApi.markTrainingRead(item);
+    if (item.href) {
+      void goto(item.href);
+      return;
+    }
+
+    if (item.kind === 'training_certificate') {
+      void goto('/lms/training/archive');
+      return;
+    }
+
     void goto(resolve('/lms/training/[enrollmentId]', { enrollmentId: item.sourceId }));
   }
 

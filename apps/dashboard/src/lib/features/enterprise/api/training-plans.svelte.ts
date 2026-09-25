@@ -5,6 +5,7 @@ import type {
   TrainingPlanDetail,
   TrainingPlanDraft,
   TrainingPlanPreview,
+  TrainingPlanSupplement,
   TrainingPlans
 } from '../utils/types';
 
@@ -90,6 +91,25 @@ class TrainingPlansApi {
         'POST'
       );
       await this.load(organizationId);
+      return true;
+    } catch {
+      this.error = t.get('enterprise.request_failed');
+      return false;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  async supplement(organizationId: string, planId: string, supplement: TrainingPlanSupplement) {
+    this.busy = true;
+    this.error = '';
+    try {
+      this.selected = await enterpriseApi.request<TrainingPlanDetail>(
+        organizationId,
+        `/plans/${planId}/supplement`,
+        'POST',
+        supplement
+      );
       return true;
     } catch {
       this.error = t.get('enterprise.request_failed');

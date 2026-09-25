@@ -254,3 +254,62 @@ export async function publishTrainingPlan(organizationId: string, profileId: str
 
   return getTrainingPlanById(organizationId, profileId, planId);
 }
+
+export async function supplementTrainingPlan(
+  organizationId: string,
+  profileId: string,
+  planId: string,
+  memberIds: number[]
+) {
+  await requireTrainingManager(organizationId, profileId);
+
+  await withTrainingPlanTransaction(async (transaction) => {
+    const plan = await lockTrainingPlan(organizationId, planId, transaction);
+    if (!plan) throw new AppError('Training plan not found', ErrorCodes.VALIDATION_ERROR, 404);
+    if (plan.status !== 'PUBLISHED') invalidPlan('Only published plans accept additional employees');
+
+    const [[courses], members] = await Promise.all([
+      getPlanItems(planId, transaction),
+      getEligibleTrainingMembers(organizationId, transaction)
+    ]);
+    const selectedIds = new Set(memberIds);
+    const selectedMembers = members.filter((member) => selectedIds.has(member.id));
+    if (selectedMembers.length !== selectedIds.size)
+      invalidPlan('Selected employee is inactive or outside this organization');
+
+    const validCourses = await getOrgTrainingCourses(
+      organizationId,
+      courses.map((item) => item.courseId),
+      transaction
+    );
+    if (courses.length === 0 || validCourses.length !== courses.length)
+      invalidPlan('Plan includes an unavailable course');
+
+    const inserted = await insertTrainingEnrollments(
+      selectedMembers.map((member) => ({
+        organizationId,
+        planId,
+        memberId: member.id,
+        matchedTargetIds: [],
+        planVersion: plan.version
+      })),
+      transaction
+    );
+    const insertedIds = new Set(inserted.map((item) => item.memberId));
+    await insertGroupMembersOnConflictDoNothing(
+      validCourses.flatMap((trainingCourse) =>
+        selectedMembers
+          .filter((member) => member.profileId && insertedIds.has(member.id))
+          .map((member) => ({
+            groupId: trainingCourse.groupId,
+            roleId: ROLE.STUDENT,
+            profileId: member.profileId!,
+            email: undefined
+          }))
+      ),
+      transaction
+    );
+  });
+
+  return getTrainingPlanById(organizationId, profileId, planId);
+}

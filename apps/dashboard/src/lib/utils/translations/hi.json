@@ -480,7 +480,10 @@
   "explore": {
     "heading": "हमारे पाठ्यक्रमों का अन्वेषण करें",
     "empty_heading": "कोई पाठ्यक्रम उपलब्ध नहीं है",
-    "empty_description": "वर्तमान में कोई प्रकाशित पाठ्यक्रम उपलब्ध नहीं है"
+    "empty_description": "वर्तमान में कोई प्रकाशित पाठ्यक्रम उपलब्ध नहीं है",
+    "course_requirement": "पाठ्यक्रम की आवश्यकता",
+    "required": "अनिवार्य",
+    "optional": "वैकल्पिक"
   },
   "exercises": {
     "heading": "व्यायाम",
@@ -3079,6 +3082,11 @@
     "can_you": "क्या आप कृपया इसे दोबारा लिख सकते हैं?"
   },
   "dashboard": {
+    "enterprise_home": {
+      "upcoming_training": "आगामी प्रशिक्षण",
+      "upcoming_exams": "आगामी परीक्षाएँ",
+      "recent_certificates": "हाल के प्रमाणपत्र"
+    },
     "morning_heading": "सुप्रभात",
     "afternoon_heading": "शुभ दोपहर",
     "evening_heading": "शुभ संध्या",
@@ -5626,6 +5634,30 @@
     "training_assignment": {
       "heading": "Training assigned",
       "body": "You have been assigned to the {planName} training plan."
+    },
+    "training_deadline": {
+      "heading": "Training deadline approaching",
+      "body": "The {planName} training plan ends soon."
+    },
+    "training_start": {
+      "heading": "प्रशिक्षण जल्द शुरू होगा",
+      "body": "{planName} प्रशिक्षण योजना जल्द शुरू होगी।"
+    },
+    "training_score": {
+      "heading": "प्रशिक्षण परिणाम उपलब्ध है",
+      "body": "{planName} के लिए आपका परिणाम {score} है।"
+    },
+    "training_certificate": {
+      "heading": "प्रमाणपत्र उपलब्ध है",
+      "body": "{courseName} के लिए आपका प्रमाणपत्र तैयार है।"
+    },
+    "training_course_deadline": {
+      "heading": "पाठ्यक्रम की समय सीमा निकट है",
+      "body": "{courseName} पाठ्यक्रम की समय सीमा जल्द समाप्त होगी।"
+    },
+    "training_exam": {
+      "heading": "परीक्षा जल्द शुरू होगी",
+      "body": "{examName} परीक्षा जल्द शुरू होगी।"
     }
   },
   "export": {
@@ -5746,6 +5778,8 @@
       "publish": "प्रकाशित और आवंटित करें",
       "published": "योजना प्रकाशित",
       "assigned": "आवंटित कर्मचारी",
+      "supplement": "योजना में कर्मचारी जोड़ें",
+      "supplemented": "योजना में कर्मचारी जोड़े गए",
       "complete_fields": "तिथियाँ और कम से कम एक पाठ्यक्रम चुनें।",
       "select_targets": "कम से कम एक लक्षित समूह चुनें।",
       "status_draft": "मसौदा",

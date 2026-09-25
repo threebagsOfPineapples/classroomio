@@ -7,10 +7,12 @@
   import { CoursesPage } from '$features/course/pages';
   import { courseMetaDeta } from '$features/course/utils/store';
   import { coursesApi } from '$features/course/api';
+  import { tagApi } from '$features/tag/api';
   import type { RecommendedCourses } from '$features/course/types';
   import { CourseSortBy, DEFAULT_COURSE_SORT, parseCourseSortValue } from '$features/course/utils/constants';
   import CoursePreviewModal from '$features/lms/components/course-preview-modal.svelte';
   import * as Pagination from '@cio/ui/base/pagination';
+  import { Button } from '@cio/ui/base/button';
 
   const EXPLORE_LIMIT = 12;
 
@@ -19,6 +21,9 @@
   let selectedCourse = $state<RecommendedCourses[number] | null>(null);
   let previewOpen = $state(false);
   let currentPage = $state(1);
+  let selectedTagSlug = $state('');
+  let requiredFilter = $state<'all' | 'required' | 'optional'>('all');
+  let lastSearchValue = '';
 
   $effect(() => {
     if (!browser) return;
@@ -27,13 +32,7 @@
   });
 
   const filteredExploreCourses: RecommendedCourses = $derived.by(() => {
-    const coursesFiltered = coursesApi.recommendedCourses.filter((course) => {
-      if (!searchValue || course.title.toLowerCase().includes(searchValue.toLowerCase())) {
-        return true;
-      }
-
-      return false;
-    });
+    const coursesFiltered = [...coursesApi.recommendedCourses];
 
     if (sortKey === CourseSortBy.DateCreated) {
       return coursesFiltered.sort(
@@ -59,13 +58,24 @@
 
   function fetchPage(page: number) {
     currentPage = page;
-    coursesApi.getRecommendedCourses({ limit: EXPLORE_LIMIT, page });
+  }
+
+  function selectTag(tagSlug: string) {
+    selectedTagSlug = tagSlug;
+    currentPage = 1;
+  }
+
+  function selectRequired(filter: 'all' | 'required' | 'optional') {
+    requiredFilter = filter;
+    currentPage = 1;
   }
 
   $effect(() => {
-    if (searchValue) {
-      currentPage = 1;
-    }
+    const nextSearchValue = searchValue.trim();
+    if (nextSearchValue === lastSearchValue) return;
+
+    lastSearchValue = nextSearchValue;
+    currentPage = 1;
   });
 
   onMount(() => {
@@ -81,7 +91,21 @@
   $effect(() => {
     if (!$profile.id || !$currentOrg.id) return;
 
-    coursesApi.getRecommendedCourses({ limit: EXPLORE_LIMIT, page: currentPage });
+    void tagApi.getTagGroups();
+  });
+
+  $effect(() => {
+    if (!$profile.id || !$currentOrg.id) return;
+
+    const page = currentPage;
+    const search = searchValue.trim();
+    const tagSlug = selectedTagSlug;
+    const required = requiredFilter === 'all' ? undefined : requiredFilter === 'required';
+    const timeout = setTimeout(
+      () => void coursesApi.getRecommendedCourses({ limit: EXPLORE_LIMIT, page, search, tagSlug, required }),
+      search ? 250 : 0
+    );
+    return () => clearTimeout(timeout);
   });
 </script>
 
@@ -98,7 +122,51 @@
     selectedCourse = course as RecommendedCourses[number];
     previewOpen = true;
   }}
-/>
+>
+  {#snippet filterControls()}
+    <div role="group" aria-label={$t('explore.course_requirement')} class="flex flex-wrap gap-2">
+      <Button
+        size="sm"
+        variant={requiredFilter === 'all' ? 'secondary' : 'outline'}
+        onclick={() => selectRequired('all')}
+      >
+        {$t('widgets.filter.all')}
+      </Button>
+      <Button
+        size="sm"
+        variant={requiredFilter === 'required' ? 'secondary' : 'outline'}
+        onclick={() => selectRequired('required')}
+      >
+        {$t('explore.required')}
+      </Button>
+      <Button
+        size="sm"
+        variant={requiredFilter === 'optional' ? 'secondary' : 'outline'}
+        onclick={() => selectRequired('optional')}
+      >
+        {$t('explore.optional')}
+      </Button>
+    </div>
+    {#if tagApi.tagGroups.some((group) => group.tags.length > 0)}
+      <div role="group" aria-label={$t('courses.tag_filters.tags')} class="flex flex-wrap gap-2">
+        <Button size="sm" variant={selectedTagSlug === '' ? 'secondary' : 'outline'} onclick={() => selectTag('')}>
+          {$t('widgets.filter.all')}
+        </Button>
+        {#each tagApi.tagGroups as group (group.id)}
+          {#each group.tags as tag (tag.id)}
+            <Button
+              size="sm"
+              variant={selectedTagSlug === tag.slug ? 'secondary' : 'outline'}
+              onclick={() => selectTag(tag.slug)}
+            >
+              {tag.name}
+            </Button>
+          {/each}
+        {/each}
+      </div>
+    {/if}
+  {/snippet}
+</CoursesPage>
 
 {#if pagination && pagination.totalPages > 1}
   <Pagination.Root
