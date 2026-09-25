@@ -57,8 +57,8 @@
       <!-- Header With Logo -->
       <div class="flex flex-col items-center">
         <div class="mb-4 flex w-full items-center justify-center">
-          <img src="/logo-192.png" alt="ClassroomIO logo" height="50" width="50" data-atf="1" />
-          <h4 class="text-xl dark:text-white">ClassroomIO</h4>
+          <img src="/enterprise-training-icon.png" alt={$t('enterprise.title')} height="50" width="50" data-atf="1" />
+          <h4 class="text-xl dark:text-white">{$t('enterprise.title')}</h4>
         </div>
 
         <!-- Loggedin Email -->
@@ -77,7 +77,7 @@
             <!-- Full name -->
             <Field.Field>
               <Field.Label>{$t('onboarding.fullname')}</Field.Label>
-              <Input bind:value={fields.fullname} name="fullname" type="text" placeholder="e.g Joke Silva" />
+              <Input bind:value={fields.fullname} name="fullname" type="text" />
               {#if onboardingApi.errors.fullname}
                 <Field.Error>{onboardingApi.errors.fullname}</Field.Error>
               {/if}
@@ -86,7 +86,7 @@
             <!-- Org name -->
             <Field.Field>
               <Field.Label>{$t('onboarding.name')}</Field.Label>
-              <Input bind:value={fields.orgName} name="orgname" type="text" placeholder="e.g My School Name" />
+              <Input bind:value={fields.orgName} name="orgname" type="text" />
               {#if onboardingApi.errors.orgName}
                 <Field.Error>{onboardingApi.errors.orgName}</Field.Error>
               {/if}
@@ -97,7 +97,7 @@
               <Field.Label>{$t('onboarding.organisation_sitename')}</Field.Label>
               <DomainInput
                 bind:value={fields.siteName}
-                placeholder="myschool"
+                placeholder="company"
                 prefix="https://"
                 suffix=".classroomio.com"
                 oninput={() => {

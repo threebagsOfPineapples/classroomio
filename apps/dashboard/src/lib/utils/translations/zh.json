@@ -65,6 +65,26 @@
       "expires": "到期日期"
     }
   },
+  "onboarding": {
+    "expanding": "从其他平台迁入",
+    "employees": "培训企业员工",
+    "customers": "为客户创建课程",
+    "explore": "先了解一下",
+    "articles": "文章",
+    "search": "搜索引擎",
+    "social": "社交媒体",
+    "friends": "朋友或家人",
+    "fullname": "姓名",
+    "name": "企业名称",
+    "organisation_sitename": "企业访问地址",
+    "what_brings": "您希望如何使用企业培训平台？",
+    "how": "您从哪里了解到我们？",
+    "back": "返回",
+    "continue": "继续"
+  },
+  "content": {
+    "toggle_label": "首选语言"
+  },
   "login": {
     "welcome": "欢迎回来",
     "email": "电子邮箱",
