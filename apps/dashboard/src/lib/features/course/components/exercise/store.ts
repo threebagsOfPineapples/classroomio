@@ -44,6 +44,9 @@ export interface QuestionnaireMetaData {
   exerciseId: string | null;
   currentSectionIndex: number;
   sectionPhase: 'overview' | 'questions';
+  examAttemptId?: string;
+  examAttemptNumber?: number;
+  examExpiresAt?: string;
 }
 
 export interface ExerciseSectionState {
@@ -72,6 +75,8 @@ export interface QuestionnaireState {
   isExam?: boolean;
   opensAt?: string | null;
   closesAt?: string | null;
+  maxAttempts?: number;
+  durationMinutes?: number | null;
   completionPolicy?: 'submitted' | 'passed';
   passThreshold?: number | null;
   slug?: string | null;
@@ -110,6 +115,8 @@ export const questionnaire: Writable<QuestionnaireState> = writable({
   isExam: false,
   opensAt: null,
   closesAt: null,
+  maxAttempts: 1,
+  durationMinutes: null,
   completionPolicy: 'submitted',
   passThreshold: 100,
   slug: ''

@@ -9,7 +9,8 @@
     hasSections,
     questionnaire,
     questionnaireMetaData,
-    resetStudentExerciseTake
+    resetStudentExerciseTake,
+    type QuestionnaireMetaData
   } from './store';
   import Preview from './preview.svelte';
   import { ExerciseQuestion } from '@cio/ui';
@@ -70,6 +71,9 @@
   const platformMaxFileSizeMb = uploadLimits.exerciseFileMb;
 
   let isSubmitting = $state(false);
+  let isStartingExam = $state(false);
+  let savedExamMetadata: QuestionnaireMetaData | null = null;
+  let clockNow = $state(Date.now());
   /** When true, do not re-apply a past submission over a fresh take (Try again). */
   let skipHydrateFromSubmissions = $state(false);
   let isLoadingAutoSavedData = $state(false);
@@ -94,7 +98,35 @@
   /** Attempt currently shown: -1 means "latest" (e.g. right after submitting). */
   const viewedAttemptIndex = $derived(selectedTryIndex >= 0 ? selectedTryIndex : submissionList.length - 1);
 
-  function handleStart() {
+  async function handleStart() {
+    if ($questionnaire.isExam) {
+      if (!courseApi.course?.id || isStartingExam) return;
+
+      isStartingExam = true;
+      const result = await exerciseApi.startExamAttempt(courseApi.course.id, exerciseId);
+      isStartingExam = false;
+      if (!result?.data) return;
+
+      const attempt = result.data;
+      if (savedExamMetadata?.examAttemptId === attempt.id) {
+        questionnaireMetaData.set(savedExamMetadata);
+      } else {
+        resetStudentExerciseTake();
+      }
+      savedExamMetadata = null;
+      questionnaireMetaData.update((metadata) => ({
+        ...metadata,
+        examAttemptId: attempt.id,
+        examAttemptNumber: attempt.attemptNumber,
+        examExpiresAt: attempt.expiresAt,
+        currentQuestionIndex: Math.max(metadata.currentQuestionIndex, 1),
+        currentSectionIndex: metadata.currentSectionIndex,
+        sectionPhase: hasSectionedExercise ? metadata.sectionPhase : 'questions'
+      }));
+      localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
+      return;
+    }
+
     questionnaireMetaData.update((m) => ({
       ...m,
       currentQuestionIndex: 1,
@@ -125,7 +157,6 @@
     isSubmitting = true;
 
     const updated = get(questionnaireMetaData);
-    localStorage.removeItem(`autosave-exercise-${exerciseId}`);
     const totalPossibleGrade = getTotalPossibleGrade($questionnaire.questions);
 
     const answersForApi = Object.entries(updated.answers)
@@ -144,9 +175,15 @@
       return;
     }
 
-    const submitResult = await exerciseApi.submit(courseApi.course.id, exerciseId, answersForApi);
+    const submitResult = await exerciseApi.submit(
+      courseApi.course.id,
+      exerciseId,
+      answersForApi,
+      $questionnaire.isExam ? updated.examAttemptId : undefined
+    );
 
     if (exerciseApi.success && submitResult?.data) {
+      localStorage.removeItem(`autosave-exercise-${exerciseId}`);
       skipHydrateFromSubmissions = false;
       const sub = submitResult.data as unknown as SubmissionListItem & { gradingState?: string };
       localSubmissions = [...localSubmissions, sub];
@@ -261,6 +298,7 @@
 
     const newAnswers = { ...answers, [id]: formattedAnswer };
     questionnaireMetaData.update((m) => ({ ...m, answers: newAnswers }));
+    localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
 
     const currentIndex = $questionnaireMetaData.currentQuestionIndex;
     const isLastQuestion = currentIndex === questions.length;
@@ -275,8 +313,6 @@
       // Advance to next question
       slideDirection = 'next';
       questionnaireMetaData.update((m) => ({ ...m, currentQuestionIndex: m.currentQuestionIndex + 1 }));
-      const updated = get(questionnaireMetaData);
-      localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(updated));
     }
   }
 
@@ -327,7 +363,11 @@
     if (stringifiedQuestionnaireMetaData) {
       const autoSavedData = JSON.parse(stringifiedQuestionnaireMetaData);
       if (autoSavedData) {
-        questionnaireMetaData.set(autoSavedData);
+        if ($questionnaire.isExam) {
+          savedExamMetadata = autoSavedData;
+        } else {
+          questionnaireMetaData.set(autoSavedData);
+        }
       }
     }
     isLoadingAutoSavedData = false;
@@ -456,6 +496,7 @@
         answers
       };
     });
+    localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
   }
 
   function onSharedNext(valueOverride?: AnswerData) {
@@ -510,6 +551,7 @@
         [questionKey]: answerValue
       }
     }));
+    localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
   }
 
   function completeAllQuestionsSection() {
@@ -595,10 +637,35 @@
   }
 
   $effect(() => {
-    if (!alreadyCheckedAutoSavedData) {
+    if (
+      !alreadyCheckedAutoSavedData &&
+      !isFetchingExercise &&
+      $questionnaire.questions.length &&
+      courseApi.course?.id
+    ) {
       getAutoSavedData();
     }
   });
+
+  $effect(() => {
+    if (!$questionnaire.isExam || !$questionnaireMetaData.examExpiresAt || $questionnaireMetaData.isFinished) return;
+
+    const timer = window.setInterval(() => {
+      clockNow = Date.now();
+    }, 1000);
+    return () => window.clearInterval(timer);
+  });
+
+  const remainingSeconds = $derived(
+    $questionnaireMetaData.examExpiresAt
+      ? Math.max(0, Math.ceil((Date.parse($questionnaireMetaData.examExpiresAt) - clockNow) / 1000))
+      : 0
+  );
+  const canTryAgain = $derived(
+    !!$questionnaire.allowMultipleAttempts &&
+      (!$questionnaire.isExam ||
+        ($questionnaireMetaData.examAttemptNumber ?? submissionList.length) < ($questionnaire.maxAttempts ?? 1))
+  );
 
   const progressValue = $derived(getProgressValue($questionnaireMetaData.currentQuestionIndex));
   const activeSections = $derived(
@@ -730,11 +797,12 @@
   }
 
   function tryAgain() {
-    if (!$questionnaire.allowMultipleAttempts) return;
+    if (!canTryAgain) return;
     localStorage.removeItem(`autosave-exercise-${exerciseId}`);
     selectedTryIndex = -1;
     skipHydrateFromSubmissions = true;
     resetStudentExerciseTake();
+    savedExamMetadata = null;
   }
 
   function applyMySubmission(submission: SubmissionListItem) {
@@ -776,6 +844,7 @@
       skipHydrateFromSubmissions = false;
       selectedTryIndex = -1;
       localSubmissions = [];
+      savedExamMetadata = null;
     }
     prevExerciseId = exerciseId;
   });
@@ -793,6 +862,21 @@
     </span>
     <Progress class="min-w-0 flex-1" value={$questionnaireMetaData.progressValue} />
   </div>
+  {#if $questionnaire.isExam && $questionnaireMetaData.examExpiresAt}
+    <p class="mb-4 text-sm font-medium" aria-live="off">
+      {remainingSeconds > 0
+        ? $t('course.navItem.lessons.exercises.all_exercises.view_mode.exam_time_remaining', {
+            minutes: Math.floor(remainingSeconds / 60),
+            seconds: String(remainingSeconds % 60).padStart(2, '0')
+          })
+        : $t('course.navItem.lessons.exercises.all_exercises.view_mode.exam_time_expired')}
+    </p>
+    {#if remainingSeconds === 0 && canTryAgain}
+      <Button type="button" variant="secondary" onclick={tryAgain}>
+        {$t('course.navItem.lessons.exercises.all_exercises.view_mode.try_again')}
+      </Button>
+    {/if}
+  {/if}
 {/if}
 
 <svelte:window onkeydown={handleEnterKey} />
@@ -863,7 +947,13 @@
         />
       </article>
 
-      <Button onclick={handleStart} type="button" class="float-right my-5">
+      <Button
+        onclick={handleStart}
+        type="button"
+        class="float-right my-5"
+        disabled={isStartingExam}
+        loading={isStartingExam}
+      >
         {$t('course.navItem.lessons.exercises.all_exercises.view_mode.start')}
       </Button>
     </div>
@@ -922,7 +1012,7 @@
                           )}
                     </p>
                   </div>
-                  {#if $questionnaire.allowMultipleAttempts && !didCurrentAttemptPass}
+                  {#if canTryAgain && !didCurrentAttemptPass}
                     <Button type="button" variant="outline" onclick={tryAgain} class="shrink-0">
                       {$t('course.navItem.lessons.exercises.all_exercises.view_mode.try_again')}
                     </Button>
@@ -982,7 +1072,7 @@
     />
 
     <RoleBasedSecurity allowedRoles={[3]}>
-      {#if $questionnaire.allowMultipleAttempts && !shouldShowPassedCompletionResult}
+      {#if canTryAgain && !shouldShowPassedCompletionResult}
         <div class="mt-4">
           <Button type="button" variant="secondary" onclick={tryAgain}>
             {$t('course.navItem.lessons.exercises.all_exercises.view_mode.try_again')}

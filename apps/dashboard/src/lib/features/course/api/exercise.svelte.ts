@@ -6,6 +6,7 @@ import type {
   DeleteExerciseRequest,
   Exercise,
   GetExerciseRequest,
+  StartExamAttemptRequest,
   SubmitExerciseRequest,
   UpdateExerciseRequest,
   VideoRecordingPlaybackRequest,
@@ -252,11 +253,30 @@ export class ExerciseApi extends BaseApiWithErrors {
     });
   }
 
-  /**
-   * Submits an exercise
-   */
-  async submit(courseId: string, exerciseId: string, answers: TExerciseSubmissionCreate['answers']) {
-    const result = ZExerciseSubmissionCreate.safeParse({ exerciseId, answers });
+  async startExamAttempt(courseId: string, exerciseId: string) {
+    return await this.execute<StartExamAttemptRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].attempt.$post({
+          param: { courseId, exerciseId }
+        }),
+      logContext: 'starting exam attempt',
+      onError: (result) => {
+        if (typeof result === 'string') {
+          snackbar.error(result);
+        } else if ('error' in result) {
+          snackbar.error(result.error);
+        }
+      }
+    });
+  }
+
+  async submit(
+    courseId: string,
+    exerciseId: string,
+    answers: TExerciseSubmissionCreate['answers'],
+    examAttemptId?: string
+  ) {
+    const result = ZExerciseSubmissionCreate.safeParse({ exerciseId, answers, examAttemptId });
     if (!result.success) {
       this.errors = mapZodErrorsToTranslations(result.error, 'exercise');
       return;

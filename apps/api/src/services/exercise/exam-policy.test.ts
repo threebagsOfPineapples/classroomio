@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { assertExamOpen, redactExamAnswers } from './exam-policy';
+import { getExamExpiresAt } from '@cio/db/queries/exercise';
 
 describe('exam access', () => {
   const window = {
@@ -29,5 +30,14 @@ describe('exam access', () => {
     expect(learnerExam.questions?.[0].settings).toEqual({});
     expect(learnerExam.questions?.[0].options[0]).toMatchObject({ isCorrect: false, settings: {} });
     expect(learnerExam.sections?.[0].questions[0].options[0]).toMatchObject({ isCorrect: false, settings: {} });
+  });
+
+  it('ends an attempt at the earlier of its duration and the exam close', () => {
+    const startedAt = '2026-09-25T09:00:00.000Z';
+    const closesAt = '2026-09-25T10:00:00.000Z';
+
+    expect(getExamExpiresAt(startedAt, closesAt, 30)).toBe('2026-09-25T09:30:00.000Z');
+    expect(getExamExpiresAt(startedAt, closesAt, 90)).toBe(closesAt);
+    expect(getExamExpiresAt(startedAt, closesAt, null)).toBe(closesAt);
   });
 });

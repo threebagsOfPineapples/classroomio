@@ -108,6 +108,8 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     isExam: exercise.isExam,
     opensAt: exercise.opensAt,
     closesAt: exercise.closesAt,
+    maxAttempts: exercise.maxAttempts,
+    durationMinutes: exercise.durationMinutes,
     completionPolicy: (exercise.completionPolicy as 'submitted' | 'passed' | undefined) ?? 'submitted',
     passThreshold: exercise.passThreshold ?? 100,
     slug: exercise.slug ?? ''

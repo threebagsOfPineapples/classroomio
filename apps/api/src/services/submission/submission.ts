@@ -1,4 +1,5 @@
 import type { AnswerData, FileUploadAnswerData, VideoRecordingAnswerData } from '@cio/question-types';
+import { randomUUID } from 'node:crypto';
 import {
   getVideoRecordingMaxDurationSeconds,
   scoreSubmissionAnswers,
@@ -6,7 +7,7 @@ import {
   validateTextareaAnswer
 } from '@cio/question-types';
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import type { TNewQuestionAnswer, TNewSubmission, TSubmission } from '@cio/db/types';
+import type { TNewQuestionAnswer, TNewSubmission, TQuestionAnswer, TSubmission } from '@cio/db/types';
 import type {
   TSubmissionAnswerUpdate,
   TSubmissionGradesUpdate,
@@ -36,7 +37,7 @@ import {
 } from '@cio/question-types';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
 import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/course/people';
-import { getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import { createExamSubmission, getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 
 import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
@@ -551,7 +552,8 @@ export async function createSubmissionService(
   courseId: string,
   exerciseId: string,
   submittedBy: string,
-  answers: Array<{ questionId: number; optionId?: number; answer?: string }>
+  answers: Array<{ questionId: number; optionId?: number; answer?: string }>,
+  examAttemptId?: string
 ): Promise<TSubmission & { answers?: any[] }> {
   try {
     const [exerciseWithRelations, courseRows] = await Promise.all([
@@ -562,7 +564,15 @@ export async function createSubmissionService(
 
     assertExamOpen(exerciseWithRelations.exercise);
 
-    if (!exerciseWithRelations.exercise.allowMultipleAttempts) {
+    if (exerciseWithRelations.exercise.isExam && !examAttemptId) {
+      throw new AppError('An exam attempt is required', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    if (!exerciseWithRelations.exercise.isExam && examAttemptId) {
+      throw new AppError('This exercise is not an exam', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    if (!exerciseWithRelations.exercise.isExam && !exerciseWithRelations.exercise.allowMultipleAttempts) {
       const alreadySubmitted = await hasSubmission(exerciseId, submittedBy);
       if (alreadySubmitted) {
         throw new AppError('This exercise allows only one submission', ErrorCodes.VALIDATION_ERROR, 400);
@@ -577,7 +587,8 @@ export async function createSubmissionService(
     const gradingState: SubmissionGradingState =
       overallStatus === 'manual_required' || overallStatus === 'hybrid' ? 'awaiting_manual' : 'queued';
 
-    const submissionData: TNewSubmission = {
+    const submissionData: TNewSubmission & { exerciseId: string; submittedBy: string } = {
+      id: randomUUID(),
       courseId,
       exerciseId,
       submittedBy,
@@ -586,8 +597,6 @@ export async function createSubmissionService(
       overallStatus,
       total: 0
     };
-
-    let submission = await createSubmission(submissionData);
 
     const questionById = new Map(
       exerciseWithRelations.questions.map((q) => {
@@ -654,7 +663,7 @@ export async function createSubmissionService(
       answerByQuestionId.set(ans.questionId, answerData);
 
       answerRows.push({
-        submissionId: submission.id,
+        submissionId: submissionData.id,
         questionId: ans.questionId,
         groupMemberId: submittedBy,
         answerData
@@ -669,7 +678,7 @@ export async function createSubmissionService(
         if (q.id == null) continue;
         if (!answeredIds.has(q.id)) {
           answerRows.push({
-            submissionId: submission.id,
+            submissionId: submissionData.id,
             questionId: q.id,
             groupMemberId: submittedBy,
             answerData: null
@@ -678,7 +687,20 @@ export async function createSubmissionService(
       }
     }
 
-    const insertedAnswers = answerRows.length > 0 ? await insertQuestionAnswersBatch(answerRows) : [];
+    let submission: TSubmission;
+    let insertedAnswers: TQuestionAnswer[];
+    if (exerciseWithRelations.exercise.isExam) {
+      const result = await createExamSubmission(examAttemptId!, submissionData, answerRows);
+      if (!result) {
+        throw new AppError('Exam attempt has expired or was already submitted', ErrorCodes.VALIDATION_ERROR, 403);
+      }
+
+      submission = result.submission;
+      insertedAnswers = result.insertedAnswers;
+    } else {
+      submission = await createSubmission(submissionData);
+      insertedAnswers = answerRows.length > 0 ? await insertQuestionAnswersBatch(answerRows) : [];
+    }
     await createVideoRecordingAssetUsages(insertedAnswers);
 
     if (shouldAutoGrade) {

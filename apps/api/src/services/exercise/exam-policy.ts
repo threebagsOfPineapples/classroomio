@@ -1,7 +1,22 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import type { getExercise } from '@cio/core/services/exercise/exercise';
+import { startExamAttempt } from '@cio/db/queries/exercise';
 
 type Exam = Awaited<ReturnType<typeof getExercise>>;
+
+export async function startExamAttemptService(exerciseId: string, groupMemberId: string) {
+  const attempt = await startExamAttempt(exerciseId, groupMemberId);
+  if (!attempt) {
+    throw new AppError('Exam is unavailable or the attempt limit has been reached', ErrorCodes.VALIDATION_ERROR, 403);
+  }
+
+  return {
+    id: attempt.id,
+    attemptNumber: attempt.attemptNumber,
+    startedAt: attempt.startedAt,
+    expiresAt: attempt.expiresAt
+  };
+}
 
 export function assertExamOpen(exercise: Pick<Exam, 'isExam' | 'opensAt' | 'closesAt'>, now = new Date()) {
   if (!exercise.isExam) return;

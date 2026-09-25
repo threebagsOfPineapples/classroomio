@@ -1,6 +1,6 @@
 {
-  "id": "d7c7a50d-c3ab-48be-abd3-6bd6b89b78e0",
-  "prevId": "aa0257f4-28d2-4d08-a10c-31c377e1e505",
+  "id": "5bc83b3f-5d39-4c11-b1bb-1214821ff0e1",
+  "prevId": "b7e09514-6328-4626-895b-e5d13fbf9719",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -6042,6 +6042,117 @@
       },
       "isRLSEnabled": false
     },
+    "public.exam_attempt": {
+      "name": "exam_attempt",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "exercise_id": {
+          "name": "exercise_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "group_member_id": {
+          "name": "group_member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempt_number": {
+          "name": "attempt_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exam_attempt_exercise_id_fkey": {
+          "name": "exam_attempt_exercise_id_fkey",
+          "tableFrom": "exam_attempt",
+          "tableTo": "exercise",
+          "columnsFrom": ["exercise_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "exam_attempt_group_member_id_fkey": {
+          "name": "exam_attempt_group_member_id_fkey",
+          "tableFrom": "exam_attempt",
+          "tableTo": "groupmember",
+          "columnsFrom": ["group_member_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "exam_attempt_submission_id_fkey": {
+          "name": "exam_attempt_submission_id_fkey",
+          "tableFrom": "exam_attempt",
+          "tableTo": "submission",
+          "columnsFrom": ["submission_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exam_attempt_member_number_unique": {
+          "name": "exam_attempt_member_number_unique",
+          "nullsNotDistinct": false,
+          "columns": ["exercise_id", "group_member_id", "attempt_number"]
+        },
+        "exam_attempt_submission_unique": {
+          "name": "exam_attempt_submission_unique",
+          "nullsNotDistinct": false,
+          "columns": ["submission_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "exam_attempt_number_valid": {
+          "name": "exam_attempt_number_valid",
+          "value": "\"exam_attempt\".\"attempt_number\" > 0"
+        },
+        "exam_attempt_expiry_valid": {
+          "name": "exam_attempt_expiry_valid",
+          "value": "\"exam_attempt\".\"expires_at\" > \"exam_attempt\".\"started_at\""
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.exercise": {
       "name": "exercise",
       "schema": "",
@@ -6142,6 +6253,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "max_attempts": {
+          "name": "max_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "duration_minutes": {
+          "name": "duration_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "section_display_mode": {
           "name": "section_display_mode",
           "type": "varchar",
@@ -6228,6 +6352,14 @@
         "exercise_exam_window_valid": {
           "name": "exercise_exam_window_valid",
           "value": "NOT \"exercise\".\"is_exam\" OR (\"exercise\".\"opens_at\" IS NOT NULL AND \"exercise\".\"closes_at\" IS NOT NULL AND \"exercise\".\"closes_at\" > \"exercise\".\"opens_at\")"
+        },
+        "exercise_max_attempts_valid": {
+          "name": "exercise_max_attempts_valid",
+          "value": "\"exercise\".\"max_attempts\" > 0"
+        },
+        "exercise_duration_minutes_valid": {
+          "name": "exercise_duration_minutes_valid",
+          "value": "\"exercise\".\"duration_minutes\" IS NULL OR \"exercise\".\"duration_minutes\" > 0"
         }
       },
       "isRLSEnabled": false

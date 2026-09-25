@@ -49,12 +49,16 @@
 
     saving = true;
 
-    const allowMultipleAttempts = !!$questionnaire.allowMultipleAttempts;
+    const allowMultipleAttempts = $questionnaire.isExam
+      ? ($questionnaire.maxAttempts ?? 1) > 1
+      : !!$questionnaire.allowMultipleAttempts;
     const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
     const passThreshold = $questionnaire.passThreshold ?? 100;
     const isExam = !!$questionnaire.isExam;
     const opensAt = $questionnaire.opensAt ?? null;
     const closesAt = $questionnaire.closesAt ?? null;
+    const maxAttempts = $questionnaire.maxAttempts ?? 1;
+    const durationMinutes = $questionnaire.durationMinutes ?? null;
     const slugPayload = isPublicCourse && slug ? slug : undefined;
 
     await exerciseApi.update(courseApi.course.id, exerciseId, {
@@ -62,6 +66,8 @@
       isExam,
       opensAt,
       closesAt,
+      maxAttempts,
+      durationMinutes,
       completionPolicy,
       passThreshold,
       slug: slugPayload
@@ -100,6 +106,25 @@
           value={localDateTime($questionnaire.closesAt)}
           onInputChange={(event) => updateExamDate('closesAt', event.currentTarget.value)}
         />
+        <InputField
+          type="number"
+          min="1"
+          label={$t('course.navItem.lessons.exercises.all_exercises.settings_exam_max_attempts')}
+          value={String($questionnaire.maxAttempts ?? 1)}
+          onInputChange={(event) =>
+            questionnaire.update((state) => ({ ...state, maxAttempts: Number(event.currentTarget.value) }))}
+        />
+        <InputField
+          type="number"
+          min="1"
+          label={$t('course.navItem.lessons.exercises.all_exercises.settings_exam_duration')}
+          value={$questionnaire.durationMinutes == null ? '' : String($questionnaire.durationMinutes)}
+          onInputChange={(event) =>
+            questionnaire.update((state) => ({
+              ...state,
+              durationMinutes: event.currentTarget.value ? Number(event.currentTarget.value) : null
+            }))}
+        />
         <p class="ui:text-muted-foreground text-sm">
           {$t('course.navItem.lessons.exercises.all_exercises.settings_exam_window_helper')}
         </p>
@@ -107,23 +132,27 @@
     </div>
   {/if}
 
-  <div class="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
-    <div class="space-y-1">
-      <Label for="allow-multiple" class="text-sm font-medium dark:text-gray-100">
-        {$t('course.navItem.lessons.exercises.all_exercises.settings_allow_multiple')}
-      </Label>
-      <p class="ui:text-muted-foreground text-sm">
-        {$t('course.navItem.lessons.exercises.all_exercises.settings_allow_multiple_helper')}
-      </p>
+  {#if !$questionnaire.isExam}
+    <div
+      class="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700"
+    >
+      <div class="space-y-1">
+        <Label for="allow-multiple" class="text-sm font-medium dark:text-gray-100">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_allow_multiple')}
+        </Label>
+        <p class="ui:text-muted-foreground text-sm">
+          {$t('course.navItem.lessons.exercises.all_exercises.settings_allow_multiple_helper')}
+        </p>
+      </div>
+      <Switch
+        id="allow-multiple"
+        checked={!!$questionnaire.allowMultipleAttempts}
+        onCheckedChange={(checked) => {
+          questionnaire.update((q) => ({ ...q, allowMultipleAttempts: checked }));
+        }}
+      />
     </div>
-    <Switch
-      id="allow-multiple"
-      checked={!!$questionnaire.allowMultipleAttempts}
-      onCheckedChange={(checked) => {
-        questionnaire.update((q) => ({ ...q, allowMultipleAttempts: checked }));
-      }}
-    />
-  </div>
+  {/if}
 
   <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
     <Label class="mb-2 block text-sm font-medium dark:text-gray-100">

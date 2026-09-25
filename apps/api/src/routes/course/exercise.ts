@@ -41,7 +41,7 @@ import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-member-or-automation-key';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/services/submission';
-import { assertExamOpen, redactExamAnswers } from '@api/services/exercise/exam-policy';
+import { assertExamOpen, redactExamAnswers, startExamAttemptService } from '@api/services/exercise/exam-policy';
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
@@ -287,6 +287,35 @@ export const exerciseRouter = new Hono()
       return handleError(c, error, 'Failed to delete exercise');
     }
   })
+  .post(
+    '/:exerciseId/attempt',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId } = c.req.valid('param');
+        const groupMemberId = await getGroupMemberIdByCourseAndProfile(courseId, user.id);
+        if (!groupMemberId) {
+          return c.json({ success: false, error: 'User is not a member of this course' }, 403);
+        }
+
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
+
+        const attempt = await startExamAttemptService(exerciseId, groupMemberId);
+        return c.json({ success: true, data: attempt }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to start exam attempt');
+      }
+    }
+  )
   // Exercise Submission routes
   .post(
     '/:exerciseId/submission',
@@ -299,7 +328,7 @@ export const exerciseRouter = new Hono()
         const user = c.get('user')!;
         const courseId = c.req.param('courseId')!;
         const { exerciseId } = c.req.valid('param');
-        const { answers } = c.req.valid('json');
+        const { answers, examAttemptId } = c.req.valid('json');
 
         const groupMemberId = await getGroupMemberIdByCourseAndProfile(courseId, user.id);
         if (!groupMemberId) {
@@ -313,7 +342,7 @@ export const exerciseRouter = new Hono()
           type: ContentType.Exercise
         });
 
-        const submission = await createSubmissionService(courseId, exerciseId, groupMemberId, answers);
+        const submission = await createSubmissionService(courseId, exerciseId, groupMemberId, answers, examAttemptId);
 
         return c.json({ success: true, data: submission }, 201);
       } catch (error) {

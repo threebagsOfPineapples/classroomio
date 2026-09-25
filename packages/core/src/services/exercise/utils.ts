@@ -112,6 +112,8 @@ export function buildExerciseUpdateFields(data: TExerciseUpdate): Partial<TExerc
   if (data.isExam !== undefined) exerciseUpdate.isExam = data.isExam;
   if (data.opensAt !== undefined) exerciseUpdate.opensAt = data.opensAt;
   if (data.closesAt !== undefined) exerciseUpdate.closesAt = data.closesAt;
+  if (data.maxAttempts !== undefined) exerciseUpdate.maxAttempts = data.maxAttempts;
+  if (data.durationMinutes !== undefined) exerciseUpdate.durationMinutes = data.durationMinutes;
   if (data.completionPolicy !== undefined) exerciseUpdate.completionPolicy = data.completionPolicy;
   if (data.passThreshold !== undefined) exerciseUpdate.passThreshold = data.passThreshold;
   if (data.sectionDisplayMode !== undefined) exerciseUpdate.sectionDisplayMode = data.sectionDisplayMode;

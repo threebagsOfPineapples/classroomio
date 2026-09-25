@@ -445,7 +445,9 @@
         shouldIncludeDeleted: true
       });
 
-      const allowMultipleAttempts = !!$questionnaire.allowMultipleAttempts;
+      const allowMultipleAttempts = $questionnaire.isExam
+        ? ($questionnaire.maxAttempts ?? 1) > 1
+        : !!$questionnaire.allowMultipleAttempts;
       const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
       const passThreshold = $questionnaire.passThreshold ?? 100;
 
@@ -460,6 +462,8 @@
         isExam: $questionnaire.isExam,
         opensAt: $questionnaire.opensAt,
         closesAt: $questionnaire.closesAt,
+        maxAttempts: $questionnaire.maxAttempts,
+        durationMinutes: $questionnaire.durationMinutes,
         completionPolicy,
         passThreshold
       });

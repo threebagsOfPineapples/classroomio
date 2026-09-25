@@ -236,6 +236,8 @@ export const ZExerciseUpdate = z.object({
   isExam: z.boolean().optional(),
   opensAt: z.iso.datetime({ offset: true }).nullable().optional(),
   closesAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  maxAttempts: z.number().int().min(1).optional(),
+  durationMinutes: z.number().int().min(1).nullable().optional(),
   slug: ZSlug.optional(),
   questions: z.array(ZExerciseUpdateQuestion).optional(),
   sections: z.array(ZExerciseSection).optional(),
@@ -259,6 +261,7 @@ export type TExerciseListQuery = z.infer<typeof ZExerciseListQuery>;
 // Exercise Submission Schemas
 export const ZExerciseSubmissionCreate = z.object({
   exerciseId: z.string().min(1),
+  examAttemptId: z.uuid().optional(),
   answers: z
     .array(
       z.object({

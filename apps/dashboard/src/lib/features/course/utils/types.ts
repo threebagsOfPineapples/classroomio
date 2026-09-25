@@ -217,6 +217,8 @@ export type UpdateExerciseRequest = (typeof classroomio.course)[':courseId']['ex
 export type DeleteExerciseRequest = (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['$delete'];
 export type SubmitExerciseRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['submission']['$post'];
+export type StartExamAttemptRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['attempt']['$post'];
 
 // Newsfeed types
 export type ListNewsfeedRequest = (typeof classroomio.course)[':courseId']['newsfeed']['$get'];

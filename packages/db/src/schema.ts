@@ -1287,6 +1287,8 @@ export const exercise = pgTable(
     isExam: boolean('is_exam').default(false).notNull(),
     opensAt: timestamp('opens_at', { withTimezone: true, mode: 'string' }),
     closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }),
+    maxAttempts: integer('max_attempts').default(1).notNull(),
+    durationMinutes: integer('duration_minutes'),
     sectionDisplayMode: varchar('section_display_mode').default('one_question'),
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),
@@ -1312,7 +1314,9 @@ export const exercise = pgTable(
     check(
       'exercise_exam_window_valid',
       sql`NOT ${table.isExam} OR (${table.opensAt} IS NOT NULL AND ${table.closesAt} IS NOT NULL AND ${table.closesAt} > ${table.opensAt})`
-    )
+    ),
+    check('exercise_max_attempts_valid', sql`${table.maxAttempts} > 0`),
+    check('exercise_duration_minutes_valid', sql`${table.durationMinutes} IS NULL OR ${table.durationMinutes} > 0`)
   ]
 );
 
@@ -1378,6 +1382,44 @@ export const groupmember = pgTable(
     unique('unique_entries').on(table.groupId, table.profileId, table.email),
     unique('unique_group_email').on(table.groupId, table.email),
     unique('unique_group_profile').on(table.groupId, table.profileId)
+  ]
+);
+
+export const examAttempt = pgTable(
+  'exam_attempt',
+  {
+    id: uuid()
+      .default(sql`gen_random_uuid()`)
+      .primaryKey()
+      .notNull(),
+    exerciseId: uuid('exercise_id').notNull(),
+    groupMemberId: uuid('group_member_id').notNull(),
+    attemptNumber: integer('attempt_number').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }).notNull(),
+    submittedAt: timestamp('submitted_at', { withTimezone: true, mode: 'string' }),
+    submissionId: uuid('submission_id')
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.exerciseId],
+      foreignColumns: [exercise.id],
+      name: 'exam_attempt_exercise_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.groupMemberId],
+      foreignColumns: [groupmember.id],
+      name: 'exam_attempt_group_member_id_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.submissionId],
+      foreignColumns: [submission.id],
+      name: 'exam_attempt_submission_id_fkey'
+    }).onDelete('set null'),
+    unique('exam_attempt_member_number_unique').on(table.exerciseId, table.groupMemberId, table.attemptNumber),
+    unique('exam_attempt_submission_unique').on(table.submissionId),
+    check('exam_attempt_number_valid', sql`${table.attemptNumber} > 0`),
+    check('exam_attempt_expiry_valid', sql`${table.expiresAt} > ${table.startedAt}`)
   ]
 );
 
