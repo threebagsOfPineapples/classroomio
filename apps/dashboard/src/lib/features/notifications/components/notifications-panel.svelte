@@ -2,6 +2,8 @@
   import * as Empty from '@cio/ui/base/empty';
   import * as UnderlineTabs from '@cio/ui/custom/underline-tabs';
   import EyeIcon from '@lucide/svelte/icons/eye';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { pendingInvitesApi } from '$features/invite/api/pending-invites.svelte';
   import PendingInviteModal from '$features/invite/components/pending-invite-modal.svelte';
   import { t } from '$lib/utils/functions/translations';
@@ -28,7 +30,11 @@
     if (item.kind === 'org_invite') {
       selectedInviteId = item.sourceId;
       isModalOpen = true;
+      return;
     }
+
+    notificationsApi.markTrainingRead(item.sourceId);
+    void goto(resolve('/lms/training/[enrollmentId]', { enrollmentId: item.sourceId }));
   }
 
   /**

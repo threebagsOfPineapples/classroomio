@@ -633,7 +633,12 @@
       },
       "people": {
         "add": "添加",
-        "title": "学员与讲师"
+        "title": "学员与讲师",
+        "roles": {
+          "admin": "管理员",
+          "tutor": "讲师",
+          "student": "学员"
+        }
       },
       "settings": {
         "heading": "课程设置",
@@ -916,5 +921,31 @@
     "label": "删除",
     "no": "否",
     "yes": "是"
+  },
+  "notifications": {
+    "training_assignment": {
+      "heading": "培训任务已分配",
+      "body": "您已加入“{planName}”培训计划。"
+    },
+    "title": "通知",
+    "empty_title": "暂无通知",
+    "empty_description": "有新通知时会显示在这里。",
+    "refresh": "刷新",
+    "pending_invite": {
+      "heading": "组织邀请",
+      "body": "{orgName} 邀请您以{role}身份加入。",
+      "action": "查看邀请"
+    },
+    "latest": "最新通知",
+    "only_show_unread": "只看未读",
+    "unread": "未读",
+    "more_options": "更多操作",
+    "give_feedback": "反馈意见",
+    "tabs": {
+      "direct": "通知",
+      "watching": "关注"
+    },
+    "watching_empty_title": "暂无关注动态",
+    "watching_empty_description": "您关注的内容有更新时会显示在这里。"
   }
 }

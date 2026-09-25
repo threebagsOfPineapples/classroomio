@@ -8,6 +8,7 @@
   import Search from '$features/ui/search.svelte';
   import AppBreadcrumbs from './app-breadcrumbs.svelte';
   import { currentOrg } from '$lib/utils/store/org';
+  import { profile } from '$lib/utils/store/user';
   import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import { notificationsApi } from '$features/notifications/api/notifications.svelte';
   import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
@@ -21,6 +22,12 @@
     if (!siteName) return;
 
     setupProgressApi.fetchSetupProgress(siteName);
+  });
+
+  $effect(() => {
+    if (!$currentOrg.id || !$profile.id) return;
+
+    void notificationsApi.loadTraining($currentOrg.id, $profile.id);
   });
 
   onMount(() => {

@@ -5608,6 +5608,10 @@
     "tabs": {
       "direct": "Bezpośrednio",
       "watching": "Obserwowanie"
+    },
+    "training_assignment": {
+      "heading": "Training assigned",
+      "body": "You have been assigned to the {planName} training plan."
     }
   },
   "export": {

@@ -5591,7 +5591,11 @@
       "watching": "Watching"
     },
     "watching_empty_title": "Nothing to watch yet",
-    "watching_empty_description": "Updates on items you follow will show up here."
+    "watching_empty_description": "Updates on items you follow will show up here.",
+    "training_assignment": {
+      "heading": "Training assigned",
+      "body": "You have been assigned to the {planName} training plan."
+    }
   },
   "report": {
     "menu": "Report",

@@ -2,7 +2,7 @@
   import * as Avatar from '@cio/ui/base/avatar';
   import { calDateDiff } from '$lib/utils/functions/date';
   import { shortenName } from '$lib/utils/functions/string';
-  import { t } from '$lib/utils/functions/translations';
+  import { locale, t } from '$lib/utils/functions/translations';
   import type { NotificationItem, NotificationText } from '../utils/types';
 
   interface Props {
@@ -41,7 +41,15 @@
   <div class="min-w-0 space-y-0.5">
     <p class="text-sm font-medium">{resolveText(item.title)}</p>
     <p class="ui:text-muted-foreground text-xs">{resolveText(item.body)}</p>
-    <p class="ui:text-muted-foreground text-xs">{calDateDiff(item.createdAt)}</p>
+    <p class="ui:text-muted-foreground text-xs">
+      {$locale === 'zh'
+        ? new Intl.DateTimeFormat('zh-CN', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+            timeZone: 'Asia/Shanghai'
+          }).format(new Date(item.createdAt))
+        : calDateDiff(item.createdAt)}
+    </p>
   </div>
 
   {#if item.unread}
