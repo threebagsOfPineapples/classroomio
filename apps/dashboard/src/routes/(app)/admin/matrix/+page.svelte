@@ -2,6 +2,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
+  import { trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
@@ -56,7 +57,7 @@
                   <th scope="row" class="p-3 font-medium">{employee.name}</th>
                   {#each employee.cells as cell (cell.planId)}
                     <td class="p-3">
-                      {cell.status ?? $t('enterprise.assessment.not_assigned')}
+                      {$t(trainingStatusKey(cell.status))}
                       {#if cell.finalScore !== null}<span class="ui:text-muted-foreground">
                           · {cell.finalScore}</span
                         >{/if}

@@ -17,7 +17,7 @@ import type { TUser } from '@cio/db/types';
 import { authClient } from '$lib/utils/services/auth/client';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { handleLocaleChange } from '$lib/utils/functions/translations';
+import { getPersistedLocale, handleLocaleChange } from '$lib/utils/functions/translations';
 import { identifyPosthogUser } from '$lib/utils/services/posthog';
 import { identifyUserJotUser } from '$lib/utils/services/userjot';
 import { isOrgStudent, globalStore } from '$lib/utils/store/app';
@@ -226,7 +226,9 @@ class AppInitApi extends BaseApi {
     }));
 
     profile.set(this.data.profile);
-    handleLocaleChange(this.data.profile.locale ?? 'en');
+    const profileLocale = this.data.profile.locale;
+    const preferredLocale = getPersistedLocale() ?? (profileLocale === 'en' ? 'zh' : profileLocale) ?? 'zh';
+    handleLocaleChange(preferredLocale);
 
     this.setOrgStore(params);
   }

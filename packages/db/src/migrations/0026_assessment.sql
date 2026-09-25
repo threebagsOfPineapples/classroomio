@@ -107,3 +107,5 @@ ALTER TABLE "training_evaluation" ADD CONSTRAINT "training_evaluation_enrollment
 CREATE INDEX "assessment_adjustment_score_idx" ON "assessment_adjustment" USING btree ("score_id");--> statement-breakpoint
 CREATE INDEX "assessment_input_enrollment_item_idx" ON "assessment_input" USING btree ("enrollment_id","item_id");--> statement-breakpoint
 CREATE INDEX "assessment_item_scheme_idx" ON "assessment_item" USING btree ("scheme_id");
+--> statement-breakpoint
+ALTER TYPE "public"."LOCALE" ADD VALUE 'zh';

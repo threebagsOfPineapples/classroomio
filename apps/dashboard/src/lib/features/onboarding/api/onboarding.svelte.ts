@@ -95,7 +95,7 @@ export class OnboardingApi extends BaseApiWithErrors {
       logContext: 'submitting organization setup',
       onSuccess: async (result) => {
         profile.set(result.data);
-        handleLocaleChange(result.data.locale ?? 'en');
+        handleLocaleChange(result.data.locale ?? 'zh');
 
         const welcomePopup = `${result.data.isEmailVerified}`;
         const orgPath = resolve(`/org/${data.siteName}?welcomePopup=${welcomePopup}`, {});

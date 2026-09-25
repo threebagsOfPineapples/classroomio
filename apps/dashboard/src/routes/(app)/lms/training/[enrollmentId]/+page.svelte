@@ -5,6 +5,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import type { TrainingEvaluationDraft } from '$lib/features/enterprise/utils/types';
+  import { trainingResultKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
@@ -95,7 +96,11 @@
                 {$t('enterprise.assessment.recalculate')}
               </Button>
             {/if}
-            <p>{assessmentApi.detail.score?.finalScore ?? '—'} · {assessmentApi.detail.score?.result ?? 'PENDING'}</p>
+            <p>
+              {assessmentApi.detail.score?.finalScore ?? '—'} · {$t(
+                trainingResultKey(assessmentApi.detail.score?.result ?? null)
+              )}
+            </p>
             <p>
               {$t('enterprise.my_training.progress')}: {assessmentApi.detail.enrollment.progressPercent === null
                 ? '—'

@@ -17,13 +17,12 @@ interface LoadOutput {
   skipAuth: boolean;
   org: PublicOrg | null;
   baseMetaTags: MetaTagsProps;
-  serverLang: string;
   localeCookie: string;
   locals: App.Locals;
   uploadLimits: UploadLimits;
 }
 
-export const load = async ({ url, cookies, request, locals }): Promise<LoadOutput> => {
+export const load = async ({ url, cookies, locals }): Promise<LoadOutput> => {
   const loadStart = performance.now();
   const debugPlay = cookies.get('debugPlay');
 
@@ -52,7 +51,6 @@ export const load = async ({ url, cookies, request, locals }): Promise<LoadOutpu
     skipAuth: orgSiteInfo.subdomain === 'play' || debugPlay === 'true',
     org: orgSiteInfo.org,
     baseMetaTags: await getBaseMetaTags(url, orgSiteInfo),
-    serverLang: request.headers?.get('accept-language') || '',
     localeCookie: cookies.get('classroomio_locale') || '',
     locals,
     uploadLimits: getUploadLimits()

@@ -4,7 +4,7 @@ import { ZComplianceSettings, ZCourseMetadata } from '../course/course';
 import { ZCourseType } from '../course/course-type';
 import { ZExerciseQuestionTypeId } from '../exercise/exercise';
 
-const ZSupportedLocale = z.enum(['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru', 'es', 'pl', 'da']);
+const ZSupportedLocale = z.enum(['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru', 'es', 'pl', 'da', 'zh']);
 const LESSON_BODY_HTML_DESCRIPTION =
   'Lesson body HTML only. Do not include the lesson title. Do not use h1 or h2 anywhere in lessonLanguages[].content. Start headings at h3 because that is the highest heading level allowed in lesson content.';
 

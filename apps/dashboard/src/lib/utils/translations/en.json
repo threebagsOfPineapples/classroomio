@@ -5735,6 +5735,10 @@
       "popular_courses": "Popular courses",
       "unfinished_plans": "Unfinished training",
       "not_assigned": "Not assigned",
+      "not_started": "Not started",
+      "expired": "Expired",
+      "pending": "Pending",
+      "makeup_required": "Makeup required",
       "matrix": "Training matrix",
       "from": "From",
       "to": "To"

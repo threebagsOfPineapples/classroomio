@@ -1,6 +1,7 @@
 import type { TLocale } from '@cio/db/types';
 
 export const LANGUAGE: Record<TLocale, string> = {
+  zh: '简体中文',
   da: 'Danish',
   de: 'German',
   en: 'English',

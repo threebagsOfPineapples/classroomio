@@ -17,7 +17,7 @@
     fullname: '',
     orgName: '',
     siteName: '',
-    locale: 'en'
+    locale: 'zh'
   });
   let isSiteNameTouched = $state(false);
 

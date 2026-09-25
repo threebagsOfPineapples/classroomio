@@ -1,11 +1,23 @@
 import type { TLocale } from '@cio/db/types';
 import i18n from '@sveltekit-i18n/base';
 import parser from '@sveltekit-i18n/parser-icu';
+import merge from 'lodash/merge';
 import { writable } from 'svelte/store';
+
+async function loadChineseTranslations() {
+  const english = (await import('../translations/en.json')).default;
+  const chinese = (await import('../translations/zh.json')).default;
+  return merge({}, english, chinese);
+}
 
 export const config = {
   parser: parser(),
   loaders: [
+    {
+      locale: 'zh',
+      key: '',
+      loader: loadChineseTranslations
+    },
     {
       locale: 'en',
       key: '',
@@ -61,9 +73,13 @@ export const config = {
 
 export const { t, loading, locales, locale, initialized, translations, loadTranslations } = new i18n(config);
 
-export const selectedLocale = writable<string>('en');
+export const selectedLocale = writable<string>('zh');
 export const LOCALE_STORAGE_KEY = 'classroomio_locale';
 export const LOCALE_COOKIE_KEY = 'classroomio_locale';
+
+function isSupportedLocale(value: string): value is TLocale {
+  return config.loaders.some((loader) => loader.locale === value);
+}
 
 /*
   `@sveltekit-i18n/base` keeps its loading state in a process-global singleton: a
@@ -106,6 +122,7 @@ export async function ensureTranslations(targetLocale: string): Promise<void> {
   // `locale.set` re-enters the library's loader trigger; `forceSet` just marks
   // the active locale for the strings we already hold.
   locale.forceSet(targetLocale);
+  if (typeof document !== 'undefined') document.documentElement.lang = targetLocale === 'zh' ? 'zh-CN' : targetLocale;
 }
 
 export function handleLocaleChange(newLocale: TLocale) {
@@ -113,6 +130,7 @@ export function handleLocaleChange(newLocale: TLocale) {
     return;
   }
 
+  if (typeof document !== 'undefined') document.documentElement.lang = newLocale === 'zh' ? 'zh-CN' : newLocale;
   locale.set(newLocale);
 
   selectedLocale.set(newLocale);
@@ -120,14 +138,14 @@ export function handleLocaleChange(newLocale: TLocale) {
   persistLocale(newLocale);
 }
 
-export function getPersistedLocale(): string | null {
+export function getPersistedLocale(): TLocale | null {
   if (typeof window === 'undefined') {
     return null;
   }
 
   try {
     const savedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (savedLocale) {
+    if (savedLocale && isSupportedLocale(savedLocale)) {
       return savedLocale;
     }
   } catch (error) {
@@ -135,7 +153,8 @@ export function getPersistedLocale(): string | null {
   }
 
   const cookieMatch = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE_KEY}=([^;]*)`));
-  return cookieMatch?.[1] ? decodeURIComponent(cookieMatch[1]) : null;
+  const savedCookie = cookieMatch?.[1] ? decodeURIComponent(cookieMatch[1]) : null;
+  return savedCookie && isSupportedLocale(savedCookie) ? savedCookie : null;
 }
 
 function persistLocale(newLocale: TLocale) {

@@ -6,6 +6,7 @@
   import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
   import { myTrainingApi } from '$lib/features/enterprise/api/my-training.svelte';
   import { getTrainingCourseProgress, getTrainingPlanProgress } from '$lib/features/enterprise/utils/my-training-utils';
+  import { trainingResultKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { Progress } from '@cio/ui/base/progress';
   import * as Page from '@cio/ui/base/page';
@@ -89,7 +90,9 @@
               <div class="mt-5 space-y-4 border-t pt-4">
                 {#if assignment.description}<p class="text-sm">{assignment.description}</p>{/if}
                 <p class="text-sm">
-                  {$t('enterprise.assessment.score')}: {assignment.finalScore ?? '—'} · {assignment.result}
+                  {$t('enterprise.assessment.score')}: {assignment.finalScore ?? '—'} · {$t(
+                    trainingResultKey(assignment.result)
+                  )}
                 </p>
                 <Button href={`/lms/training/${assignment.enrollmentId}`} variant="secondary" size="sm">
                   {$t('enterprise.assessment.details')}

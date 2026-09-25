@@ -15181,7 +15181,7 @@
     "public.LOCALE": {
       "name": "LOCALE",
       "schema": "public",
-      "values": ["en", "hi", "fr", "pt", "de", "vi", "ru", "es", "pl", "da"]
+      "values": ["en", "hi", "fr", "pt", "de", "vi", "ru", "es", "pl", "da", "zh"]
     },
     "public.ORGANIZATION_API_KEY_TYPE": {
       "name": "ORGANIZATION_API_KEY_TYPE",

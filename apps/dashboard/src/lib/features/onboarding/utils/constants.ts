@@ -4,6 +4,7 @@ export const ONBOARDING_STEPS = {
 } as const;
 
 export const DROPDOWN_ITEMS = [
+  { id: 'zh', text: '简体中文' },
   { id: 'de', text: 'German' },
   { id: 'en', text: 'English' },
   { id: 'es', text: 'Spanish' },

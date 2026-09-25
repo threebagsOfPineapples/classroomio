@@ -3,6 +3,7 @@
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
+  import { trainingResultKey, trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
@@ -73,14 +74,16 @@
                 <div>
                   <h2 class="text-lg font-semibold">{record.planName}</h2>
                   <p class="ui:text-muted-foreground text-sm">
-                    {new Date(record.assignedAt).toLocaleDateString()} · {record.status}
+                    {new Date(record.assignedAt).toLocaleDateString()} · {$t(trainingStatusKey(record.status))}
                   </p>
                 </div>
                 <Button href={`/lms/training/${record.enrollmentId}`} variant="secondary" size="sm">
                   {$t('enterprise.assessment.details')}
                 </Button>
               </div>
-              <p>{$t('enterprise.assessment.score')}: {record.finalScore ?? '—'} · {record.result}</p>
+              <p>
+                {$t('enterprise.assessment.score')}: {record.finalScore ?? '—'} · {$t(trainingResultKey(record.result))}
+              </p>
               <div class="space-y-1">
                 {#each record.courses as course (course.id)}
                   <p class="text-sm">

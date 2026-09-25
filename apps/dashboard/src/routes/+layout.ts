@@ -3,10 +3,9 @@ import { config, ensureTranslations, getPersistedLocale } from '$lib/utils/funct
 const SUPPORTED_LANGUAGES = config?.loaders?.map((loader) => loader.locale) || [];
 
 export const load = async ({ data }) => {
-  const serverLang = data?.serverLang?.split?.('-')?.[0] || 'en';
   const persistedLocale = data?.localeCookie || getPersistedLocale();
-
-  const userLocale = persistedLocale || data?.locals?.profile?.locale || getInitialLocale(serverLang);
+  const profileLocale = data?.locals?.profile?.locale;
+  const userLocale = persistedLocale || (profileLocale === 'en' ? 'zh' : profileLocale) || 'zh';
 
   const initLocale = getInitialLocale(userLocale);
   const translationsStart = performance.now();
@@ -22,5 +21,5 @@ function getInitialLocale(lang: string): string {
 
   if (SUPPORTED_LANGUAGES.includes(locale)) return locale;
 
-  return 'en';
+  return 'zh';
 }

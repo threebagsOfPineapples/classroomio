@@ -5,6 +5,7 @@
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
   import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
   import type { AssessmentDraft } from '$lib/features/enterprise/utils/types';
+  import { trainingResultKey, trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
@@ -361,7 +362,7 @@
                   class="w-full justify-between"
                   onclick={() => selectEnrollment(row.enrollmentId)}
                 >
-                  <span>{row.memberEmail ?? row.memberId} · {row.status}</span>
+                  <span>{row.memberEmail ?? row.memberId} · {$t(trainingStatusKey(row.status))}</span>
                   <span>{row.finalScore ?? '—'}</span>
                 </Button>
               {/each}
@@ -371,8 +372,9 @@
               <section class="space-y-4 rounded-lg border p-5">
                 <h2 class="text-lg font-semibold">{$t('enterprise.assessment.details')}</h2>
                 <p>
-                  {$t('enterprise.assessment.score')}: {assessmentApi.detail.score?.finalScore ?? '—'} · {assessmentApi
-                    .detail.score?.result ?? 'PENDING'}
+                  {$t('enterprise.assessment.score')}: {assessmentApi.detail.score?.finalScore ?? '—'} · {$t(
+                    trainingResultKey(assessmentApi.detail.score?.result ?? null)
+                  )}
                 </p>
                 <Button variant="secondary" disabled={assessmentApi.busy} onclick={recalculate}
                   >{$t('enterprise.assessment.recalculate')}</Button
