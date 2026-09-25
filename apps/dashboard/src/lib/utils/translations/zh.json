@@ -199,7 +199,21 @@
     },
     "reset_password": {
       "heading": "设置新密码",
-      "description": "请输入新密码"
+      "description": "请输入新密码",
+      "invalid_token": "重置链接无效或已过期",
+      "submit": "重置密码"
+    },
+    "forgot_password": {
+      "description": "我们会向您的邮箱发送密码重置链接。",
+      "email_sent": "邮件已发送",
+      "sent_description": "密码重置链接已发送至 {email}。请查看收件箱和垃圾邮件文件夹。",
+      "send_link": "发送重置链接"
+    },
+    "auth_failure": {
+      "title": "操作未完成",
+      "description": "发生意外错误，请重试或返回首页。",
+      "code": "错误代码",
+      "back_home": "返回首页"
     }
   },
   "profileMenu": {

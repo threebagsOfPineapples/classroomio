@@ -4291,9 +4291,23 @@
     },
     "reset_password": {
       "heading": "Nova senha",
-      "description": "Insira os detalhes da sua nova senha"
+      "description": "Insira os detalhes da sua nova senha",
+      "invalid_token": "Invalid or expired reset link",
+      "submit": "Reset password"
     },
-    "continue_with": "Ou continue com"
+    "continue_with": "Ou continue com",
+    "forgot_password": {
+      "description": "We will send a password reset link to your email.",
+      "email_sent": "Email sent",
+      "sent_description": "We sent a password reset link to {email}. Check your inbox and spam folder.",
+      "send_link": "Send reset link"
+    },
+    "auth_failure": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred. Please try again or return to the home page.",
+      "code": "Error code",
+      "back_home": "Go home"
+    }
   },
   "app": {
     "search": {

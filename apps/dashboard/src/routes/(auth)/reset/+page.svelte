@@ -26,7 +26,7 @@
   onMount(() => {
     if (token) return;
 
-    snackbar.error('Invalid Token');
+    snackbar.error('login.reset_password.invalid_token');
 
     setTimeout(() => {
       goto(resolve('/login', {}));
@@ -37,7 +37,7 @@
 </script>
 
 <svelte:head>
-  <title>Reset Password - ClassroomIO</title>
+  <title>{$t('login.reset_password.heading')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <AuthUI
@@ -89,7 +89,7 @@
     </Field.Field>
 
     <Button type="submit" disabled={isSubmitDisabled || resetApi.isLoading} loading={resetApi.isLoading} class="w-full">
-      Reset Password
+      {$t('login.reset_password.submit')}
     </Button>
   </div>
 </AuthUI>

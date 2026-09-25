@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { t } from '$lib/utils/functions/translations';
   import { Button } from '@cio/ui/base/button';
   import { Empty } from '@cio/ui/custom/empty';
@@ -47,8 +48,8 @@
 </script>
 
 <svelte:head>
-  <title>Email Verification Error - ClassroomIO</title>
-  <meta name="description" content="There was an issue verifying your email address." />
+  <title>{title} · {$t('enterprise.company_name')}</title>
+  <meta name="description" content={message} />
 </svelte:head>
 
 <Empty
@@ -79,7 +80,7 @@
     <Button onclick={handleSupport} variant="ghost">
       {$t('email_verification.actions.contact_support')}
     </Button>
-    <Button onclick={() => goto('/')}>
+    <Button onclick={() => goto(resolve('/', {}))}>
       {$t('email_verification.actions.back_to_dashboard')}
     </Button>
   </div>
