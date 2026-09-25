@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   withAssessmentTransaction: vi.fn(),
   lockTrainingPlan: vi.fn(),
   getTrainingPlan: vi.fn(),
+  listTrainingPlans: vi.fn(),
   listAssessmentEnrollments: vi.fn(),
   listArchiveCourseEvidence: vi.fn(),
   listPublishedAssessmentEnrollmentsForCourse: vi.fn(),
@@ -57,11 +58,13 @@ vi.mock('@api/services/course/member-progress', () => ({
 }));
 vi.mock('@cio/db/queries/training-plan', () => ({
   lockTrainingPlan: mocks.lockTrainingPlan,
-  getTrainingPlan: mocks.getTrainingPlan
+  getTrainingPlan: mocks.getTrainingPlan,
+  listTrainingPlans: mocks.listTrainingPlans
 }));
 
 import {
   getTrainingArchiveSummary,
+  getTrainingMatrix,
   getTrainingStatistics,
   publishPlanAssessment,
   submitTrainingEvaluation,
@@ -75,6 +78,7 @@ describe('assessment publication and evaluation', () => {
     mocks.getEnterpriseEmployees.mockResolvedValue([{ member: { id: 7 } }, { member: { id: 8 } }]);
     mocks.listAssessmentEnrollments.mockResolvedValue([]);
     mocks.listArchiveCourseEvidence.mockResolvedValue([]);
+    mocks.listTrainingPlans.mockResolvedValue([]);
     mocks.withAssessmentTransaction.mockImplementation((callback) => callback({}));
     mocks.lockTrainingPlan.mockResolvedValue({ id: 'plan', status: 'PUBLISHED' });
     mocks.getTrainingPlan.mockResolvedValue({ id: 'plan' });
@@ -153,6 +157,64 @@ describe('assessment publication and evaluation', () => {
 
     const october = await getTrainingStatistics('org', 'admin', undefined, '2026-10-01', '2026-10-31');
     expect(october.monthlyTrend).toEqual([{ month: '2026-10', assigned: 0, completed: 1 }]);
+  });
+
+  it('limits department manager statistics to visible employees and rejects regular employees', async () => {
+    mocks.getEnterpriseOverview.mockResolvedValue({
+      canManage: false,
+      roles: ['DEPARTMENT_MANAGER'],
+      memberId: 7
+    });
+
+    await getTrainingStatistics('org', 'manager');
+    expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7, 8]);
+
+    mocks.getEnterpriseOverview.mockResolvedValue({ canManage: false, roles: ['EMPLOYEE'], memberId: 7 });
+    mocks.listAssessmentEnrollments.mockClear();
+    await expect(getTrainingStatistics('org', 'employee')).rejects.toMatchObject({ statusCode: 403 });
+    expect(mocks.listAssessmentEnrollments).not.toHaveBeenCalled();
+  });
+
+  it('shows department managers only plans assigned to their visible employees in the matrix', async () => {
+    mocks.getEnterpriseOverview.mockResolvedValue({
+      canManage: false,
+      roles: ['DEPARTMENT_MANAGER'],
+      memberId: 7
+    });
+    mocks.getEnterpriseEmployees.mockResolvedValue([
+      { member: { id: 7, status: 'ACTIVE', employmentStatus: 'ACTIVE', email: 'manager@example.com' } },
+      { member: { id: 8, status: 'ACTIVE', employmentStatus: 'ACTIVE', email: 'learner@example.com' } }
+    ]);
+    mocks.listTrainingPlans.mockResolvedValue([
+      { id: 'visible-plan', name: 'Visible', status: 'PUBLISHED' },
+      { id: 'other-plan', name: 'Other', status: 'PUBLISHED' }
+    ]);
+    mocks.listAssessmentEnrollments.mockResolvedValue([
+      {
+        enrollment: {
+          id: 'enrollment',
+          assignedAt: '2026-09-25T00:00:00.000Z',
+          completedAt: null,
+          status: 'NOT_STARTED',
+          progressPercent: null
+        },
+        plan: {
+          id: 'visible-plan',
+          name: 'Visible',
+          planType: 'MANDATORY',
+          endAt: '2026-12-31T00:00:00.000Z',
+          status: 'PUBLISHED'
+        },
+        member: { id: 8, email: 'learner@example.com', departmentId: 'managed' },
+        score: null,
+        evaluation: null
+      }
+    ]);
+
+    const matrix = await getTrainingMatrix('org', 'manager');
+    expect(matrix.plans).toEqual([{ id: 'visible-plan', name: 'Visible' }]);
+    expect(matrix.employees).toHaveLength(2);
+    expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7, 8]);
   });
 
   it('updates the assigned learner score when a native submission changes', async () => {

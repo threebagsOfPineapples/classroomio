@@ -53,7 +53,11 @@
     if (!organizationId) return;
 
     void enterpriseApi.load(organizationId).then((loaded) => {
-      if (loaded && $currentOrg.id === organizationId && enterpriseApi.overview?.canManage) {
+      if (
+        loaded &&
+        $currentOrg.id === organizationId &&
+        (enterpriseApi.overview?.canManage || enterpriseApi.overview?.roles.includes('DEPARTMENT_MANAGER'))
+      ) {
         void assessmentApi.loadStatistics(organizationId);
       }
     });
@@ -149,10 +153,14 @@
       </div>
     </Page.HeaderContent>
     <Page.Action>
-      <Button variant="secondary" href={resolve('/admin/plans')}>{$t('enterprise.plans.title')}</Button>
-      <Button variant="secondary" href={resolve('/admin/assessment')}>{$t('enterprise.assessment.title')}</Button>
-      <Button variant="secondary" href={resolve('/admin/matrix')}>{$t('enterprise.assessment.matrix')}</Button>
-      <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('enterprise.assessment.subtitle')}</Button>
+      {#if overview?.canManage}
+        <Button variant="secondary" href={resolve('/admin/plans')}>{$t('enterprise.plans.title')}</Button>
+        <Button variant="secondary" href={resolve('/admin/assessment')}>{$t('enterprise.assessment.title')}</Button>
+      {/if}
+      {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}
+        <Button variant="secondary" href={resolve('/admin/matrix')}>{$t('enterprise.assessment.matrix')}</Button>
+        <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('enterprise.assessment.subtitle')}</Button>
+      {/if}
     </Page.Action>
   </Page.Header>
 
@@ -163,7 +171,7 @@
       {#if loading}<p>{$t('enterprise.loading')}</p>{/if}
 
       {#if overview}
-        {#if overview.canManage}
+        {#if overview.canManage || overview.roles.includes('DEPARTMENT_MANAGER')}
           <section aria-label={$t('enterprise.assessment.title')} class="space-y-4 rounded-lg border p-5">
             {#if assessmentApi.error}<p role="alert">{assessmentApi.error}</p>{/if}
             {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}

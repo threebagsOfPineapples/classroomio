@@ -50,6 +50,15 @@ async function requireAssessmentManager(organizationId: string, profileId: strin
   return overview;
 }
 
+async function requireAssessmentReportReader(organizationId: string, profileId: string) {
+  const overview = await getEnterpriseOverview(organizationId, profileId);
+  if (!overview.canManage && !overview.roles.includes('DEPARTMENT_MANAGER')) {
+    throw new AppError('Training statistics access required', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
+  }
+
+  return overview;
+}
+
 async function requireVisibleEnrollment(organizationId: string, profileId: string, enrollmentId: string) {
   const row = await getAssessmentEnrollment(organizationId, enrollmentId);
   if (!row) assessmentError('Training enrollment not found', 404);
@@ -552,13 +561,17 @@ export async function getTrainingArchiveSummary(organizationId: string, profileI
 }
 
 export async function getTrainingMatrix(organizationId: string, profileId: string) {
-  await requireAssessmentManager(organizationId, profileId);
+  const overview = await requireAssessmentReportReader(organizationId, profileId);
   const [plans, employees, records] = await Promise.all([
     listTrainingPlans(organizationId),
     getEnterpriseEmployees(organizationId, profileId),
     getTrainingArchive(organizationId, profileId)
   ]);
-  const publishedPlans = plans.filter((plan) => plan.status !== 'DRAFT' && plan.status !== 'CANCELLED');
+  const visiblePlanIds = new Set(records.map((record) => record.planId));
+  const publishedPlans = plans.filter(
+    (plan) =>
+      plan.status !== 'DRAFT' && plan.status !== 'CANCELLED' && (overview.canManage || visiblePlanIds.has(plan.id))
+  );
   const byMemberAndPlan = new Map(records.map((record) => [`${record.memberId}:${record.planId}`, record]));
   return {
     plans: publishedPlans.map((plan) => ({ id: plan.id, name: plan.name })),
@@ -588,7 +601,8 @@ export async function getTrainingStatistics(
   from?: string,
   to?: string
 ) {
-  await requireAssessmentManager(organizationId, profileId);
+  await requireAssessmentReportReader(organizationId, profileId);
+
   const records = await getTrainingArchive(organizationId, profileId, undefined, planId);
   const fromTime = from ? Date.parse(`${from}T00:00:00+08:00`) : -Infinity;
   const toTime = to ? Date.parse(`${to}T00:00:00+08:00`) + 86400000 : Infinity;
