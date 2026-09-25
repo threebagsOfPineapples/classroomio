@@ -63,6 +63,14 @@
     }
   ]);
   const monthlyChartData = $derived(assessmentApi.statistics?.monthlyTrend.slice(-12) ?? []);
+  const planTypeChartData = $derived(
+    (assessmentApi.statistics?.byPlanType ?? []).map((type, index) => ({
+      key: type.type,
+      label: $t(`enterprise.plans.type_${type.type.toLowerCase()}`),
+      responses: type.count,
+      color: `var(--chart-${(index % 5) + 1})`
+    }))
+  );
 
   $effect(() => {
     const organizationId = $currentOrg.id;
@@ -182,21 +190,47 @@
             </div>
             <div class="space-y-2">
               <h2 class="font-semibold">{$t('enterprise.assessment.plan_types')}</h2>
+              {#if browser && planTypeChartData.length > 0}
+                {#await loadChart() then Chart}
+                  <Chart.ChartContainer class="flex h-[280px] w-full flex-col items-center" config={{}}>
+                    <Chart.PieChart data={planTypeChartData} key="key" label="label" value="responses" c="color" />
+                    <Chart.ChartLegend
+                      items={planTypeChartData.map((type) => ({
+                        label: type.label,
+                        color: type.color,
+                        value: type.responses
+                      }))}
+                    />
+                  </Chart.ChartContainer>
+                {/await}
+              {/if}
               {#each assessmentApi.statistics.byPlanType as type (type.type)}
                 <p class="text-sm">{$t(`enterprise.plans.type_${type.type.toLowerCase()}`)} · {type.count}</p>
               {/each}
             </div>
             <div class="space-y-2">
               <h2 class="font-semibold">{$t('enterprise.assessment.popular_courses')}</h2>
-              {#each assessmentApi.statistics.popularCourses as course (course.courseId)}
-                <p class="text-sm">{course.title} · {course.assigned}</p>
-              {/each}
+              <ol class="space-y-2">
+                {#each assessmentApi.statistics.popularCourses as course (course.courseId)}
+                  <li>
+                    <p class="flex justify-between gap-2 text-sm">
+                      <span>{course.title}</span><span>{course.assigned}</span>
+                    </p>
+                    <Progress value={course.assigned} max={assessmentApi.statistics.popularCourses[0]?.assigned ?? 1} />
+                  </li>
+                {/each}
+              </ol>
             </div>
             <div class="space-y-2">
               <h2 class="font-semibold">{$t('enterprise.assessment.unfinished_plans')}</h2>
-              {#each assessmentApi.statistics.unfinishedPlans as plan (plan.planId)}
-                <p class="text-sm">{plan.name} · {plan.count}</p>
-              {/each}
+              <ol class="space-y-2">
+                {#each assessmentApi.statistics.unfinishedPlans as plan (plan.planId)}
+                  <li>
+                    <p class="flex justify-between gap-2 text-sm"><span>{plan.name}</span><span>{plan.count}</span></p>
+                    <Progress value={plan.count} max={assessmentApi.statistics.unfinishedPlans[0]?.count ?? 1} />
+                  </li>
+                {/each}
+              </ol>
             </div>
           </section>
         </div>
