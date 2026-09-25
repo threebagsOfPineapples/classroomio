@@ -128,6 +128,13 @@
       "billing": "费用与套餐",
       "branding": "品牌设置",
       "search": "搜索设置…"
+    },
+    "profile": {
+      "heading": "个人资料"
+    },
+    "notifications": {
+      "heading": "通知设置",
+      "page_subtitle": "选择要接收的邮件通知，以及组织向成员发送的邮件。"
     }
   },
   "org_navigation": {
@@ -356,7 +363,330 @@
       "nav_landing_page": "课程主页",
       "nav_settings": "课程设置",
       "nav_ai_assistant": "AI 助手",
-      "exit_course": "退出课程"
+      "exit_course": "退出课程",
+      "nav_ai_tutor": "AI 辅导"
+    },
+    "not_permitted": {
+      "header": "无访问权限",
+      "body": "您无权访问这门课程。",
+      "button": "返回首页"
+    },
+    "navItem": {
+      "news_feed": {
+        "heading": "课程动态",
+        "heading_button": {
+          "title": "添加"
+        }
+      },
+      "lessons": {
+        "heading_v2": "课程内容",
+        "add_content": "添加内容",
+        "body_header": "暂无课时",
+        "body_content": "还没有课时。点击“添加”开始创建课程内容。",
+        "drag": "拖动卡片调整顺序",
+        "no_lesson": "暂无课时",
+        "share_your_knowledge": "还没有课时。点击“添加”开始创建课程内容。",
+        "stats": {
+          "exercises": "练习与考试",
+          "lessons": "课时",
+          "sections": "章节"
+        },
+        "student_body_content": "这门课程还没有添加课时，请稍后再来查看。",
+        "student_share_your_knowledge": "这门课程还没有添加课时，请稍后再来查看。",
+        "materials": {
+          "body_content": "为课时添加内容，请点击",
+          "body_heading": "这个课时还没有笔记、视频或幻灯片",
+          "button": "按钮",
+          "get_started": "“开始添加”",
+          "no_content": "暂无内容",
+          "tabs": {
+            "settings": {
+              "title": "设置"
+            },
+            "note": {
+              "title": "笔记"
+            },
+            "slide": {
+              "title": "幻灯片"
+            }
+          }
+        },
+        "saved": "已保存",
+        "saving": "保存中…",
+        "version_history": {
+          "title": "版本历史"
+        },
+        "add_lesson": {
+          "lock": "锁定",
+          "unlock": "解锁",
+          "all": "全部"
+        },
+        "complete": "已完成",
+        "incomplete": "未完成",
+        "mark_as": "标记为",
+        "next": "下一项",
+        "next_shortcut": "下一项（→）",
+        "prev": "上一项",
+        "prev_shortcut": "上一项（←）",
+        "exercises": {
+          "all_exercises": {
+            "add": "添加",
+            "add_question": "添加题目",
+            "add_section": "添加章节",
+            "analytics": {
+              "submissions": "提交记录"
+            },
+            "auto_graded_badge": "自动评分",
+            "delete_exercise": "删除练习",
+            "edit_mode": {
+              "delete_modal": "删除练习",
+              "deleting": "删除中…",
+              "no": "取消",
+              "sure": "确定要删除这项练习吗？",
+              "yes": "确认删除",
+              "error": "部分内容有误",
+              "question_type_auto_gradable": "自动评分",
+              "question_type_auto_gradable_description": "系统自动评分",
+              "question_type_manual_grading": "人工评分",
+              "question_type_manual_grading_description": "需要人工审核评分",
+              "write": "编写代码"
+            },
+            "guard": {
+              "attempts_title": "学员未通过后会怎样？",
+              "cancel": "取消",
+              "description": "学员通过后，这项练习才会计为完成。",
+              "manual_notice_description": "以下题目需要人工评分，通过结果在评分完成后才会确定：",
+              "manual_notice_title": "部分题目需要人工评分",
+              "recommended": "推荐",
+              "retry_option": "允许重试，直到通过",
+              "retry_option_description": "学员可以不限次数重新提交。",
+              "save_anyway": "仍要保存",
+              "save_continue": "保存并继续",
+              "single_attempt_option": "仅可尝试一次",
+              "single_attempt_option_description": "未通过的学员将无法继续，除非您手动修改其提交状态。",
+              "title": "保存前请确认"
+            },
+            "manual_grading_required_badge": "需要人工评分",
+            "more": "更多操作",
+            "notify": {
+              "action": "通知学员"
+            },
+            "preview": "预览",
+            "questions": "题目",
+            "reorder": "调整题目顺序",
+            "reorder_done": "完成排序",
+            "save": "保存",
+            "settings": "设置",
+            "view_mode": {
+              "edit": "编辑",
+              "all": "全部必答",
+              "answer_required": "请先回答这道题，再继续。",
+              "attempt_counter": "第 {current} 次尝试，共 {total} 次",
+              "back": "返回",
+              "begin_section": "开始本章节",
+              "complete_section": "完成本章节",
+              "due": "截止时间",
+              "empty_edit_hint_prefix": "点击",
+              "empty_edit_hint_suffix": "按钮添加。",
+              "exam_time_expired": "考试时间已到，已保存的答案将自动提交。",
+              "exam_time_remaining": "剩余时间：{minutes}:{seconds}",
+              "graded": "已评分",
+              "instructor_feedback": "讲师反馈",
+              "next_try": "下一次尝试",
+              "no_description": "暂无说明",
+              "no_question": "这项练习还没有题目",
+              "passed_completion_result_title": "已通过",
+              "pending": "待处理",
+              "points": "分",
+              "previous_try": "上一次尝试",
+              "questions": "道题",
+              "sections": "个章节",
+              "start": "开始",
+              "status_graded": "状态：已完成评分",
+              "status_pending": "状态：待评分",
+              "status_submitted": "状态：已提交",
+              "submitted": "已提交",
+              "try_again": "再试一次"
+            },
+            "finish": "完成",
+            "section": {
+              "fallback_title": "章节"
+            },
+            "delete_confirmation": {
+              "section_sure": "此章节将被删除，所含题目会移至最近的章节。",
+              "section_title": "删除章节",
+              "sure": "确定要删除这道题吗",
+              "title": "删除题目"
+            },
+            "points_required_auto_grade": "自动评分练习的分值必须大于 0。",
+            "settings_allow_multiple": "允许多次尝试",
+            "settings_allow_multiple_helper": "学员可以多次提交，并在结果页查看历史记录。",
+            "settings_completion_passed": "通过：须达到最低分数",
+            "settings_completion_passed_helper": "学员达到及格线后，练习才计为完成。",
+            "settings_completion_policy": "完成规则",
+            "settings_completion_submitted": "提交：任意提交均计为完成",
+            "settings_exam_closes": "结束时间",
+            "settings_exam_duration": "时长（分钟，可选）",
+            "settings_exam_max_attempts": "最多尝试次数",
+            "settings_exam_mode": "考试模式",
+            "settings_exam_opens": "开始时间",
+            "settings_exam_window_helper": "学员只能在指定时间内查看题目并提交答案。",
+            "settings_existing_submissions_warning": "更改通过条件可能影响已有的完成状态和学习进度。",
+            "settings_manual_grading_warning": "需要人工评分的提交，在评分完成前不能计为通过。",
+            "settings_pass_threshold": "及格线（%）",
+            "settings_save": "保存设置",
+            "settings_single_attempt_warning": "仅允许一次尝试时，未通过的学员需要讲师处理才能继续。"
+          },
+          "new_exercise_modal": {
+            "errors": {
+              "template_fetch": "获取模板失败，请重试。"
+            },
+            "finish": "完成",
+            "how": "请选择练习创建方式",
+            "next": "下一步",
+            "no_templates_for_tag": "此标签暂无可用模板。",
+            "options": {
+              "from_scratch": "从零创建",
+              "from_scratch_subtitle": "已有题目时，可自行创建练习",
+              "use_ai": "使用 AI",
+              "use_ai_subtitle": "根据课程笔记生成练习",
+              "use_template": "使用模板",
+              "use_template_subtitle": "从预设模板中选择，快速开始"
+            },
+            "select_template": "选择模板",
+            "title": "为练习命名",
+            "title_placeholder": "练习名称"
+          }
+        },
+        "add_content_add_to_section": "添加内容",
+        "add_content_adding_to": "添加到",
+        "add_content_back": "返回",
+        "add_content_continue": "继续",
+        "add_content_create_section_first": "请先创建章节，再添加课时或练习。",
+        "add_content_description": "请选择要添加的内容类型。",
+        "add_content_later": "稍后",
+        "add_content_open_now": "立即打开",
+        "add_content_section_fallback": "章节",
+        "add_content_section_label": "章节",
+        "add_content_select_section": "选择章节",
+        "completion_policy": {
+          "label": "完成规则",
+          "manual_description": "学员自行将课时标记为已完成。",
+          "manual_label": "手动标记",
+          "none_description": "此课时不会阻止学员继续学习。",
+          "none_label": "无要求",
+          "video_watch_description": "学员看完指定的上传视频后自动完成。无法跟踪 YouTube 和外部嵌入视频。",
+          "video_watch_label": "观看视频",
+          "watch_threshold": "观看比例（%）"
+        },
+        "session": {
+          "confirm_body": "保存后会向所有已报名学员发送更新通知和日历邀请。",
+          "confirm_cancel": "取消",
+          "confirm_save": "保存并通知",
+          "confirm_title": "通知学员本次变更？",
+          "datetime_label": "日期与时间",
+          "heading": "直播课时",
+          "intro": "设置直播课程的加入链接和时间。学员将在开始前 24 小时及 1 小时收到提醒。",
+          "link_label": "加入链接（Zoom、Meet 等）",
+          "save": "保存课时安排",
+          "timezone_helper": "提醒和日历邀请将按此时区显示。",
+          "timezone_label": "时区"
+        },
+        "settings": {
+          "comments": {
+            "change_course_setting": "前往课程设置修改",
+            "description": "设置学员是否可以查看并添加此课时的评论。",
+            "disabled": "评论已关闭",
+            "disabled_by_course": "整门课程已关闭评论，无法在此课时单独开启。",
+            "enabled": "评论已开启",
+            "title": "课时评论"
+          },
+          "progression": {
+            "heading": "学习顺序",
+            "intro": "设置学员如何完成本课时并继续学习。",
+            "option_guide_heading": "规则说明",
+            "students_only_note": "这些规则仅适用于学员；讲师可以自由预览和切换内容。",
+            "watch_videos_empty": "仅能跟踪上传的视频。无法跟踪 YouTube 和外部嵌入视频，因此此课时既不能自动完成，学员也不能手动标记完成。请在“视频”页上传视频，或改用手动完成规则。",
+            "watch_videos_heading": "必看视频",
+            "watch_videos_helper": "仅能要求观看上传的视频；无法跟踪 YouTube 和外部嵌入视频。",
+            "watch_videos_learn_more": "了解更多",
+            "watch_videos_no_uploads_title": "此课时没有上传的视频",
+            "watch_videos_required": "使用视频观看规则时，请至少选择一个视频。"
+          }
+        }
+      },
+      "analytics": {
+        "title": "数据分析"
+      },
+      "attendance": {
+        "title": "出勤"
+      },
+      "certificates": {
+        "title": "证书"
+      },
+      "compliance": {
+        "title": "合规要求"
+      },
+      "marks": {
+        "avg_grade": "平均成绩",
+        "title": "成绩"
+      },
+      "people": {
+        "add": "添加",
+        "title": "学员与讲师"
+      },
+      "settings": {
+        "heading": "课程设置",
+        "slug": {
+          "description": "公开链接的最后一段，只能使用字母、数字和连字符。",
+          "label": "链接标识"
+        },
+        "public_conversion": {
+          "blocks_public_conversion_desc": "公开课程仅支持自动评分题目。请修改题型或删除题目后再转换。",
+          "blocks_public_conversion_title": "公开课程不支持人工评分"
+        }
+      },
+      "submissions": {
+        "title": "作业提交",
+        "grading_modal": {
+          "add_comment": "添加评语",
+          "add_comment_placeholder": "填写评语",
+          "ai_icon": "AI",
+          "allocated": "评分依据",
+          "details": "详情",
+          "early": "提前",
+          "grade_with_ai": "使用 AI 评分",
+          "late": "逾期",
+          "options_correct": "个选项正确",
+          "out_of": "满分",
+          "status": "状态",
+          "student": "学员",
+          "student_avatar": "学员头像",
+          "submit_grades": "提交成绩",
+          "total_grade": "总成绩"
+        },
+        "submission_status": {
+          "graded": "已评分",
+          "in_progress": "进行中",
+          "submitted": "已提交"
+        }
+      }
+    },
+    "sidebar": {
+      "compliance": {
+        "due_date": "截止日期",
+        "title": "合规要求",
+        "valid_until": "有效期至"
+      },
+      "footer_nav": {
+        "label": "课程内容导航",
+        "next": "下一项",
+        "previous": "上一项"
+      },
+      "progress": {
+        "exercises": "练习：已完成 {completed}/{total}",
+        "lessons": "课时：已完成 {completed}/{total}"
+      }
     }
   },
   "lms_navigation": {
@@ -527,5 +857,64 @@
       "status_completed": "已完成",
       "status_cancelled": "已取消"
     }
+  },
+  "schedule": {
+    "join": "加入会议"
+  },
+  "analytics": {
+    "course_metrics": {
+      "page_subtitle": "查看本课程的报名、课时完成、成绩和学员进度。"
+    },
+    "exercises": "练习",
+    "exercises_completed": "已完成练习",
+    "lessons_completed": "已完成课时",
+    "progress": "进度",
+    "title": "数据分析",
+    "total_average_grade": "平均成绩"
+  },
+  "audience": {
+    "email": "电子邮箱",
+    "filter": {
+      "last_activity": "最近活动"
+    },
+    "name": "姓名",
+    "import": {
+      "back": "返回"
+    }
+  },
+  "certificates": {
+    "description": "查看并下载完成课程后获得的证书。",
+    "heading": "证书"
+  },
+  "cohorts": {
+    "lms": {
+      "empty_description": "您尚未加入任何培训班。",
+      "empty_title": "暂无培训班"
+    }
+  },
+  "community": {
+    "title": "交流社区"
+  },
+  "exercises": {
+    "heading": "练习与考试"
+  },
+  "explore": {
+    "heading": "探索课程"
+  },
+  "new_course_modal": {
+    "compliance_label": "合规课程",
+    "compliance_subtitle": "支持定期复训、提醒与有效期跟踪",
+    "live_class_label": "直播课程",
+    "live_class_subtitle": "适合按时间安排课时的集中培训",
+    "public_label": "公开课程",
+    "public_subtitle": "无需注册即可访问的免费课程页面，可公开分享",
+    "self_paced_label": "自主学习",
+    "self_paced_subtitle": "学员可按自己的进度完成课时"
+  },
+  "delete_modal": {
+    "content": "确定要删除吗？",
+    "label": "删除",
+    "no": "否",
+    "yes": "是"
   }
 }
