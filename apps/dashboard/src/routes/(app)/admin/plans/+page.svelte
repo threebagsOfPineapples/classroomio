@@ -40,12 +40,18 @@
   let positionTargets = $state<string[]>([]);
   let employeeTargets = $state<number[]>([]);
   let positionInput = $state('');
+  let planSearch = $state('');
   let message = $state('');
   let savedFingerprint = $state('');
   let lastOrganizationId: string | null = null;
   const selected = $derived(trainingPlansApi.selected);
   const canEdit = $derived(!selected || selected.plan.status === 'DRAFT');
   const hasUnsavedChanges = $derived(savedFingerprint !== getDraftFingerprint());
+  const filteredPlans = $derived(
+    trainingPlansApi.plans.filter((plan) =>
+      `${plan.name} ${plan.code}`.toLocaleLowerCase().includes(planSearch.trim().toLocaleLowerCase())
+    )
+  );
 
   $effect(() => {
     const organizationId = $currentOrg.id;
@@ -236,7 +242,8 @@
       {#if enterpriseApi.overview?.canManage}
         <div class="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <nav aria-label={$t('enterprise.plans.title')} class="space-y-2">
-            {#each trainingPlansApi.plans as plan (plan.id)}
+            <InputField name="plan-search" label={$t('enterprise.plans.title')} type="search" bind:value={planSearch} />
+            {#each filteredPlans as plan (plan.id)}
               <Button
                 variant={selected?.plan.id === plan.id ? 'secondary' : 'outline'}
                 class="w-full justify-start"
