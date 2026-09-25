@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>Exercises - ClassroomIO</title>
+  <title>{$t('lms_navigation.exercise')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="w-full">

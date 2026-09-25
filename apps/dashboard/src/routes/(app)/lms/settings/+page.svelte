@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Settings - ClassroomIO</title>
+  <title>{$t('lms_navigation.settings')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Header>
