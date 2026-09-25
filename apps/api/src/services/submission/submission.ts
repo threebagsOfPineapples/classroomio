@@ -37,7 +37,12 @@ import {
 } from '@cio/question-types';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
 import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/course/people';
-import { createExamSubmission, getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import {
+  createExamSubmission,
+  getExamCourseId,
+  getExerciseById,
+  getExerciseWithRelationsOptimized
+} from '@cio/db/queries/exercise';
 import { getGroupMemberIdByCourseAndProfile, isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 
 import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
@@ -563,6 +568,10 @@ export async function createSubmissionService(
     const course = courseRows[0];
 
     assertExamOpen(exerciseWithRelations.exercise);
+
+    if (exerciseWithRelations.exercise.isExam && (await getExamCourseId(exerciseId)) !== courseId) {
+      throw new AppError('Exam does not belong to this course', ErrorCodes.VALIDATION_ERROR, 403);
+    }
 
     if (exerciseWithRelations.exercise.isExam && !examAttemptId) {
       throw new AppError('An exam attempt is required', ErrorCodes.VALIDATION_ERROR, 400);

@@ -9,7 +9,8 @@ import {
   ZExerciseVideoRecordingParam,
   ZExerciseVideoRecordingPlaybackParam,
   ZExerciseVideoRecordingUploadComplete,
-  ZExerciseVideoRecordingUploadInit
+  ZExerciseVideoRecordingUploadInit,
+  ZExamDraftSave
 } from '@cio/utils/validation/exercise';
 import { ZTemplateById, ZTemplateByTag } from '@cio/utils/validation/mocks';
 import {
@@ -41,7 +42,12 @@ import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-member-or-automation-key';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/services/submission';
-import { assertExamOpen, redactExamAnswers, startExamAttemptService } from '@api/services/exercise/exam-policy';
+import {
+  assertExamOpen,
+  redactExamAnswers,
+  saveExamDraftService,
+  startExamAttemptService
+} from '@api/services/exercise/exam-policy';
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
@@ -309,10 +315,40 @@ export const exerciseRouter = new Hono()
           type: ContentType.Exercise
         });
 
-        const attempt = await startExamAttemptService(exerciseId, groupMemberId);
+        const attempt = await startExamAttemptService(courseId, exerciseId, groupMemberId);
         return c.json({ success: true, data: attempt }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to start exam attempt');
+      }
+    }
+  )
+  .put(
+    '/:exerciseId/attempt/draft',
+    authMiddleware,
+    courseMemberMiddleware,
+    zValidator('param', ZExerciseGetParam),
+    zValidator('json', ZExamDraftSave),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { exerciseId } = c.req.valid('param');
+        const groupMemberId = await getGroupMemberIdByCourseAndProfile(courseId, user.id);
+        if (!groupMemberId) {
+          return c.json({ success: false, error: 'User is not a member of this course' }, 403);
+        }
+
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: exerciseId,
+          type: ContentType.Exercise
+        });
+
+        const data = await saveExamDraftService(courseId, exerciseId, groupMemberId, c.req.valid('json'));
+        return c.json({ success: true, data }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to save exam draft');
       }
     }
   )

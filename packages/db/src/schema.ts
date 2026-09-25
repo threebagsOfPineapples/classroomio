@@ -1398,7 +1398,11 @@ export const examAttempt = pgTable(
     startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }).notNull(),
     submittedAt: timestamp('submitted_at', { withTimezone: true, mode: 'string' }),
-    submissionId: uuid('submission_id')
+    submissionId: uuid('submission_id'),
+    draftAnswers: jsonb('draft_answers')
+      .$type<Array<{ questionId: number; optionId?: number; answer?: string }>>()
+      .notNull()
+      .default([])
   },
   (table) => [
     foreignKey({
@@ -1418,6 +1422,9 @@ export const examAttempt = pgTable(
     }).onDelete('set null'),
     unique('exam_attempt_member_number_unique').on(table.exerciseId, table.groupMemberId, table.attemptNumber),
     unique('exam_attempt_submission_unique').on(table.submissionId),
+    index('exam_attempt_expired_pending_idx')
+      .on(table.expiresAt)
+      .where(sql`${table.submittedAt} IS NULL`),
     check('exam_attempt_number_valid', sql`${table.attemptNumber} > 0`),
     check('exam_attempt_expiry_valid', sql`${table.expiresAt} > ${table.startedAt}`)
   ]

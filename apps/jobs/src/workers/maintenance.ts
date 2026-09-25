@@ -5,6 +5,7 @@ import { Queue, Worker } from 'bullmq';
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
 import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
+import { finalizeExpiredExams } from '@cio/core/services/exercise/expired-exams';
 import { pruneDeadLetterJobsOlderThan, reapStuckMediaJobs } from '@cio/db/queries';
 import { reconcileMemberLastActive } from '@cio/db/queries/organization';
 import { capAutoLessonVersionsPerLanguage, pruneAutoLessonVersions } from '@cio/db/queries/lesson/version';
@@ -124,6 +125,12 @@ const worker = new Worker(
       return result;
     }
 
+    if (job.name === JOB_NAMES.maintenance.examAttemptFinalize) {
+      const result = await finalizeExpiredExams();
+      if (result.finalized > 0) log.info('exam-attempt-finalize-done', result);
+      return result;
+    }
+
     throw new Error(`Unknown maintenance job: ${job.name}`);
   },
   { connection, concurrency: 1 }
@@ -180,6 +187,16 @@ async function registerSchedulers(): Promise<void> {
     log.info('lesson-version-retention-scheduler-registered', {
       name: JOB_NAMES.maintenance.lessonVersionRetention,
       everyMs: 86_400_000
+    });
+
+    await maintenanceQueue.upsertJobScheduler(
+      'exam-attempt-finalize-scheduler',
+      { every: 30_000 },
+      { name: JOB_NAMES.maintenance.examAttemptFinalize, data: {} }
+    );
+    log.info('exam-attempt-finalize-scheduler-registered', {
+      name: JOB_NAMES.maintenance.examAttemptFinalize,
+      everyMs: 30_000
     });
   } catch (err) {
     log.error('maintenance-scheduler-register-failed', { error: errorMessage(err) });

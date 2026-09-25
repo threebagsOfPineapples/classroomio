@@ -7,6 +7,7 @@ import type {
   Exercise,
   GetExerciseRequest,
   StartExamAttemptRequest,
+  SaveExamDraftRequest,
   SubmitExerciseRequest,
   UpdateExerciseRequest,
   VideoRecordingPlaybackRequest,
@@ -17,6 +18,7 @@ import type {
   TExerciseCreate,
   TExerciseSubmissionCreate,
   TExerciseUpdate,
+  TExamDraftSave,
   TExerciseVideoRecordingUploadComplete,
   TExerciseVideoRecordingUploadInit
 } from '@cio/utils/validation/exercise';
@@ -24,6 +26,7 @@ import {
   ZExerciseCreate,
   ZExerciseSubmissionCreate,
   ZExerciseUpdate,
+  ZExamDraftSave,
   ZExerciseVideoRecordingUploadComplete,
   ZExerciseVideoRecordingUploadInit
 } from '@cio/utils/validation/exercise';
@@ -268,6 +271,22 @@ export class ExerciseApi extends BaseApiWithErrors {
         }
       }
     });
+  }
+
+  async saveExamDraft(courseId: string, exerciseId: string, fields: TExamDraftSave) {
+    const result = ZExamDraftSave.safeParse(fields);
+    if (!result.success) return false;
+
+    const response = await this.execute<SaveExamDraftRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].exercise[':exerciseId'].attempt.draft.$put({
+          param: { courseId, exerciseId },
+          json: result.data
+        }),
+      logContext: 'saving exam draft'
+    });
+
+    return !!response?.data?.saved;
   }
 
   async submit(

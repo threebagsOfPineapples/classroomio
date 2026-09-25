@@ -219,6 +219,8 @@ export type SubmitExerciseRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['submission']['$post'];
 export type StartExamAttemptRequest =
   (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['attempt']['$post'];
+export type SaveExamDraftRequest =
+  (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['attempt']['draft']['$put'];
 
 // Newsfeed types
 export type ListNewsfeedRequest = (typeof classroomio.course)[':courseId']['newsfeed']['$get'];

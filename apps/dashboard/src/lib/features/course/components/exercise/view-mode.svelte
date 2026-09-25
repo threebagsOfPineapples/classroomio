@@ -27,6 +27,7 @@
   import { formatAnswers } from '$features/course/utils/functions';
   import {
     getTextareaAnswerCharacterCount,
+    fromApiPayload,
     toApiPayload,
     type AnswerData,
     type ExerciseQuestionVideoRecordingUploader,
@@ -73,6 +74,10 @@
   let isSubmitting = $state(false);
   let isStartingExam = $state(false);
   let savedExamMetadata: QuestionnaireMetaData | null = null;
+  let draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  let draftSavePromise: Promise<boolean> = Promise.resolve(true);
+  let draftSaveErrorShown = false;
+  let finalDraftFlushStarted = false;
   let clockNow = $state(Date.now());
   /** When true, do not re-apply a past submission over a fresh take (Try again). */
   let skipHydrateFromSubmissions = $state(false);
@@ -108,10 +113,29 @@
       if (!result?.data) return;
 
       const attempt = result.data;
+      finalDraftFlushStarted = false;
+      const serverAnswers: Record<string, AnswerData> = {};
+      for (const draftAnswer of attempt.draftAnswers ?? []) {
+        const question = $questionnaire.questions.find((item) => Number(item.id) === draftAnswer.questionId);
+        if (!question) continue;
+
+        const model = toExerciseQuestionModel(question);
+        try {
+          const answer = fromApiPayload(model.questionType, draftAnswer, model);
+          if (answer) serverAnswers[getExerciseQuestionContractKey(model)] = answer;
+        } catch {
+          continue;
+        }
+      }
+
       if (savedExamMetadata?.examAttemptId === attempt.id) {
-        questionnaireMetaData.set(savedExamMetadata);
+        questionnaireMetaData.set({
+          ...savedExamMetadata,
+          answers: { ...serverAnswers, ...savedExamMetadata.answers }
+        });
       } else {
         resetStudentExerciseTake();
+        questionnaireMetaData.update((metadata) => ({ ...metadata, answers: serverAnswers }));
       }
       savedExamMetadata = null;
       questionnaireMetaData.update((metadata) => ({
@@ -124,6 +148,7 @@
         sectionPhase: hasSectionedExercise ? metadata.sectionPhase : 'questions'
       }));
       localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
+      queueExamDraftSave();
       return;
     }
 
@@ -151,28 +176,68 @@
     return toApiPayload(answerData, questionId);
   }
 
+  function getAnswerPayloads(metadata: QuestionnaireMetaData) {
+    return Object.entries(metadata.answers)
+      .map(([questionKey, answerData]) => {
+        const question = $questionnaire.questions.find(
+          (item) => getExerciseQuestionContractKey(toExerciseQuestionModel(item)) === questionKey
+        );
+        if (!question) return null;
+        return mapAnswerToApiPayload(question, answerData);
+      })
+      .filter((answer) => answer !== null) as Array<{ questionId: number; optionId?: number; answer?: string }>;
+  }
+
+  async function flushExamDraft() {
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = null;
+
+    const metadata = get(questionnaireMetaData);
+    if (!$questionnaire.isExam || !metadata.examAttemptId || !courseApi.course?.id) return true;
+
+    const courseId = courseApi.course.id;
+    const attemptId = metadata.examAttemptId;
+    const answers = getAnswerPayloads(metadata);
+    draftSavePromise = draftSavePromise.then(() =>
+      exerciseApi.saveExamDraft(courseId, exerciseId, { examAttemptId: attemptId, answers })
+    );
+    const saved = await draftSavePromise;
+    if (saved) {
+      draftSaveErrorShown = false;
+    } else if (!draftSaveErrorShown && remainingSeconds > 0 && !isSubmitting) {
+      snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.exam_draft_save_failed'));
+      draftSaveErrorShown = true;
+    }
+
+    return saved;
+  }
+
+  function queueExamDraftSave() {
+    if (!$questionnaire.isExam || !$questionnaireMetaData.examAttemptId || remainingSeconds === 0) return;
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(() => void flushExamDraft(), 500);
+  }
+
   async function submitExercise() {
     if (!courseApi.course?.id || isSubmitting) return;
+    if ($questionnaire.isExam && remainingSeconds === 0) return;
 
     isSubmitting = true;
 
     const updated = get(questionnaireMetaData);
     const totalPossibleGrade = getTotalPossibleGrade($questionnaire.questions);
 
-    const answersForApi = Object.entries(updated.answers)
-      .map(([questionKey, val]) => {
-        const question = $questionnaire.questions.find(
-          (item) => getExerciseQuestionContractKey(toExerciseQuestionModel(item)) === questionKey
-        );
-        if (!question) return null;
-        return mapAnswerToApiPayload(question, val);
-      })
-      .filter((answer) => answer !== null) as Array<{ questionId: number; optionId?: number; answer?: string }>;
+    const answersForApi = getAnswerPayloads(updated);
 
     if (answersForApi.length === 0) {
       isSubmitting = false;
       snackbar.error(t.get('course.navItem.lessons.exercises.all_exercises.view_mode.answers_required'));
       return;
+    }
+
+    if ($questionnaire.isExam && draftSaveTimer) {
+      clearTimeout(draftSaveTimer);
+      draftSaveTimer = null;
     }
 
     const submitResult = await exerciseApi.submit(
@@ -279,6 +344,7 @@
 
   async function onSubmit(id, value) {
     if (!courseApi.course?.id) return;
+    if ($questionnaire.isExam && remainingSeconds === 0) return;
 
     const { answers } = $questionnaireMetaData;
     const questions = hasSectionedExercise ? currentSectionQuestions : $questionnaire.questions;
@@ -299,6 +365,7 @@
     const newAnswers = { ...answers, [id]: formattedAnswer };
     questionnaireMetaData.update((m) => ({ ...m, answers: newAnswers }));
     localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
+    queueExamDraftSave();
 
     const currentIndex = $questionnaireMetaData.currentQuestionIndex;
     const isLastQuestion = currentIndex === questions.length;
@@ -497,9 +564,11 @@
       };
     });
     localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
+    queueExamDraftSave();
   }
 
   function onSharedNext(valueOverride?: AnswerData) {
+    if ($questionnaire.isExam && remainingSeconds === 0) return;
     if (!sharedCurrentQuestionKey) return;
     const valueToUse = valueOverride !== undefined ? valueOverride : sharedCurrentAnswer;
     if (!hasAnswerValue(valueToUse)) {
@@ -552,9 +621,11 @@
       }
     }));
     localStorage.setItem(`autosave-exercise-${exerciseId}`, JSON.stringify(get(questionnaireMetaData)));
+    queueExamDraftSave();
   }
 
   function completeAllQuestionsSection() {
+    if ($questionnaire.isExam && remainingSeconds === 0) return;
     const missingAnswer = currentSectionQuestions.find((question) => {
       const questionKey = getExerciseQuestionContractKey(toExerciseQuestionModel(question));
       return !hasAnswerValue($questionnaireMetaData.answers[questionKey]);
@@ -661,6 +732,14 @@
       ? Math.max(0, Math.ceil((Date.parse($questionnaireMetaData.examExpiresAt) - clockNow) / 1000))
       : 0
   );
+  $effect(() => {
+    if (!$questionnaire.isExam || !$questionnaireMetaData.examAttemptId || finalDraftFlushStarted || isSubmitting)
+      return;
+    if (remainingSeconds > 2 || remainingSeconds === 0) return;
+
+    finalDraftFlushStarted = true;
+    void flushExamDraft();
+  });
   const canTryAgain = $derived(
     !!$questionnaire.allowMultipleAttempts &&
       (!$questionnaire.isExam ||
@@ -1128,7 +1207,7 @@
             question: sectionQuestionModel,
             answer: $questionnaireMetaData.answers[sectionQuestionKey],
             labels: questionLabels,
-            disabled: isSubmitting,
+            disabled: isSubmitting || ($questionnaire.isExam && remainingSeconds === 0),
             platformMaxFileSizeMb,
             onFileUpload: handleFileUpload,
             onVideoRecordingUpload: handleVideoRecordingUpload
@@ -1140,7 +1219,12 @@
       {/each}
 
       <div class="flex justify-end">
-        <Button type="button" onclick={completeAllQuestionsSection} disabled={isSubmitting} loading={isSubmitting}>
+        <Button
+          type="button"
+          onclick={completeAllQuestionsSection}
+          disabled={isSubmitting || ($questionnaire.isExam && remainingSeconds === 0)}
+          loading={isSubmitting}
+        >
           {$questionnaireMetaData.currentSectionIndex === activeSections.length - 1
             ? $t('course.navItem.lessons.exercises.all_exercises.finish')
             : $t('course.navItem.lessons.exercises.all_exercises.view_mode.complete_section')}
@@ -1185,7 +1269,7 @@
                   question: sharedQuestionModel,
                   answer: sharedCurrentAnswer,
                   labels: questionLabels,
-                  disabled: isSubmitting,
+                  disabled: isSubmitting || ($questionnaire.isExam && remainingSeconds === 0),
                   platformMaxFileSizeMb,
                   onFileUpload: handleFileUpload,
                   onVideoRecordingUpload: handleVideoRecordingUpload
@@ -1200,7 +1284,7 @@
       <div>
         <ExerciseQuestion.QuestionNavigation
           canGoBack={hasSectionedExercise || $questionnaireMetaData.currentQuestionIndex > 1}
-          canGoNext={canGoNextForSharedQuestion && !isSubmitting}
+          canGoNext={canGoNextForSharedQuestion && !isSubmitting && (!$questionnaire.isExam || remainingSeconds > 0)}
           isLast={$questionnaireMetaData.currentQuestionIndex === currentQuestionList.length}
           {isSubmitting}
           previousLabel={t.get('course.navItem.lessons.exercises.all_exercises.previous')}

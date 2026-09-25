@@ -274,6 +274,20 @@ export const ZExerciseSubmissionCreate = z.object({
 });
 export type TExerciseSubmissionCreate = z.infer<typeof ZExerciseSubmissionCreate>;
 
+export const ZExamDraftSave = z.object({
+  examAttemptId: z.uuid(),
+  answers: z
+    .array(
+      z.object({
+        questionId: z.number().int().positive(),
+        optionId: z.number().int().positive().optional(),
+        answer: z.string().max(1_000_000).optional()
+      })
+    )
+    .max(500)
+});
+export type TExamDraftSave = z.infer<typeof ZExamDraftSave>;
+
 // Exercise Template Schemas
 export const ZExerciseFromTemplate = z.object({
   lessonId: z.string().optional(),

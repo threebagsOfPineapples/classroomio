@@ -1,10 +1,20 @@
 import * as schema from '@db/schema';
-import { and, db, desc, eq, gt, isNull, sql } from '@db/drizzle';
+import { and, asc, db, desc, eq, gt, isNull, lte, sql } from '@db/drizzle';
 import type { TNewQuestionAnswer, TNewSubmission } from '@db/types';
 
 export function getExamExpiresAt(startedAt: string, closesAt: string, durationMinutes: number | null) {
   const durationDeadline = durationMinutes ? Date.parse(startedAt) + durationMinutes * 60_000 : Infinity;
   return new Date(Math.min(Date.parse(closesAt), durationDeadline)).toISOString();
+}
+
+export async function getExamCourseId(exerciseId: string) {
+  const [row] = await db
+    .select({ exerciseCourseId: schema.exercise.courseId, lessonCourseId: schema.lesson.courseId })
+    .from(schema.exercise)
+    .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
+    .where(eq(schema.exercise.id, exerciseId));
+
+  return row?.exerciseCourseId ?? row?.lessonCourseId ?? null;
 }
 
 export async function startExamAttempt(exerciseId: string, groupMemberId: string) {
@@ -52,6 +62,77 @@ export async function startExamAttempt(exerciseId: string, groupMemberId: string
 
     return attempt;
   });
+}
+
+export type ExamDraftAnswer = { questionId: number; optionId?: number; answer?: string };
+
+export async function saveExamDraft(
+  exerciseId: string,
+  groupMemberId: string,
+  examAttemptId: string,
+  answers: ExamDraftAnswer[]
+) {
+  const [attempt] = await db
+    .update(schema.examAttempt)
+    .set({ draftAnswers: answers })
+    .where(
+      and(
+        eq(schema.examAttempt.id, examAttemptId),
+        eq(schema.examAttempt.exerciseId, exerciseId),
+        eq(schema.examAttempt.groupMemberId, groupMemberId),
+        isNull(schema.examAttempt.submittedAt),
+        gt(schema.examAttempt.expiresAt, sql`clock_timestamp()`),
+        sql`EXISTS (SELECT 1 FROM exercise WHERE exercise.id = ${exerciseId} AND exercise.is_exam AND exercise.opens_at <= clock_timestamp() AND exercise.closes_at > clock_timestamp())`
+      )
+    )
+    .returning({ id: schema.examAttempt.id });
+
+  return attempt ?? null;
+}
+
+export async function listExpiredExamAttempts(limit: number) {
+  return db
+    .select()
+    .from(schema.examAttempt)
+    .where(and(isNull(schema.examAttempt.submittedAt), lte(schema.examAttempt.expiresAt, sql`clock_timestamp()`)))
+    .orderBy(asc(schema.examAttempt.expiresAt))
+    .limit(limit);
+}
+
+export async function createExpiredExamSubmission(
+  examAttemptId: string,
+  submissionData: TNewSubmission & { exerciseId: string; submittedBy: string },
+  answerRows: TNewQuestionAnswer[]
+) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [submission] = await tx.insert(schema.submission).values(submissionData).returning();
+      if (!submission) throw new Error('Failed to create expired exam submission');
+
+      const [attempt] = await tx
+        .update(schema.examAttempt)
+        .set({ submissionId: submission.id, submittedAt: sql`clock_timestamp()` })
+        .where(
+          and(
+            eq(schema.examAttempt.id, examAttemptId),
+            eq(schema.examAttempt.exerciseId, submissionData.exerciseId),
+            eq(schema.examAttempt.groupMemberId, submissionData.submittedBy),
+            isNull(schema.examAttempt.submittedAt),
+            lte(schema.examAttempt.expiresAt, sql`clock_timestamp()`)
+          )
+        )
+        .returning({ id: schema.examAttempt.id });
+      if (!attempt) throw new InvalidExamAttempt();
+
+      const insertedAnswers =
+        answerRows.length > 0 ? await tx.insert(schema.questionAnswer).values(answerRows).returning() : [];
+      return { submission, insertedAnswers };
+    });
+  } catch (error) {
+    if (error instanceof InvalidExamAttempt) return null;
+
+    throw error;
+  }
 }
 
 class InvalidExamAttempt extends Error {}

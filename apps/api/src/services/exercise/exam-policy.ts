@@ -1,10 +1,17 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import type { getExercise } from '@cio/core/services/exercise/exercise';
-import { startExamAttempt } from '@cio/db/queries/exercise';
+import {
+  getExamCourseId,
+  getExerciseWithRelationsOptimized,
+  saveExamDraft,
+  startExamAttempt
+} from '@cio/db/queries/exercise';
+import type { TExamDraftSave } from '@cio/utils/validation/exercise';
 
 type Exam = Awaited<ReturnType<typeof getExercise>>;
 
-export async function startExamAttemptService(exerciseId: string, groupMemberId: string) {
+export async function startExamAttemptService(courseId: string, exerciseId: string, groupMemberId: string) {
+  await assertExamCourse(courseId, exerciseId);
   const attempt = await startExamAttempt(exerciseId, groupMemberId);
   if (!attempt) {
     throw new AppError('Exam is unavailable or the attempt limit has been reached', ErrorCodes.VALIDATION_ERROR, 403);
@@ -14,8 +21,41 @@ export async function startExamAttemptService(exerciseId: string, groupMemberId:
     id: attempt.id,
     attemptNumber: attempt.attemptNumber,
     startedAt: attempt.startedAt,
-    expiresAt: attempt.expiresAt
+    expiresAt: attempt.expiresAt,
+    draftAnswers: attempt.draftAnswers
   };
+}
+
+export async function saveExamDraftService(
+  courseId: string,
+  exerciseId: string,
+  groupMemberId: string,
+  { examAttemptId, answers }: TExamDraftSave
+) {
+  await assertExamCourse(courseId, exerciseId);
+  const exercise = await getExerciseWithRelationsOptimized(exerciseId);
+  if (!exercise.exercise.isExam) {
+    throw new AppError('This exercise is not an exam', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  const questionIds = new Set(exercise.questions.map((question) => question.id));
+  if (answers.some((answer) => !questionIds.has(answer.questionId))) {
+    throw new AppError('Draft contains an invalid question', ErrorCodes.VALIDATION_ERROR, 400);
+  }
+
+  const saved = await saveExamDraft(exerciseId, groupMemberId, examAttemptId, answers);
+  if (!saved) {
+    throw new AppError('Exam attempt has expired or was already submitted', ErrorCodes.VALIDATION_ERROR, 403);
+  }
+
+  return { saved: true };
+}
+
+export async function assertExamCourse(courseId: string, exerciseId: string) {
+  const actualCourseId = await getExamCourseId(exerciseId);
+  if (actualCourseId !== courseId) {
+    throw new AppError('Exam does not belong to this course', ErrorCodes.VALIDATION_ERROR, 403);
+  }
 }
 
 export function assertExamOpen(exercise: Pick<Exam, 'isExam' | 'opensAt' | 'closesAt'>, now = new Date()) {
