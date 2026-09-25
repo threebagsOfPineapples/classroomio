@@ -50,12 +50,21 @@ import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUrls } from '@cio/core/utils/s3';
 import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
+import { syncAssessmentsForSubmission } from '@api/services/assessment';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExerciseCompletedForMember } from '@cio/db/queries/course/progression';
 import { assertExamOpen } from '@api/services/exercise/exam-policy';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
+
+async function syncTrainingAssessment(courseId: string, groupMemberId: string) {
+  try {
+    await syncAssessmentsForSubmission(courseId, groupMemberId);
+  } catch (error) {
+    console.error('Failed to update training assessment after submission:', error);
+  }
+}
 
 async function triggerCertificationIfExerciseComplete(
   courseId: string,
@@ -752,6 +761,7 @@ export async function createSubmissionService(
         });
 
         await syncComplianceProgressFromSubmission(courseId, submittedBy);
+        await syncTrainingAssessment(courseId, submittedBy);
         await triggerCertificationIfExerciseComplete(courseId, exerciseId, submittedBy);
 
         const enrichedAnswers =
@@ -765,6 +775,7 @@ export async function createSubmissionService(
     });
 
     await syncComplianceProgressFromSubmission(courseId, submittedBy);
+    await syncTrainingAssessment(courseId, submittedBy);
     await triggerCertificationIfExerciseComplete(courseId, exerciseId, submittedBy);
 
     return submission;
@@ -821,8 +832,12 @@ export async function updateSubmissionService(submissionId: string, data: TSubmi
       });
     }
 
-    if (updated.gradingState === 'completed' && updated.courseId && updated.submittedBy) {
-      await syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy);
+    if (updated.courseId && updated.submittedBy) {
+      if (updated.gradingState === 'completed') {
+        await syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy);
+      }
+
+      await syncTrainingAssessment(updated.courseId, updated.submittedBy);
     }
 
     return updated;
@@ -924,6 +939,7 @@ export async function updateSubmissionGradesBatch(
 
     if (updated.courseId && updated.submittedBy) {
       await syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy);
+      await syncTrainingAssessment(updated.courseId, updated.submittedBy);
     }
 
     return updated;
@@ -955,6 +971,10 @@ export async function deleteSubmissionService(submissionId: string): Promise<TSu
     const deleted = await deleteSubmission(submissionId);
     if (!deleted) {
       throw new AppError('Failed to delete submission', ErrorCodes.INTERNAL_ERROR, 500);
+    }
+
+    if (deleted.courseId && deleted.submittedBy) {
+      await syncTrainingAssessment(deleted.courseId, deleted.submittedBy);
     }
 
     return deleted;

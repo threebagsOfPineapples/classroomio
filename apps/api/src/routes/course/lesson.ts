@@ -30,6 +30,7 @@ import {
 } from '@api/services/lesson';
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { evaluateCourseCertification } from '@api/services/course/completion';
+import { syncAssessmentsForCourse } from '@api/services/assessment';
 import { ContentType } from '@cio/utils/constants';
 
 import { Hono } from '@api/utils/hono';
@@ -258,6 +259,10 @@ export const lessonRouter = new Hono()
 
         const completion = await upsertLessonCompletionService(lessonId, user.id, isComplete);
 
+        await syncAssessmentsForCourse(courseId, user.id).catch((assessmentError) => {
+          console.error('Failed to update training assessment after lesson completion:', assessmentError);
+        });
+
         if (isComplete) {
           void evaluateCourseCertification(courseId, user.id).catch((certError) => {
             console.error('Failed to evaluate course certification after lesson completion:', certError);
@@ -319,6 +324,10 @@ export const lessonRouter = new Hono()
         const watchProgress = await updateLessonWatchProgressService(lessonId, user.id, beat);
 
         if (watchProgress.didJustComplete) {
+          await syncAssessmentsForCourse(courseId, user.id).catch((assessmentError) => {
+            console.error('Failed to update training assessment after video watch:', assessmentError);
+          });
+
           void evaluateCourseCertification(courseId, user.id).catch((certError) => {
             console.error('Failed to evaluate course certification after video watch:', certError);
           });

@@ -21,6 +21,7 @@ import {
   listAssessmentExercises,
   listAssessmentInputs,
   listAssessmentPlanCourses,
+  listPublishedAssessmentEnrollmentsForCourse,
   listArchiveCourseEvidence,
   listCompletedAssessmentSubmissions,
   publishAssessmentScheme,
@@ -31,6 +32,7 @@ import {
   withAssessmentTransaction
 } from '@cio/db/queries/assessment';
 import { getTrainingPlan, listTrainingPlans, lockTrainingPlan } from '@cio/db/queries/training-plan';
+import { getProfileByGroupMemberId } from '@cio/db/queries/course/people';
 import type { TAssessmentSchemeDraft, TTrainingEvaluation } from '@cio/utils/validation/assessment';
 import { ROLE } from '@cio/utils/constants';
 import { calculateAssessment } from './assessment-calculation';
@@ -170,6 +172,14 @@ export async function publishPlanAssessment(organizationId: string, profileId: s
 
     await publishAssessmentScheme(scheme.id, transaction);
   });
+
+  const enrollments = await listAssessmentEnrollments(organizationId, planId);
+  for (const enrollment of enrollments) {
+    if (enrollment.enrollment.status === 'CANCELLED' || enrollment.enrollment.status === 'EXPIRED') continue;
+
+    await calculateEnrollmentAssessment(organizationId, enrollment.enrollment.id);
+  }
+
   return getPlanAssessment(organizationId, profileId, planId);
 }
 
@@ -203,6 +213,22 @@ async function readTrainingProgress(
 
 export async function recalculateAssessment(organizationId: string, profileId: string, enrollmentId: string) {
   await requireVisibleEnrollment(organizationId, profileId, enrollmentId);
+  return calculateEnrollmentAssessment(organizationId, enrollmentId);
+}
+
+export async function syncAssessmentsForCourse(courseId: string, profileId: string) {
+  const enrollments = await listPublishedAssessmentEnrollmentsForCourse(courseId, profileId);
+  for (const enrollment of enrollments) {
+    await calculateEnrollmentAssessment(enrollment.organizationId, enrollment.enrollmentId);
+  }
+}
+
+export async function syncAssessmentsForSubmission(courseId: string, groupMemberId: string) {
+  const profile = await getProfileByGroupMemberId(groupMemberId);
+  if (profile) await syncAssessmentsForCourse(courseId, profile.id);
+}
+
+async function calculateEnrollmentAssessment(organizationId: string, enrollmentId: string) {
   return withAssessmentTransaction(async (transaction) => {
     const context = await getAssessmentEnrollment(organizationId, enrollmentId, transaction, true);
     if (!context) assessmentError('Training enrollment not found', 404);

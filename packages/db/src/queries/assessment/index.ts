@@ -20,7 +20,7 @@ import {
   trainingPlan,
   trainingPlanCourse
 } from '@db/schema';
-import { and, asc, desc, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, or, sql } from 'drizzle-orm';
 
 export function withAssessmentTransaction<T>(callback: (transaction: DbOrTxClient) => Promise<T>) {
   return db.transaction(callback);
@@ -134,6 +134,31 @@ export function listAssessmentPlanCourses(organizationId: string, planId: string
     .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
     .innerJoin(group, eq(course.groupId, group.id))
     .where(and(eq(trainingPlanCourse.planId, planId), eq(group.organizationId, organizationId)));
+}
+
+export function listPublishedAssessmentEnrollmentsForCourse(courseId: string, profileId: string) {
+  return db
+    .select({ enrollmentId: trainingEnrollment.id, organizationId: trainingEnrollment.organizationId })
+    .from(trainingPlanCourse)
+    .innerJoin(trainingPlan, eq(trainingPlanCourse.planId, trainingPlan.id))
+    .innerJoin(trainingEnrollment, eq(trainingEnrollment.planId, trainingPlan.id))
+    .innerJoin(organizationmember, eq(trainingEnrollment.memberId, organizationmember.id))
+    .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
+    .innerJoin(group, eq(course.groupId, group.id))
+    .innerJoin(assessmentScheme, eq(assessmentScheme.planId, trainingPlan.id))
+    .where(
+      and(
+        eq(course.id, courseId),
+        eq(organizationmember.profileId, profileId),
+        eq(trainingPlan.organizationId, group.organizationId),
+        eq(trainingEnrollment.organizationId, group.organizationId),
+        eq(organizationmember.organizationId, group.organizationId),
+        eq(assessmentScheme.status, 'PUBLISHED'),
+        ne(trainingPlan.status, 'CANCELLED'),
+        ne(trainingEnrollment.status, 'CANCELLED'),
+        ne(trainingEnrollment.status, 'EXPIRED')
+      )
+    );
 }
 
 export function listArchiveCourseEvidence(organizationId: string, planId?: string, memberIds?: number[]) {

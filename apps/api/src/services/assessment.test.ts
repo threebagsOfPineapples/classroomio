@@ -11,7 +11,18 @@ const mocks = vi.hoisted(() => ({
   lockTrainingPlan: vi.fn(),
   getTrainingPlan: vi.fn(),
   listAssessmentEnrollments: vi.fn(),
-  listArchiveCourseEvidence: vi.fn()
+  listArchiveCourseEvidence: vi.fn(),
+  listPublishedAssessmentEnrollmentsForCourse: vi.fn(),
+  listAssessmentPlanCourses: vi.fn(),
+  listAssessmentInputs: vi.fn(),
+  listCompletedAssessmentSubmissions: vi.fn(),
+  getAssessmentScore: vi.fn(),
+  saveAssessmentScore: vi.fn(),
+  updateAssessmentEnrollment: vi.fn(),
+  getProfileByGroupMemberId: vi.fn(),
+  getBatchStudentCourseMembership: vi.fn(),
+  getCourseTrackableContentCounts: vi.fn(),
+  getCourseMemberProgressSummaries: vi.fn()
 }));
 
 vi.mock('@api/services/enterprise', () => ({
@@ -25,14 +36,36 @@ vi.mock('@cio/db/queries/assessment', () => ({
   publishAssessmentScheme: mocks.publishAssessmentScheme,
   withAssessmentTransaction: mocks.withAssessmentTransaction,
   listAssessmentEnrollments: mocks.listAssessmentEnrollments,
-  listArchiveCourseEvidence: mocks.listArchiveCourseEvidence
+  listArchiveCourseEvidence: mocks.listArchiveCourseEvidence,
+  listPublishedAssessmentEnrollmentsForCourse: mocks.listPublishedAssessmentEnrollmentsForCourse,
+  listAssessmentPlanCourses: mocks.listAssessmentPlanCourses,
+  listAssessmentInputs: mocks.listAssessmentInputs,
+  listCompletedAssessmentSubmissions: mocks.listCompletedAssessmentSubmissions,
+  getAssessmentScore: mocks.getAssessmentScore,
+  saveAssessmentScore: mocks.saveAssessmentScore,
+  updateAssessmentEnrollment: mocks.updateAssessmentEnrollment
+}));
+vi.mock('@cio/db/queries/course/people', () => ({
+  getProfileByGroupMemberId: mocks.getProfileByGroupMemberId
+}));
+vi.mock('@cio/db/queries/course/member-progress', () => ({
+  getBatchStudentCourseMembership: mocks.getBatchStudentCourseMembership,
+  getCourseTrackableContentCounts: mocks.getCourseTrackableContentCounts
+}));
+vi.mock('@api/services/course/member-progress', () => ({
+  getCourseMemberProgressSummaries: mocks.getCourseMemberProgressSummaries
 }));
 vi.mock('@cio/db/queries/training-plan', () => ({
   lockTrainingPlan: mocks.lockTrainingPlan,
   getTrainingPlan: mocks.getTrainingPlan
 }));
 
-import { getTrainingArchiveSummary, publishPlanAssessment, submitTrainingEvaluation } from './assessment';
+import {
+  getTrainingArchiveSummary,
+  publishPlanAssessment,
+  submitTrainingEvaluation,
+  syncAssessmentsForSubmission
+} from './assessment';
 
 describe('assessment publication and evaluation', () => {
   beforeEach(() => {
@@ -86,5 +119,45 @@ describe('assessment publication and evaluation', () => {
     expect(summary.trainingCount).toBe(0);
     expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7]);
     expect(mocks.listArchiveCourseEvidence).toHaveBeenCalledWith('org', undefined, [7]);
+  });
+
+  it('updates the assigned learner score when a native submission changes', async () => {
+    mocks.getProfileByGroupMemberId.mockResolvedValue({ id: 'learner' });
+    mocks.listPublishedAssessmentEnrollmentsForCourse.mockResolvedValue([
+      { organizationId: 'org', enrollmentId: 'enrollment' }
+    ]);
+    mocks.getAssessmentEnrollment.mockResolvedValue({
+      enrollment: { startedAt: null },
+      plan: { id: 'plan' },
+      member: { profileId: 'learner' }
+    });
+    mocks.getAssessmentScheme.mockResolvedValue({
+      status: 'PUBLISHED',
+      passScore: 60,
+      items: [{ id: 'exam', type: 'EXAM', exerciseId: 'exercise', weight: 100, maxScore: 100, required: true }]
+    });
+    mocks.listAssessmentPlanCourses.mockResolvedValue([{ courseId: 'course', groupId: 'group', required: true }]);
+    mocks.listAssessmentInputs.mockResolvedValue([]);
+    mocks.getAssessmentScore.mockResolvedValue(null);
+    mocks.getCourseTrackableContentCounts.mockResolvedValue({ lessonsCount: 1, exercisesCount: 1 });
+    mocks.getBatchStudentCourseMembership.mockResolvedValue(new Set(['learner']));
+    mocks.getCourseMemberProgressSummaries.mockResolvedValue(new Map([['learner', { progressPercent: 50 }]]));
+    mocks.listCompletedAssessmentSubmissions.mockResolvedValue([{ id: 'submission', total: 80 }]);
+
+    await syncAssessmentsForSubmission('course', 'group-member');
+
+    expect(mocks.listPublishedAssessmentEnrollmentsForCourse).toHaveBeenCalledWith('course', 'learner');
+    expect(mocks.getAssessmentEnrollment).toHaveBeenCalledWith('org', 'enrollment', {}, true);
+    expect(mocks.saveAssessmentScore).toHaveBeenCalledWith(
+      'enrollment',
+      expect.objectContaining({ finalScore: 80, result: 'PASS' }),
+      [expect.objectContaining({ itemId: 'exam', sourceId: 'submission', rawScore: 80 })],
+      {}
+    );
+    expect(mocks.updateAssessmentEnrollment).toHaveBeenCalledWith(
+      'enrollment',
+      expect.objectContaining({ status: 'IN_PROGRESS', progressPercent: 50, finalScore: 80 }),
+      {}
+    );
   });
 });
