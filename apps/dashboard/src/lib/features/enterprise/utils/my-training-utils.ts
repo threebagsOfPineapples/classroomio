@@ -17,8 +17,10 @@ export function getTrainingCourseProgress(course: EnrolledCourse | undefined) {
 export function getTrainingPlanProgress(assignment: MyTrainingAssignment, enrolledCourses: UserEnrolledCourses) {
   if (assignment.courses.length === 0) return null;
 
+  const requiredCourses = assignment.courses.filter((course) => course.required);
+  const progressCourses = requiredCourses.length ? requiredCourses : assignment.courses;
   const enrolledById = new Map(enrolledCourses.map((course) => [course.id, course]));
-  const percentages = assignment.courses.map((course) => getTrainingCourseProgress(enrolledById.get(course.id)));
+  const percentages = progressCourses.map((course) => getTrainingCourseProgress(enrolledById.get(course.id)));
   if (percentages.some((percentage) => percentage === null)) return null;
 
   const total = percentages.reduce<number>((sum, percentage) => sum + percentage!, 0);

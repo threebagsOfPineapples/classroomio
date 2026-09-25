@@ -179,8 +179,10 @@ async function readTrainingProgress(
 ) {
   if (!profileId || courses.length === 0) return null;
 
+  const requiredCourses = courses.filter((course) => course.required);
+  const progressCourses = requiredCourses.length ? requiredCourses : courses;
   const percentages = await Promise.all(
-    courses.map(async (course) => {
+    progressCourses.map(async (course) => {
       const [counts, membership] = await Promise.all([
         getCourseTrackableContentCounts(course.courseId),
         getBatchStudentCourseMembership(course.courseId, [profileId])

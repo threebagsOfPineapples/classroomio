@@ -129,7 +129,7 @@ export function listAssessmentEnrollments(organizationId: string, planId?: strin
 
 export function listAssessmentPlanCourses(organizationId: string, planId: string) {
   return db
-    .select({ courseId: course.id, groupId: group.id })
+    .select({ courseId: course.id, groupId: group.id, required: trainingPlanCourse.required })
     .from(trainingPlanCourse)
     .innerJoin(course, eq(trainingPlanCourse.courseId, course.id))
     .innerJoin(group, eq(course.groupId, group.id))

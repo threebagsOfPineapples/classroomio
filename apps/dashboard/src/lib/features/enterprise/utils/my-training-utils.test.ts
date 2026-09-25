@@ -11,5 +11,12 @@ describe('training plan progress', () => {
 
     expect(getTrainingPlanProgress(assignment, enrolledCourses)).toBe(75);
     expect(getTrainingPlanProgress(assignment, [enrolledCourses[0]] as never)).toBeNull();
+    const planWithOptionalCourse = {
+      courses: [
+        { id: 'course-1', required: true },
+        { id: 'course-2', required: false }
+      ]
+    } as never;
+    expect(getTrainingPlanProgress(planWithOptionalCourse, [enrolledCourses[0]] as never)).toBe(100);
   });
 });
