@@ -922,6 +922,11 @@
     "company_name": "河南至臻数字生活科技有限公司",
     "title": "企业培训管理",
     "subtitle": "组织、部门与员工",
+    "workbench": {
+      "active_plans": "进行中的培训",
+      "upcoming_plans": "即将开始的培训",
+      "due_soon": "7 天内到期的培训"
+    },
     "request_failed": "操作失败，请稍后重试",
     "load_failed": "企业数据加载失败",
     "saved": "已保存",

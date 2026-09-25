@@ -5849,6 +5849,11 @@
       "matrix": "Training matrix",
       "from": "From",
       "to": "To"
+    },
+    "workbench": {
+      "active_plans": "Laufende Schulungen",
+      "upcoming_plans": "Bevorstehende Schulungen",
+      "due_soon": "Schulungen enden innerhalb von 7 Tagen"
     }
   }
 }

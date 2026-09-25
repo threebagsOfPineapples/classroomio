@@ -4,6 +4,8 @@
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
+  import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
+  import { getTrainingWorkbenchPlans } from '$lib/features/enterprise/utils/training-workbench';
   import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
@@ -27,6 +29,8 @@
   let selectedRoles = $state<EnterpriseRole[]>([]);
   const overview = $derived(enterpriseApi.overview);
   const statistics = $derived(assessmentApi.statistics);
+  const currentTime = Date.now();
+  const workbenchPlans = $derived(getTrainingWorkbenchPlans(trainingPlansApi.plans, currentTime));
   const employees = $derived(enterpriseApi.employees);
   const selectedEmployee = $derived(enterpriseApi.selectedEmployee);
   const loading = $derived(enterpriseApi.loading);
@@ -59,6 +63,7 @@
         (enterpriseApi.overview?.canManage || enterpriseApi.overview?.roles.includes('DEPARTMENT_MANAGER'))
       ) {
         void assessmentApi.loadStatistics(organizationId);
+        if (enterpriseApi.overview?.canManage) void trainingPlansApi.load(organizationId);
       }
     });
   });
@@ -190,6 +195,38 @@
                   {$t('enterprise.assessment.average_score')}: <strong>{statistics.averageScore ?? '—'}</strong>
                 </p>
               </div>
+              {#if overview.canManage}
+                <div class="grid gap-5 border-t pt-4 text-sm md:grid-cols-3">
+                  <div>
+                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.active_plans')}</h2>
+                    {#each workbenchPlans.active as plan (plan.id)}
+                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}>{plan.name}</a>
+                    {:else}
+                      <p class="ui:text-muted-foreground">—</p>
+                    {/each}
+                  </div>
+                  <div>
+                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.upcoming_plans')}</h2>
+                    {#each workbenchPlans.upcoming as plan (plan.id)}
+                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}
+                        >{plan.name} · {new Date(plan.startAt).toLocaleDateString()}</a
+                      >
+                    {:else}
+                      <p class="ui:text-muted-foreground">—</p>
+                    {/each}
+                  </div>
+                  <div>
+                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.due_soon')}</h2>
+                    {#each workbenchPlans.dueSoon as plan (plan.id)}
+                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}
+                        >{plan.name} · {new Date(plan.endAt).toLocaleDateString()}</a
+                      >
+                    {:else}
+                      <p class="ui:text-muted-foreground">—</p>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
               <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
                 <div>
                   <h2 class="mb-2 font-medium">{$t('enterprise.assessment.unfinished_plans')}</h2>

@@ -5688,6 +5688,11 @@
     "company_name": "河南至臻数字生活科技有限公司",
     "title": "Enterprise management",
     "subtitle": "Departments and employees",
+    "workbench": {
+      "active_plans": "Training in progress",
+      "upcoming_plans": "Upcoming training",
+      "due_soon": "Training ending within 7 days"
+    },
     "request_failed": "Request failed",
     "load_failed": "Could not load enterprise data",
     "saved": "Saved",

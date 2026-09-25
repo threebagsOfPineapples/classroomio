@@ -5849,6 +5849,11 @@
       "matrix": "Training matrix",
       "from": "From",
       "to": "To"
+    },
+    "workbench": {
+      "active_plans": "Formación en curso",
+      "upcoming_plans": "Próximas formaciones",
+      "due_soon": "Formaciones que terminan en 7 días"
     }
   }
 }

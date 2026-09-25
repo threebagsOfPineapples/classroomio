@@ -5849,6 +5849,11 @@
       "matrix": "Training matrix",
       "from": "From",
       "to": "To"
+    },
+    "workbench": {
+      "active_plans": "चल रहे प्रशिक्षण",
+      "upcoming_plans": "आगामी प्रशिक्षण",
+      "due_soon": "7 दिनों में समाप्त होने वाले प्रशिक्षण"
     }
   }
 }

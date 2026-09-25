@@ -5849,6 +5849,11 @@
       "matrix": "Training matrix",
       "from": "From",
       "to": "To"
+    },
+    "workbench": {
+      "active_plans": "Đào tạo đang diễn ra",
+      "upcoming_plans": "Đào tạo sắp tới",
+      "due_soon": "Đào tạo kết thúc trong vòng 7 ngày"
     }
   }
 }
