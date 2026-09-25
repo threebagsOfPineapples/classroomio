@@ -691,10 +691,15 @@
       }
     },
     "sidebar": {
+      "back_to_course": "返回课程",
       "compliance": {
         "due_date": "截止日期",
         "title": "合规要求",
         "valid_until": "有效期至"
+      },
+      "content_count": {
+        "lessons": "{count} 个课时",
+        "exercises": "{count} 个练习"
       },
       "footer_nav": {
         "label": "课程内容导航",
@@ -702,8 +707,47 @@
         "previous": "上一项"
       },
       "progress": {
+        "title": "我的学习进度",
+        "completed": "已完成 {completed}/{total}",
         "exercises": "练习：已完成 {completed}/{total}",
         "lessons": "课时：已完成 {completed}/{total}"
+      }
+    },
+    "certification": {
+      "rules_heading": "认证规则",
+      "deadline_label": "认证截止时间",
+      "deadline_helper": "学员须在此时间前达到完成比例。留空表示不设截止时间。",
+      "deadline_required": "合规课程发布前必须设置完成截止时间。",
+      "deadline_required_enroll": "合规课程报名之前必须设置认证截止时间。",
+      "deadline_invalid": "课程完成截止时间无效。",
+      "threshold_label": "最低完成比例（%）",
+      "threshold_helper": "获得证书所需的课时与练习综合完成比例（0–100），默认 100%。",
+      "final_exercise_label": "结业练习（可选）",
+      "final_exercise_none": "无",
+      "final_exercise_helper": "设置后，学员除达到上述完成比例外，还须在该练习中达到最低分数；按最高一次成绩计算。",
+      "final_exercise_multiple_attempts_note": "学员可以不限次数地参加所选练习。",
+      "min_exercise_score_label": "结业练习最低分（%）",
+      "min_exercise_score_helper": "分数按该练习总分的百分比计算（0–100）。",
+      "blocker_progress": "当前课程进度为 {current}%，要求达到 {required}%。",
+      "blocker_deadline": "认证截止时间已过。",
+      "blocker_no_content": "这门课程暂无可完成的课时或练习。",
+      "blocker_final_not_submitted": "请提交必做练习“{exerciseTitle}”以获得证书。",
+      "blocker_final_pending": "“{exerciseTitle}”的作答仍在评分中。",
+      "blocker_final_score": "“{exerciseTitle}”的最高成绩为 {bestPercent}%，要求达到 {requiredPercent}%。",
+      "blocker_final_misconfigured": "认证练习“{exerciseTitle}”未设置分值，请联系讲师处理。",
+      "email_message_label": "邮件内容",
+      "email_message_placeholder": "例如：祝贺你取得进步，继续保持学习！"
+    },
+    "completion": {
+      "modal": {
+        "title": "课程学习要求已完成！",
+        "subtitle": "恭喜！你可以随时查看和下载证书。",
+        "subtitle_no_certificate": "恭喜！你已完成本课程。",
+        "view_certificate": "查看证书",
+        "later": "关闭",
+        "checking": "正在检查资格…",
+        "not_eligible_title": "再完成一点就好",
+        "retake_exercise": "重新参加练习"
       }
     }
   },
