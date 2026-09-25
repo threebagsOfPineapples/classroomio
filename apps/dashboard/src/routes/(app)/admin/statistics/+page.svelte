@@ -1,4 +1,13 @@
+<script module lang="ts">
+  function loadChart() {
+    if (typeof window === 'undefined') return Promise.reject(new Error('browser-only'));
+
+    return import('@cio/ui/base/chart');
+  }
+</script>
+
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
@@ -8,12 +17,52 @@
   import { Progress } from '@cio/ui/base/progress';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
+  import type { ChartConfig } from '@cio/ui/base/chart/types';
 
   const assessmentApi = new AssessmentApi();
 
   let lastOrganizationId = '';
   let fromDate = $state('');
   let toDate = $state('');
+
+  const departmentChartConfig = $derived({
+    completionRate: { label: $t('enterprise.assessment.completion_rate'), color: 'var(--chart-1)' }
+  } satisfies ChartConfig);
+  const departmentSeries = $derived([
+    {
+      key: 'completionRate',
+      value: 'completionRate',
+      label: departmentChartConfig.completionRate.label,
+      color: 'var(--color-completionRate)'
+    }
+  ]);
+  const departmentChartData = $derived(
+    [...(assessmentApi.statistics?.byDepartment ?? [])]
+      .sort((left, right) => right.assigned - left.assigned)
+      .slice(0, 8)
+      .map((department) => ({
+        name:
+          enterpriseApi.overview?.departments.find((item) => item.id === department.departmentId)?.name ??
+          (department.departmentId === 'unassigned'
+            ? $t('enterprise.assessment.not_assigned')
+            : department.departmentId),
+        completionRate: department.completionRate
+      }))
+  );
+  const monthlyChartConfig = $derived({
+    assigned: { label: $t('enterprise.assessment.training_count'), color: 'var(--chart-2)' },
+    completed: { label: $t('enterprise.assessment.completed'), color: 'var(--chart-1)' }
+  } satisfies ChartConfig);
+  const monthlySeries = $derived([
+    { key: 'assigned', value: 'assigned', label: monthlyChartConfig.assigned.label, color: 'var(--color-assigned)' },
+    {
+      key: 'completed',
+      value: 'completed',
+      label: monthlyChartConfig.completed.label,
+      color: 'var(--color-completed)'
+    }
+  ]);
+  const monthlyChartData = $derived(assessmentApi.statistics?.monthlyTrend.slice(-12) ?? []);
 
   $effect(() => {
     const organizationId = $currentOrg.id;
@@ -83,6 +132,19 @@
           <section class="grid gap-6 rounded-lg border p-5 lg:grid-cols-2">
             <div class="space-y-3">
               <h2 class="font-semibold">{$t('enterprise.assessment.by_department')}</h2>
+              {#if browser && departmentChartData.length > 0}
+                {#await loadChart() then Chart}
+                  <Chart.ChartContainer class="h-[260px] w-full" config={departmentChartConfig}>
+                    <Chart.BarChart
+                      data={departmentChartData}
+                      x="name"
+                      axis="x"
+                      yDomain={[0, 100]}
+                      series={departmentSeries}
+                    />
+                  </Chart.ChartContainer>
+                {/await}
+              {/if}
               {#each assessmentApi.statistics.byDepartment as department (department.departmentId)}
                 <div>
                   <p class="text-sm">
@@ -97,6 +159,20 @@
             </div>
             <div class="space-y-3">
               <h2 class="font-semibold">{$t('enterprise.assessment.monthly_trend')}</h2>
+              {#if browser && monthlyChartData.length > 0}
+                {#await loadChart() then Chart}
+                  <Chart.ChartContainer class="h-[260px] w-full" config={monthlyChartConfig}>
+                    <Chart.BarChart
+                      data={monthlyChartData}
+                      x="month"
+                      axis="x"
+                      legend
+                      seriesLayout="group"
+                      series={monthlySeries}
+                    />
+                  </Chart.ChartContainer>
+                {/await}
+              {/if}
               {#each assessmentApi.statistics.monthlyTrend as month (month.month)}
                 <div>
                   <p class="text-sm">{month.month} · {month.completed}/{month.assigned}</p>
