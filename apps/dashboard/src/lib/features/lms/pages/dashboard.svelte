@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { Button } from '@cio/ui/base/button';
-  import { CoursesPage } from '$features/course/pages';
-  import { CourseCardList } from '$features/course/components';
+  import { Progress } from '@cio/ui/base/progress';
+  import BookOpenIcon from '@lucide/svelte/icons/book-open';
+  import AwardIcon from '@lucide/svelte/icons/award';
   import { t, locale } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
@@ -9,49 +11,40 @@
   import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
   import { myTrainingApi } from '$features/enterprise/api/my-training.svelte';
   import { AssessmentApi } from '$features/enterprise/api/assessment.svelte';
-  import { isStudentCourseComplete } from '$features/course/utils/compliance-utils';
-  import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
-  import UpcomingSessionsCard from '$features/lms/components/upcoming-sessions-card.svelte';
-  import CoursePreviewModal from '$features/lms/components/course-preview-modal.svelte';
-  import type { RecommendedCourses } from '$features/course/types';
+  import { lmsExercisesApi } from '$features/lms/api/exercises.svelte';
+  import { getStudentCourseProgressPercent } from '$features/course/utils/compliance-utils';
+  import { filterLearningCourses, getCourseLearningAction } from '$features/course/utils/course-learning';
+  import { getHomeExams, getPendingTraining } from '../utils/home-model';
+  import LearningCourses from '../components/learning-courses.svelte';
+  import UpcomingSessionsCard from '../components/upcoming-sessions-card.svelte';
 
   const assessmentApi = new AssessmentApi();
   let loadedFor = '';
-  let searchValue = $state('');
-  let selectedCourse = $state<RecommendedCourses[number] | null>(null);
-  let previewOpen = $state(false);
-  const visibleCourses = $derived(
-    coursesApi.enrolledCourses.filter((course) => course.title.toLowerCase().includes(searchValue.trim().toLowerCase()))
+  const pendingCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'pending'));
+  const completedCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'completed'));
+  const startedCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'in_progress'));
+  const nextCourse = $derived(startedCourses[0] ?? pendingCourses[0] ?? completedCourses[0]);
+  const nextAction = $derived(nextCourse ? getCourseLearningAction(nextCourse) : null);
+  const pendingTraining = $derived(getPendingTraining(myTrainingApi.assignments));
+  const activeTraining = $derived(pendingTraining.filter((assignment) => Date.parse(assignment.startAt) <= Date.now()));
+  const upcomingTraining = $derived(
+    pendingTraining
+      .filter((assignment) => Date.parse(assignment.startAt) > Date.now())
+      .sort((left, right) => Date.parse(left.startAt) - Date.parse(right.startAt))
+      .slice(0, 3)
   );
+  const exams = $derived(
+    getHomeExams(myTrainingApi.assignments, lmsExercisesApi.exercises, lmsExercisesApi.examAccess, Date.now())
+  );
+  const examTasks = $derived(
+    exams.filter((exam) => ['open', 'in_progress', 'unknown', 'unavailable'].includes(exam.state))
+  );
+  const upcomingExams = $derived(exams.filter((exam) => exam.state === 'upcoming').slice(0, 3));
   const ownEmployee = $derived(
     enterpriseApi.employees.find((employee) => employee.member.id === enterpriseApi.overview?.memberId)
   );
   const ownDepartment = $derived(
     enterpriseApi.overview?.departments.find((department) => department.id === ownEmployee?.member.departmentId)
-  );
-  const inProgressCourses = $derived(coursesApi.enrolledCourses.filter((course) => !isStudentCourseComplete(course)));
-  const pendingTraining = $derived(
-    myTrainingApi.assignments.filter(
-      (assignment) =>
-        assignment.planStatus === 'PUBLISHED' &&
-        !['COMPLETED', 'CANCELLED', 'EXPIRED'].includes(assignment.enrollmentStatus)
-    )
-  );
-  const upcomingTraining = $derived(
-    [...pendingTraining]
-      .filter((assignment) => Date.parse(assignment.startAt) > Date.now())
-      .sort((left, right) => Date.parse(left.startAt) - Date.parse(right.startAt))
-      .slice(0, 3)
-  );
-  const upcomingExams = $derived(
-    [
-      ...new Map(
-        myTrainingApi.assignments.flatMap((assignment) => assignment.exams).map((exam) => [exam.id, exam])
-      ).values()
-    ]
-      .filter((exam) => Date.parse(exam.opensAt) > Date.now())
-      .sort((left, right) => Date.parse(left.opensAt) - Date.parse(right.opensAt))
-      .slice(0, 3)
   );
   const recentCertificates = $derived.by(() => {
     const seen = new Set<string>();
@@ -68,17 +61,21 @@
       })
       .slice(0, 3);
   });
+  const learningHours = $derived(assessmentApi.archiveSummary?.actualLearningHours);
   const upcomingSessions = $derived(
     coursesApi.enrolledCourses
       .filter((course) => course.type === 'LIVE_CLASS' && course.upcomingSession)
-      .map((course) => ({
-        lessonId: course.upcomingSession!.lessonId,
-        courseTitle: course.title,
-        lessonTitle: course.upcomingSession!.lessonTitle,
-        callUrl: course.upcomingSession!.callUrl,
-        lessonAt: course.upcomingSession!.lessonAt,
-        timezone: course.upcomingSession!.sessionTimezone
-      }))
+      .map((course) => {
+        const session = course.upcomingSession!;
+        return {
+          lessonId: session.lessonId,
+          courseTitle: course.title,
+          lessonTitle: session.lessonTitle,
+          callUrl: session.callUrl,
+          lessonAt: session.lessonAt,
+          timezone: session.sessionTimezone
+        };
+      })
       .sort((left, right) => Date.parse(left.lessonAt) - Date.parse(right.lessonAt))
   );
 
@@ -87,133 +84,220 @@
     const profileId = $profile.id;
     if (!organizationId || !profileId) return;
 
-    const nextKey = organizationId + ':' + profileId;
-    if (loadedFor === nextKey) return;
+    const key = organizationId + ':' + profileId;
+    if (key === loadedFor) return;
 
-    loadedFor = nextKey;
-    void coursesApi.getEnrolledCourses();
-    void coursesApi.getRecommendedCourses({ limit: 3 });
-    void enterpriseApi.load(organizationId);
-    void myTrainingApi.load(organizationId, profileId);
-    void assessmentApi.loadArchiveSummary(organizationId);
+    loadedFor = key;
+    untrack(() => {
+      void coursesApi.getEnrolledCourses();
+      void enterpriseApi.load(organizationId);
+      void assessmentApi.loadArchiveSummary(organizationId);
+      void reloadTasks();
+    });
   });
+
+  async function reloadTasks() {
+    const organizationId = $currentOrg.id;
+    const profileId = $profile.id;
+    await myTrainingApi.load(organizationId, profileId);
+    if ($currentOrg.id !== organizationId || $profile.id !== profileId) return;
+
+    await lmsExercisesApi.fetchLMSExercises(organizationId);
+    await lmsExercisesApi.fetchExamAccess(myTrainingApi.assignments);
+  }
 
   function dateLabel(value: string) {
     return new Date(value).toLocaleDateString($locale === 'zh' ? 'zh-CN' : $locale);
   }
 </script>
 
-<div class="space-y-6 pb-8">
-  <section class="training-panel learner-overview space-y-5" aria-label={$t('enterprise.my_training.title')}>
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h2 class="text-lg font-semibold">{$profile.fullname}</h2>
-        <p class="ui:text-muted-foreground mt-1 text-sm">
-          {$t('enterprise.department')}: {ownDepartment?.name ?? '—'} · {$t('enterprise.position')}: {ownEmployee
-            ?.member.position ?? '—'}
+{#snippet retry(action: () => void)}
+  <p class="text-sm" role="alert">{$t('enterprise.load_failed')}</p>
+  <Button size="sm" variant="outline" onclick={action}>{$t('enterprise.ui_v2.retry')}</Button>
+{/snippet}
+
+<div class="learner-home-v2 space-y-6 pb-8">
+  <div class="learner-welcome-grid">
+    <section class="training-panel learner-next" aria-label={$t('enterprise.ui_v2.next_learning')}>
+      <div class="learner-next-copy">
+        <h2 class="learner-next-label">{$t('enterprise.ui_v2.next_learning')}</h2>
+        {#if coursesApi.isLoading}<h3 class="learner-next-title">{$t('enterprise.loading')}</h3>
+        {:else if coursesApi.error}{@render retry(() => void coursesApi.getEnrolledCourses())}
+        {:else if nextCourse && nextAction}
+          <h3 class="learner-next-title">{nextCourse.title}</h3>
+          <p class="learner-next-note">
+            {$t(pendingCourses.length ? 'enterprise.ui_v2.next_hint' : 'enterprise.ui_v2.all_learning_done')}
+          </p>
+          <div class="learner-next-bottom">
+            <Button href={nextAction.href}>{$t(nextAction.key)}</Button>
+            <div class="learner-next-progress">
+              <Progress value={getStudentCourseProgressPercent(nextCourse)} />
+              <p>{$t('enterprise.ui_v2.content_progress')}: {getStudentCourseProgressPercent(nextCourse)}%</p>
+            </div>
+          </div>
+        {:else}
+          <h3 class="learner-next-title">{$t('enterprise.ui_v2.no_course')}</h3>
+          <p class="learner-next-note">{$t('enterprise.ui_v2.no_course_hint')}</p>
+          <Button href="/lms/explore" class="mt-5">{$t('my_learning.find_courses')}</Button>
+        {/if}
+      </div>
+      <BookOpenIcon class="custom learner-next-art" aria-hidden="true" />
+    </section>
+    <section class="training-panel learner-personal">
+      <h2 class="font-semibold">{$t('enterprise.ui_v2.personal_overview')}</h2>
+      <div class="training-metrics grid grid-cols-2 gap-5">
+        <p>
+          {$t('enterprise.ui_v2.pending')}<strong
+            >{coursesApi.isLoading || coursesApi.error ? '—' : pendingCourses.length}<small
+              >{$t('enterprise.ui_v2.course_unit')}</small
+            ></strong
+          >
+        </p>
+        <p>
+          {$t('enterprise.ui_v2.completed')}<strong
+            >{coursesApi.isLoading || coursesApi.error ? '—' : completedCourses.length}<small
+              >{$t('enterprise.ui_v2.course_unit')}</small
+            ></strong
+          >
+        </p>
+        <p>
+          {$t('enterprise.assessment.average_score')}<strong
+            >{assessmentApi.loading || assessmentApi.error
+              ? '—'
+              : (assessmentApi.archiveSummary?.averageScore ?? '—')}<small>{$t('enterprise.ui_v2.score_unit')}</small
+            ></strong
+          >
+        </p>
+        <p>
+          {$t('enterprise.assessment.learning_hours')}<strong
+            >{assessmentApi.loading || assessmentApi.error || learningHours == null
+              ? '—'
+              : learningHours < 1
+                ? Math.round(learningHours * 60)
+                : learningHours}<small
+              >{$t(
+                learningHours != null && learningHours < 1
+                  ? 'enterprise.ui_v2.minute_unit'
+                  : 'enterprise.ui_v2.hour_unit'
+              )}</small
+            ></strong
+          >
         </p>
       </div>
-      {#if inProgressCourses[0]}
-        <Button href={getStudentCourseContinuePath(inProgressCourses[0].id)} size="sm"
-          >{$t('dashboard.continue_learning')}</Button
-        >
-      {:else}
-        <Button href="/lms/training/archive" variant="outline" size="sm">{$t('enterprise.assessment.archive')}</Button>
-      {/if}
-    </div>
-    <div class="training-metrics grid gap-5 border-t pt-5 sm:grid-cols-2 lg:grid-cols-5">
-      <p class="text-sm">
-        {$t('enterprise.assessment.unfinished_plans')}<strong
-          >{myTrainingApi.loading || myTrainingApi.error ? '—' : pendingTraining.length}</strong
-        >
-      </p>
-      <p class="text-sm">
-        {$t('dashboard.currently_learning')}<strong
-          >{coursesApi.isLoading || coursesApi.error ? '—' : inProgressCourses.length}</strong
-        >
-      </p>
-      <p class="text-sm">
-        {$t('enterprise.assessment.average_score')}<strong>{assessmentApi.archiveSummary?.averageScore ?? '—'}</strong>
-      </p>
-      <p class="text-sm">
-        {$t('enterprise.assessment.training_count')}<strong>{assessmentApi.archiveSummary?.trainingCount ?? '—'}</strong
-        >
-      </p>
-      <p class="text-sm">
-        {$t('enterprise.assessment.learning_hours')}<strong
-          >{assessmentApi.archiveSummary?.actualLearningHours ?? '—'}</strong
-        >
-      </p>
-    </div>
-  </section>
-
-  <section class="learner-course-section space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <h2 class="text-xl font-semibold">{$t('my_learning.heading')}</h2>
-      <Button href="/lms/mylearning" variant="outline" size="sm">{$t('dashboard.view_more')}</Button>
-    </div>
-    <CoursesPage
-      bind:searchValue
-      courses={visibleCourses}
-      isLMS
-      isLoading={coursesApi.isLoading}
-      showSortSelect={false}
-    >
-      {#snippet emptyAction()}
-        <Button href="/lms/explore">{$t('my_learning.find_courses')}</Button>
-      {/snippet}
-    </CoursesPage>
-  </section>
-
-  <section class="training-panel grid gap-6 md:grid-cols-3" aria-label={$t('enterprise.my_training.title')}>
-    <div class="space-y-3">
-      <h3 class="font-semibold">{$t('dashboard.enterprise_home.upcoming_training')}</h3>
-      {#each upcomingTraining as assignment (assignment.enrollmentId)}
-        <a class="ui:hover:text-primary block text-sm" href={'/lms/training/' + assignment.enrollmentId}
-          >{assignment.name} · {dateLabel(assignment.startAt)}</a
-        >
-      {:else}
-        <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
-      {/each}
-    </div>
-    <div class="space-y-3">
-      <h3 class="font-semibold">{$t('dashboard.enterprise_home.upcoming_exams')}</h3>
-      {#each upcomingExams as exam (exam.id)}
-        <a class="ui:hover:text-primary block text-sm" href={'/courses/' + exam.courseId + '/exercises/' + exam.id}
-          >{exam.title} · {dateLabel(exam.opensAt)}</a
-        >
-      {:else}
-        <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
-      {/each}
-    </div>
-    <div class="space-y-3">
-      <h3 class="font-semibold">{$t('dashboard.enterprise_home.recent_certificates')}</h3>
-      {#each recentCertificates as course (course.id + ':' + course.certificateAt)}
-        <a class="ui:hover:text-primary block text-sm" href={'/courses/' + course.id + '/certificates'}
-          >{course.title} · {dateLabel(course.certificateAt!)}</a
-        >
-      {:else}
-        <p class="ui:text-muted-foreground text-sm">{$t('enterprise.my_training.pending')}</p>
-      {/each}
-    </div>
-  </section>
-  <UpcomingSessionsCard sessions={upcomingSessions} />
-  {#if coursesApi.recommendedCourses.length}
-    <section class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-semibold">{$t('dashboard.explore_more_courses')}</h2>
-        <Button href="/lms/explore" variant="outline" size="sm">{$t('dashboard.view_more')}</Button>
+      <div class="learner-overview-foot">
+        <span
+          >{$t('enterprise.assessment.training_count')}: {assessmentApi.loading || assessmentApi.error
+            ? '—'
+            : (assessmentApi.archiveSummary?.trainingCount ?? '—')}</span
+        ><Button href="/lms/training/archive" variant="link" size="sm">{$t('enterprise.assessment.archive')}</Button>
       </div>
-      <CourseCardList
-        courses={coursesApi.recommendedCourses}
-        isLMS
-        isExplore
-        onCardClick={(course) => {
-          selectedCourse = coursesApi.recommendedCourses.find((recommended) => recommended.id === course.id) ?? null;
-          previewOpen = true;
-        }}
-      />
+      {#if assessmentApi.error}{@render retry(() => void assessmentApi.loadArchiveSummary($currentOrg.id))}{/if}
     </section>
-  {/if}
-  {#if selectedCourse}<CoursePreviewModal course={selectedCourse} bind:open={previewOpen} />{/if}
+  </div>
+  <div class="learner-learning-grid">
+    <section class="learner-courses-v2 min-w-0">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold">{$t('my_learning.heading')}</h2>
+        <Button href="/lms/mylearning" variant="link" size="sm">{$t('dashboard.view_more')}</Button>
+      </div>
+      <LearningCourses
+        courses={coursesApi.enrolledCourses}
+        loading={coursesApi.isLoading}
+        error={coursesApi.error}
+        onRetry={() => void coursesApi.getEnrolledCourses()}
+      />
+      <p class="ui:text-muted-foreground mt-4 text-xs leading-6">{$t('enterprise.ui_v2.completion_note')}</p>
+      <UpcomingSessionsCard sessions={upcomingSessions} />
+    </section>
+    <section class="training-panel learner-tasks-v2 space-y-4">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="font-semibold">{$t('enterprise.ui_v2.learning_tasks')}</h2>
+        <Button href="/lms/training" variant="link" size="sm">{$t('dashboard.view_more')}</Button>
+      </div>
+      {#if myTrainingApi.loading || lmsExercisesApi.isLoading || lmsExercisesApi.accessLoading}<p
+          class="ui:text-muted-foreground text-sm"
+        >
+          {$t('enterprise.loading')}
+        </p>
+      {:else if myTrainingApi.error || lmsExercisesApi.error}{@render retry(() => void reloadTasks())}
+      {:else}
+        {#each activeTraining.slice(0, 2) as assignment (assignment.enrollmentId)}<div class="home-task-row">
+            <span class="home-task-kind">{$t('enterprise.my_training.title')}</span>
+            <h3>{assignment.name}</h3>
+            <p>{$t('enterprise.my_training.due')} {dateLabel(assignment.endAt)}</p>
+            <Button href={'/lms/training/' + assignment.enrollmentId} variant="link" size="sm"
+              >{$t('enterprise.ui_v2.view_plan')}</Button
+            >
+          </div>{/each}
+        {#each examTasks.slice(0, 3) as exam (exam.id)}
+          <div class="home-task-row">
+            <span class="home-task-kind">{$t(`enterprise.ui_v2.exam_${exam.state}`)}</span>
+            <h3>{exam.title}</h3>
+            <p>{$t('enterprise.my_training.due')} {dateLabel(exam.closesAt)}</p>
+            {#if ['open', 'in_progress'].includes(exam.state)}<Button
+                href={'/courses/' + exam.courseId + '/exercises/' + exam.id}
+                variant="link"
+                size="sm">{$t('enterprise.ui_v2.view_exam')}</Button
+              >{:else if exam.state === 'unknown'}<Button variant="link" size="sm" onclick={() => void reloadTasks()}
+                >{$t('enterprise.ui_v2.retry')}</Button
+              >{/if}
+          </div>
+        {/each}
+        {#if !activeTraining.length && !examTasks.length}<div class="training-empty">
+            <h3>{$t('enterprise.ui_v2.no_tasks')}</h3>
+            <p>{$t('enterprise.ui_v2.no_tasks_hint')}</p>
+          </div>{/if}
+        {#if examTasks.length}<p class="ui:text-muted-foreground text-xs leading-5">
+            {$t('enterprise.ui_v2.exam_eligibility_note')}
+          </p>{/if}
+      {/if}
+    </section>
+    <section class="training-panel learner-training-v2 space-y-4">
+      <h2 class="font-semibold">{$t('dashboard.enterprise_home.upcoming_training')}</h2>
+      {#if myTrainingApi.loading || lmsExercisesApi.isLoading || lmsExercisesApi.accessLoading}<p
+          class="ui:text-muted-foreground text-sm"
+        >
+          {$t('enterprise.loading')}
+        </p>{:else if myTrainingApi.error || lmsExercisesApi.error}{@render retry(() => void reloadTasks())}{:else}
+        {#each upcomingTraining as assignment (assignment.enrollmentId)}<a
+            class="home-task-row block"
+            href={'/lms/training/' + assignment.enrollmentId}
+            ><h3>{assignment.name}</h3>
+            <p>{dateLabel(assignment.startAt)} — {dateLabel(assignment.endAt)}</p></a
+          >{/each}
+        {#each upcomingExams as exam (exam.id)}<div class="home-task-row">
+            <span class="home-task-kind">{$t('enterprise.ui_v2.exam_upcoming')}</span>
+            <h3>{exam.title}</h3>
+            <p>{dateLabel(exam.opensAt)}</p>
+          </div>{/each}
+        {#if !upcomingTraining.length && !upcomingExams.length}<p class="ui:text-muted-foreground text-sm">
+            {$t('enterprise.ui_v2.no_upcoming')}
+          </p>{/if}
+      {/if}
+    </section>
+    <section class="training-panel learner-certificates-v2 space-y-4">
+      <h2 class="font-semibold">{$t('dashboard.enterprise_home.recent_certificates')}</h2>
+      {#if assessmentApi.loading}<p class="ui:text-muted-foreground text-sm">
+          {$t('enterprise.loading')}
+        </p>{:else if assessmentApi.error}{@render retry(
+          () => void assessmentApi.loadArchiveSummary($currentOrg.id)
+        )}{:else}
+        {#each recentCertificates as course (course.id + ':' + course.certificateAt)}<a
+            class="flex items-start gap-3"
+            href={'/courses/' + course.id + '/certificates'}
+            ><AwardIcon class="custom certificate-mark" /><span class="home-task-row"
+              ><h3>{course.title}</h3>
+              <p>{dateLabel(course.certificateAt!)}</p></span
+            ></a
+          >{:else}<p class="ui:text-muted-foreground text-sm">{$t('enterprise.ui_v2.no_certificates')}</p>{/each}
+      {/if}
+    </section>
+  </div>
+  <p class="ui:text-muted-foreground border-t pt-4 text-xs">
+    {$profile.fullname} · {$t('enterprise.department')}: {enterpriseApi.loading || enterpriseApi.error
+      ? '—'
+      : (ownDepartment?.name ?? '—')} · {$t('enterprise.position')}: {enterpriseApi.loading || enterpriseApi.error
+      ? '—'
+      : (ownEmployee?.member.position ?? '—')}
+  </p>
 </div>

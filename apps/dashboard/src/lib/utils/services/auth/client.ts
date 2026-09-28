@@ -2,6 +2,7 @@ import { createAuthClient } from 'better-auth/svelte';
 import { env } from '$env/dynamic/public';
 import { ssoClient } from '@better-auth/sso/client';
 import { dev } from '$app/environment';
+import type { DingtalkPlugin } from '@cio/db/auth';
 
 // Browser baseURL depends on deployment shape:
 //
@@ -51,6 +52,7 @@ export const authClient = createAuthClient({
     credentials: 'include' // Include cookies in requests
   },
   plugins: [
+    { id: 'dingtalk', $InferServerPlugin: {} as DingtalkPlugin },
     ssoClient({
       domainVerification: {
         enabled: true

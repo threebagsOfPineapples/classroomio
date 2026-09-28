@@ -1,5 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { page } from '$app/state';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
@@ -61,7 +62,10 @@
       untrack(() => {
         resetForm();
         void enterpriseApi.load(organizationId);
-        void trainingPlansApi.load(organizationId);
+        void trainingPlansApi.load(organizationId).then(() => {
+          const planId = page.url.searchParams.get('planId');
+          if ($currentOrg.id === organizationId && planId && !trainingPlansApi.error) void selectPlan(planId);
+        });
       });
     }
   });

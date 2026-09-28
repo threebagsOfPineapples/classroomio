@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-28T04:35:33Z",
+  "generatedAt": "2026-09-28T06:05:14Z",
   "title": "Design System: 至臻企业培训平台",
   "extensions": {
     "colorMeta": {
@@ -12,25 +12,21 @@
         "role": "neutral",
         "displayName": "主操作白字"
       },
-      "training-brand": {
-        "role": "primary",
-        "displayName": "企业品牌橙"
-      },
       "sidebar": {
         "role": "neutral",
-        "displayName": "管理侧栏墨色"
+        "displayName": "侧栏深蓝"
       },
       "sidebar-foreground": {
         "role": "neutral",
-        "displayName": "侧栏浅灰字"
+        "displayName": "侧栏浅字"
       },
       "sidebar-accent": {
         "role": "neutral",
-        "displayName": "侧栏选中墨蓝"
+        "displayName": "侧栏选中深蓝"
       },
       "sidebar-accent-foreground": {
         "role": "primary",
-        "displayName": "导航选中橙"
+        "displayName": "侧栏选中橙"
       },
       "training-ground": {
         "role": "neutral",
@@ -38,11 +34,11 @@
       },
       "training-paper": {
         "role": "neutral",
-        "displayName": "内容白色"
+        "displayName": "面板白色"
       },
       "training-line": {
         "role": "neutral",
-        "displayName": "细分隔灰"
+        "displayName": "分隔线灰"
       },
       "training-muted": {
         "role": "neutral",
@@ -50,7 +46,7 @@
       },
       "training-accent": {
         "role": "primary",
-        "displayName": "浅橙提示底"
+        "displayName": "浅橙状态底"
       },
       "foreground": {
         "role": "neutral",
@@ -68,57 +64,89 @@
         "role": "neutral",
         "displayName": "输入边框灰"
       },
-      "learner-overview": {
+      "learner-next": {
         "role": "neutral",
-        "displayName": "学习概览墨色"
+        "displayName": "学习行动深蓝"
       },
-      "learner-overview-foreground": {
-        "role": "neutral",
-        "displayName": "概览浅白字"
+      "learner-next-action": {
+        "role": "primary",
+        "displayName": "学习行动橙"
       },
-      "learner-overview-muted": {
+      "learner-next-muted": {
         "role": "neutral",
-        "displayName": "概览次级字"
+        "displayName": "行动辅助浅字"
       },
-      "course-cover": {
+      "course-cover-self-paced": {
         "role": "neutral",
-        "displayName": "课程封面冷灰"
+        "displayName": "自主学习中性蓝灰"
       },
-      "course-cover-foreground": {
+      "course-cover-self-paced-icon": {
         "role": "neutral",
-        "displayName": "封面墨字"
+        "displayName": "自主学习图标色"
+      },
+      "course-cover-compliance": {
+        "role": "neutral",
+        "displayName": "合规课程中性灰绿"
+      },
+      "course-cover-compliance-icon": {
+        "role": "neutral",
+        "displayName": "合规课程图标色"
+      },
+      "course-cover-live-class": {
+        "role": "neutral",
+        "displayName": "直播课程中性米灰"
+      },
+      "course-cover-live-class-icon": {
+        "role": "neutral",
+        "displayName": "直播课程图标色"
+      },
+      "department-progress": {
+        "role": "neutral",
+        "displayName": "部门进度蓝灰"
       }
     },
     "typographyMeta": {
       "title": {
         "displayName": "页面标题",
-        "purpose": "培训页面主标题。"
+        "purpose": "培训页面标题，手机按既有字号覆写。"
       },
       "body": {
-        "displayName": "辅助正文",
-        "purpose": "培训页面副标题，其他正文保留共享组件字号。"
+        "displayName": "副标题正文",
+        "purpose": "页面副标题与相关辅助说明。"
       },
       "label": {
         "displayName": "导航标签",
         "purpose": "管理侧栏和学员顶部导航。"
       },
       "metric": {
-        "displayName": "统计数字",
-        "purpose": "工作台统计，采用等宽数字排列。"
+        "displayName": "个人概览指标",
+        "purpose": "白色个人面板中的动态真实指标。"
       },
-      "overview-metric": {
-        "displayName": "学员概览数字",
-        "purpose": "学员概览指标的真实数值。"
+      "workbench-metric": {
+        "displayName": "管理独立指标",
+        "purpose": "四张管理指标卡，各自带口径说明。"
       },
-      "course-cover-title": {
-        "displayName": "无图课程标题",
-        "purpose": "真实完整课程标题字段，采用两行裁切。"
+      "learner-next-title": {
+        "displayName": "下一步课程标题",
+        "purpose": "从真实下一步学习课程提取标题。"
+      },
+      "learner-next-label": {
+        "displayName": "学习行动模块标题",
+        "purpose": "下一步学习区域的18px标题。"
       }
     },
     "breakpoints": [
       {
         "name": "training-mobile-max",
         "value": "767px"
+      },
+      {
+        "name": "learner-stacked-max",
+        "value": "899px"
+      },
+      {
+        "name": "workbench-stacked-max",
+        "value": "1199px"
       },
       {
         "name": "shared-input-desktop-min",
@@ -155,9 +183,9 @@
       "name": "主要操作",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "共享 Button 的默认主要操作为深橙白字；学习概览继续学习使用品牌橙墨字的已有局部覆写。",
-      "html": "<a class=\"ds-primary\" href=\"#primary\">查看课程</a> <a class=\"ds-primary ds-overview-primary\" href=\"#continue\">继续学习</a>",
-      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;background:var(--primary,#bd4b00);color:var(--primary-foreground,#fff);border-radius:calc(var(--radius,0.625rem) - 2px);padding:8px 16px;height:36px;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-2xs,0 1px rgb(0 0 0 / 0.05))}.ds-primary:hover{background:color-mix(in oklab,var(--primary,#bd4b00) 90%,transparent)}.ds-primary:focus-visible{outline:2px solid var(--primary,#bd4b00);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#bd4b00) 50%,transparent)}.ds-overview-primary{--primary:#f59a18;--primary-foreground:#17243a;height:32px;padding:0 12px}"
+      "description": "普通主要操作为深橙白字；下一步学习面板使用其浅橙墨字局部覆写。",
+      "html": "<a class=\"ds-primary\" href=\"#primary\">查看课程</a> <a class=\"ds-primary ds-next-primary\" href=\"#continue\">继续学习</a>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;background:var(--primary,#bd4b00);color:var(--primary-foreground,#fff);border-radius:calc(var(--radius,0.625rem) - 2px);padding:8px 16px;height:36px;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-2xs,0 1px rgb(0 0 0 / 0.05))}.ds-primary:hover{background:color-mix(in oklab,var(--primary,#bd4b00) 90%,transparent)}.ds-primary:focus-visible{outline:2px solid var(--primary,#bd4b00);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#bd4b00) 50%,transparent)}.ds-next-primary{--primary:#ffad49;--primary-foreground:#19283d}"
     },
     {
       "name": "次要操作",
@@ -171,7 +199,7 @@
       "name": "文本输入",
       "kind": "input",
       "refersTo": "input",
-      "description": "共享 Input 沿用培训外壳的冷灰边框和墨色文字；课程查询随输入过滤，清空恢复原列表。",
+      "description": "共享 Search/Input 的现有视觉；课程状态筛选与搜索结合，清空关键词保留当前分类，查看全部同时重置。",
       "html": "<input class=\"ds-input\" type=\"text\" aria-label=\"课程名称\" placeholder=\"课程名称\" />",
       "css": ".ds-input{height:36px;min-width:0;border:1px solid var(--input,#d9e0e9);background:var(--background,oklch(1 0 0));color:var(--foreground,#202c3d);border-radius:calc(var(--radius,0.625rem) - 2px);padding:4px 12px;font-size:16px;transition:color 150ms cubic-bezier(0.4,0,0.2,1),box-shadow 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-xs,0 1px 2px 0 rgb(0 0 0 / 0.05))}.ds-input::placeholder{color:var(--muted-foreground,#617083)}.ds-input:focus-visible{border-color:var(--ring,#bd4b00);outline:2px solid var(--primary,#bd4b00);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#bd4b00) 50%,transparent)}.ds-input[aria-invalid=true]{border-color:var(--destructive,oklch(0.577 0.245 27.325))}.ds-input:disabled{cursor:not-allowed;opacity:.5}@media(min-width:768px){.ds-input{font-size:14px}}"
     },
@@ -179,9 +207,9 @@
       "name": "培训面板",
       "kind": "card",
       "refersTo": "training-panel",
-      "description": "普通培训面板为白色细边框；学习概览使用同一面板的墨色覆写，根圆角均为12px。",
-      "html": "<section class=\"ds-panel\"><strong>培训任务</strong><p>查看已分配的培训计划</p></section><section class=\"ds-panel ds-overview\"><strong>学习概览</strong><p>平均成绩</p><strong class=\"ds-overview-metric\">—</strong></section>",
-      "css": ".ds-panel{padding:24px;background:var(--training-paper,#ffffff);border:1px solid var(--training-line,#e2e7ee);border-radius:12px;color:var(--foreground,#202c3d);font-family:\"Microsoft YaHei\",\"PingFang SC\",sans-serif}.ds-panel p{color:var(--training-muted,#617083)}@media(max-width:767px){.ds-panel{padding:16px}}.ds-overview{padding:22px 24px;background:#202e44;border:0;color:#f7f9fc}.ds-overview p{color:#bfccdc}.ds-overview-metric{display:block;color:#fff;font-size:28px;font-weight:600;line-height:1.2}@media(max-width:767px){.ds-overview{padding:16px}.ds-overview-metric{font-size:26px}}"
+      "description": "白色培训面板与白色个人四项概览；下一步学习另用深蓝行动面板，不将个人指标放入深蓝区域。",
+      "html": "<section class=\"ds-panel\"><strong>我的学习概览</strong><div class=\"ds-personal-metrics\"><p>待完成课程<strong>—</strong></p><p>已完成课程<strong>—</strong></p><p>平均成绩<strong>—</strong></p><p>实际学习时长<strong>—</strong></p></div></section>",
+      "css": ".ds-panel{padding:24px;background:var(--training-paper,#ffffff);border:1px solid var(--training-line,#e2e7ee);border-radius:12px;color:var(--foreground,#202c3d);font-family:\"Microsoft YaHei\",\"PingFang SC\",sans-serif}.ds-personal-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.ds-personal-metrics p{color:var(--training-muted,#617083);font-size:12px;font-variant-numeric:tabular-nums}.ds-personal-metrics strong{display:block;margin-top:10px;color:var(--foreground,#202c3d);font-size:30px;font-weight:600;line-height:1.2}@media(max-width:899px) and (min-width:768px){.ds-personal-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:767px){.ds-panel{padding:16px}.ds-personal-metrics{gap:20px 16px}.ds-personal-metrics strong{font-size:26px;margin-top:6px}}"
     },
     {
       "name": "管理导航选中项",
@@ -213,37 +241,54 @@
       "description": "共享 Progress 在培训课程卡片内使用分隔线灰轨道、深橙指示条；示例值仅演示视觉。",
       "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-label=\"示例学习进度\" aria-valuenow=\"60\" aria-valuemin=\"0\" aria-valuemax=\"100\"><div class=\"ds-progress-indicator\"></div></div>",
       "css": ".ds-progress{position:relative;width:100%;height:8px;overflow:hidden;border-radius:calc(var(--radius,0.625rem) - 2px);background:var(--training-line,#e2e7ee)}.ds-progress-indicator{height:100%;width:100%;background:var(--primary,#bd4b00);transform:translateX(-40%);transition:all 150ms cubic-bezier(0.4,0,0.2,1)}"
+    },
+    {
+      "name": "下一步学习行动区",
+      "kind": "custom",
+      "refersTo": "learner-next",
+      "description": "V2真实课程行动区；标题与行动由已有学习状态决定，此预览仅示意视觉结构。",
+      "html": "<section class=\"ds-next\"><div class=\"ds-next-copy\"><h2>下一步学习</h2><h3>课程标题</h3><p>按实际学习状态继续课程</p><a class=\"ds-next-cta\" href=\"#course\">继续学习</a></div><svg class=\"ds-next-art\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 0 0 0-3-3z\"/></svg></section>",
+      "css": ".ds-next{display:flex;align-items:center;justify-content:space-between;min-height:246px;padding:28px;border:1px solid #19283d;border-radius:12px;background:#19283d;color:#fff;font-family:\"Microsoft YaHei\",\"PingFang SC\",sans-serif}.ds-next-copy{min-width:0}.ds-next h2{font-size:18px;font-weight:600}.ds-next h3{margin:14px 0 0;font-size:26px;font-weight:600;overflow-wrap:anywhere}.ds-next p{margin-top:8px;color:#b9c7d9;font-size:13px;line-height:1.7}.ds-next-cta{display:inline-flex;align-items:center;justify-content:center;margin-top:24px;height:36px;padding:8px 16px;border-radius:calc(var(--radius,0.625rem) - 2px);background:#ffad49;color:#19283d;font-size:14px;font-weight:500;text-decoration:none;transition:all 150ms cubic-bezier(0.4,0,0.2,1)}.ds-next-cta:hover{background:color-mix(in oklab,#ffad49 90%,transparent)}.ds-next-cta:focus-visible{outline:2px solid var(--primary,#bd4b00);outline-offset:3px}.ds-next-art{width:128px;height:128px;flex-shrink:0;margin-inline:20px 10px;color:#b9c7d9;stroke-width:1}@media(max-width:1199px){.ds-next-art{display:none}}@media(max-width:899px){.ds-next{min-height:220px}}@media(max-width:767px){.ds-next{padding:22px}.ds-next h3{font-size:23px}}"
+    },
+    {
+      "name": "课程类型无图封面",
+      "kind": "card",
+      "refersTo": "course-cover",
+      "description": "136px统一媒体，仅复现源码中的SELF_PACED、COMPLIANCE、LIVE_CLASS类型和已有Lucide图标；真实照片继续保留。",
+      "html": "<div class=\"ds-cover\" data-course-type=\"SELF_PACED\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg></div><div class=\"ds-cover\" data-course-type=\"COMPLIANCE\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/></svg></div><div class=\"ds-cover\" data-course-type=\"LIVE_CLASS\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"1\"/></svg></div>",
+      "css": ".ds-cover{display:grid;place-items:center;width:100%;height:136px;border-radius:8px;background:#e6edf5;color:#4b6a93}.ds-cover[data-course-type=COMPLIANCE]{background:#e6eeea;color:#507667}.ds-cover[data-course-type=LIVE_CLASS]{background:#f6e8d9;color:#955b2a}.ds-cover svg{width:64px;height:64px;stroke-width:1.2}"
     }
   ],
   "narrative": {
     "northStar": "清晰的企业培训工作台",
-    "overview": "这份文档记录现有 PlayEdu 参考结构的配色和密度强化。河南至臻数字生活科技有限公司的企业图标与橙色品牌保持一致，管理端使用墨色侧栏、白色顶部栏与任务表格，学员端使用白色顶部导航、墨色学习概览和冷灰课程封面。页面底色与内容面板通过冷灰、白色和细边框建立层次。\n\n首屏承载管理任务或学员学习概览与课程。用户从侧栏或顶部导航进入课程、培训和档案；课程查询随输入实时过滤，清空即恢复列表。中文优先，AI 默认隐藏，控件继续沿用现有共享库；这次强化没有引入新的图片、图标组件或装饰动画。",
+    "overview": "V2 沿用已确认的 PlayEdu 双端结构与企业橙色，分别突出下一步学习和管理待办。河南至臻数字生活科技有限公司的名称与图标由页面导航承载；学员首页的深蓝区域用于一项学习行动，个人四项指标回到白色面板。管理端保留深蓝侧栏、白色顶部栏和培训计划表格，四项指标分别成卡。\n\n课程封面减少重复信息：真实照片保留，无图课程仅用实际课程类型的既有 Lucide 图标与中性底色，标题在卡片正文显示。课程默认查看待完成集合，并明确未开始、学习中和已完成。中文界面优先，作者原有英文内容保留，AI 默认隐藏；复用现有共享组件，没有新增框架、图表、假趋势或排行榜。",
     "keyCharacteristics": [
-      "墨色导航与学习概览、冷灰页面、白色面板、公司品牌橙色。",
-      "管理端任务表格与学员端学习指标、课程卡片。",
-      "真实课程标题与公司标识组成无图封面，已有课程照片保留。",
-      "桌面与手机沿用同一主题，手机指标双列、课程单列。",
-      "实际样式来源为 `src/training.css`，共享组件沿用 `../../packages/ui/src`。"
+      "橙色主操作、深蓝导航与学习行动区、冷灰背景、白色指标面板。",
+      "学员首页行动区与四项个人概览，课程区域与前置待办。",
+      "管理端四张独立指标卡、计划表、去重评分队列和部门进度。",
+      "无图封面仅显示实际课程类型图标，照片和占位媒体统一高度。",
+      "未知、真实零、加载、失败重试、空结果与权限不足分别呈现。"
     ],
     "rules": [
       {
-        "name": "The Brand Color Rule",
-        "body": "普通主要操作使用深橙与白字；学习概览中的继续学习使用品牌橙与墨字；管理选中项使用墨色底与橙色文字。",
+        "name": "The Action Color Rule",
+        "body": "深蓝区域承载下一步学习，个人统计使用白色面板；普通主要操作使用深橙白字，学习行动区使用其已有浅橙墨字覆写。",
         "section": "colors"
       }
     ],
     "dos": [
-      "**Do** 保留墨色侧栏、冷灰表面、白色面板与公司品牌橙的现有分工。",
-      "**Do** 在管理侧栏根组件保留主题，使手机 portal 中的导航继续使用同一配色。",
-      "**Do** 保留真实课程图片；无图时使用公司标识和真实完整标题。",
-      "**Do** 保留课程实时过滤、清空恢复与真实学习指标。",
-      "**Do** 在桌面与手机保留同一主题，并使用手机双列指标、单列课程。"
+      "**Do** 让深蓝行动区突出一项真实下一步学习，个人四项指标使用白色面板。",
+      "**Do** 保留课程默认待完成和状态对应行动；100% 内容进度与合规完成分开。",
+      "**Do** 保留真实照片，无图时仅用实际类型图标与中性底色。",
+      "**Do** 保留去重评分总数、权限判断、部门完成/分配基数和独立失败重试。",
+      "**Do** 让小于 900px 的首页待办排在课程前，手机课程单列、指标双列。"
     ],
     "donts": [
-      "**Don't** 将这次配色强化变成新的概念、动画、图片或图标组件提案。",
-      "**Don't** 恢复大号两字课程封面或卡片固定窄宽度。",
-      "**Don't** 默认显示 AI 入口或第三方 SDK 默认悬浮入口。",
-      "**Don't** 将第三方 SDK 的配置与受信 CSS 域处理描述成公司新功能。"
+      "**Don't** 恢复标题与公司 Logo 叠加的课程无图封面或旧高度。",
+      "**Don't** 把已完成课程继续标为继续学习，或将内容进度直接等同培训结业。",
+      "**Don't** 在首页开始考试，或仅凭时间窗口声称考试次数和资格可用。",
+      "**Don't** 将未知、失败或无权限呈现为真实零，也不编造趋势与能力排名。",
+      "**Don't** 将原型或尚未完成的复验描述成生产上线或全量业务验收。"
     ]
   }
 }

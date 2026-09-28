@@ -1,18 +1,11 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import Workbench from '$features/enterprise/components/workbench.svelte';
   import { page } from '$app/state';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
-  import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
-  import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
-  import { getTrainingWorkbenchPlans } from '$lib/features/enterprise/utils/training-workbench';
-  import type {
-    EnterpriseDepartment,
-    EnterpriseEmployee,
-    EnterpriseGradingQueue,
-    EnterpriseRole
-  } from '$lib/features/enterprise/utils/types';
+  import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
@@ -33,7 +26,6 @@
         ? 'enterprise.employees'
         : 'enterprise.interface.workbench'
   );
-  const assessmentApi = new AssessmentApi();
   let editingDepartmentId = $state<string | null>(null);
   let departmentForm = $state({ name: '', code: '', parentId: '', leaderMemberId: '', sort: 0, status: 'ACTIVE' });
   let employeeForm = $state({
@@ -46,11 +38,6 @@
   });
   let selectedRoles = $state<EnterpriseRole[]>([]);
   const overview = $derived(enterpriseApi.overview);
-  const statistics = $derived(assessmentApi.statistics);
-  const currentTime = Date.now();
-  const workbenchPlans = $derived(getTrainingWorkbenchPlans(trainingPlansApi.plans, currentTime));
-  const pendingAssignments = $derived(assessmentApi.gradingQueue.filter((item) => !item.isExam));
-  const pendingWritten = $derived(assessmentApi.gradingQueue.filter((item) => item.hasWrittenQuestion));
   const employees = $derived(enterpriseApi.employees);
   const selectedEmployee = $derived(enterpriseApi.selectedEmployee);
   const loading = $derived(enterpriseApi.loading);
@@ -76,19 +63,7 @@
     const organizationId = $currentOrg.id;
     if (!organizationId) return;
 
-    void enterpriseApi.load(organizationId).then((loaded) => {
-      if (
-        loaded &&
-        $currentOrg.id === organizationId &&
-        (enterpriseApi.overview?.canManage || enterpriseApi.overview?.roles.includes('DEPARTMENT_MANAGER'))
-      ) {
-        void assessmentApi.loadStatistics(organizationId);
-        if (enterpriseApi.overview?.canManage) {
-          void trainingPlansApi.load(organizationId);
-          void assessmentApi.loadGradingQueue(organizationId);
-        }
-      }
-    });
+    void enterpriseApi.load(organizationId);
   });
 
   function editDepartment(department?: EnterpriseDepartment) {
@@ -173,146 +148,55 @@
   <title>{$t(headingKey)} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
-{#snippet gradingItems(items: EnterpriseGradingQueue)}
-  <ol class="space-y-1 text-sm">
-    {#each items.slice(0, 5) as item (item.id)}
-      <li class="py-1">
-        {#if item.canGrade}
-          <a
-            class="ui:hover:text-primary"
-            href={resolve(`/courses/${item.courseId}/submissions?submissionId=${item.id}`)}
-            >{item.exerciseTitle} · {item.learnerName ?? '—'}</a
-          >
-        {:else}
-          <span>{item.exerciseTitle} · {item.learnerName ?? '—'}</span>
-          <span class="ui:text-muted-foreground"> · {$t('enterprise.workbench.instructor_only')}</span>
-        {/if}
-      </li>
-    {:else}
-      <li class="ui:text-muted-foreground">—</li>
-    {/each}
-  </ol>
-{/snippet}
-
 <Page.Root class="w-full">
   <Page.Header>
     <Page.HeaderContent>
       <div class="flex items-center gap-4">
         <div>
           <Page.Title>{$t(headingKey)}</Page.Title>
-          <Page.Subtitle>{$t('enterprise.subtitle')}</Page.Subtitle>
+          <Page.Subtitle
+            >{$t(
+              activeView === 'workbench' ? 'enterprise.ui_v2.workbench_subtitle' : 'enterprise.subtitle'
+            )}</Page.Subtitle
+          >
         </div>
       </div>
     </Page.HeaderContent>
     <Page.Action>
-      {#if overview?.canManage}
-        <Button variant="secondary" href={resolve('/admin/plans')}>{$t('enterprise.plans.title')}</Button>
-        <Button variant="secondary" href={resolve('/admin/assessment')}>{$t('enterprise.assessment.title')}</Button>
-      {/if}
-      {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}
-        <Button variant="secondary" href={resolve('/admin/matrix')}>{$t('enterprise.assessment.matrix')}</Button>
-        <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('org_navigation.stats')}</Button>
+      {#if activeView === 'workbench'}
+        {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}<Button
+            variant="outline"
+            size="sm"
+            href="/admin/statistics">{$t('org_navigation.stats')}</Button
+          >{/if}
+        {#if overview?.canManage}<Button size="sm" href="/admin/plans">{$t('enterprise.ui_v2.new_plan')}</Button>{/if}
+      {:else}
+        {#if overview?.canManage}
+          <Button variant="secondary" href={resolve('/admin/plans', {})}>{$t('enterprise.plans.title')}</Button>
+          <Button variant="secondary" href={resolve('/admin/assessment', {})}
+            >{$t('enterprise.assessment.title')}</Button
+          >
+        {/if}
+        {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}
+          <Button variant="secondary" href={resolve('/admin/matrix', {})}>{$t('enterprise.assessment.matrix')}</Button>
+          <Button variant="secondary" href={resolve('/admin/statistics', {})}>{$t('org_navigation.stats')}</Button>
+        {/if}
       {/if}
     </Page.Action>
   </Page.Header>
 
   <Page.Body>
     {#snippet child()}
-      {#if error}<p role="alert" class="rounded-md bg-red-50 p-3 text-red-700">{error}</p>{/if}
+      {#if error}<p role="alert" class="rounded-md bg-red-50 p-3 text-red-700">{error}</p>
+        <Button variant="outline" size="sm" onclick={() => void enterpriseApi.load($currentOrg.id)}
+          >{$t('enterprise.ui_v2.retry')}</Button
+        >{/if}
       {#if notice}<p role="status" class="rounded-md bg-green-50 p-3 text-green-700">{notice}</p>{/if}
       {#if loading}<p>{$t('enterprise.loading')}</p>{/if}
 
       {#if overview}
         {#if activeView === 'workbench' && (overview.canManage || overview.roles.includes('DEPARTMENT_MANAGER'))}
-          <section aria-label={$t('enterprise.assessment.title')} class="training-panel space-y-6">
-            {#if assessmentApi.error}<p role="alert">{assessmentApi.error}</p>{/if}
-            {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
-            {#if statistics}
-              <div class="training-metrics grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                <p>{$t('enterprise.assessment.learners')}: <strong>{statistics.learners}</strong></p>
-                <p>
-                  {$t('enterprise.assessment.completion_rate')}:
-                  <strong>{statistics.completionRate === null ? '—' : `${statistics.completionRate}%`}</strong>
-                </p>
-                <p>
-                  {$t('enterprise.assessment.pass_rate')}:
-                  <strong>{statistics.passRate === null ? '—' : `${statistics.passRate}%`}</strong>
-                </p>
-                <p>
-                  {$t('enterprise.assessment.average_score')}: <strong>{statistics.averageScore ?? '—'}</strong>
-                </p>
-              </div>
-              {#if overview.canManage}
-                <div class="grid gap-5 border-t pt-4 text-sm md:grid-cols-3">
-                  <div>
-                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.active_plans')}</h2>
-                    {#each workbenchPlans.active as plan (plan.id)}
-                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}>{plan.name}</a>
-                    {:else}
-                      <p class="ui:text-muted-foreground">—</p>
-                    {/each}
-                  </div>
-                  <div>
-                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.upcoming_plans')}</h2>
-                    {#each workbenchPlans.upcoming as plan (plan.id)}
-                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}
-                        >{plan.name} · {new Date(plan.startAt).toLocaleDateString()}</a
-                      >
-                    {:else}
-                      <p class="ui:text-muted-foreground">—</p>
-                    {/each}
-                  </div>
-                  <div>
-                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.due_soon')}</h2>
-                    {#each workbenchPlans.dueSoon as plan (plan.id)}
-                      <a class="ui:hover:text-primary block py-1" href={resolve('/admin/plans')}
-                        >{plan.name} · {new Date(plan.endAt).toLocaleDateString()}</a
-                      >
-                    {:else}
-                      <p class="ui:text-muted-foreground">—</p>
-                    {/each}
-                  </div>
-                </div>
-                <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
-                  <div>
-                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.pending_assignments')}</h2>
-                    {@render gradingItems(pendingAssignments)}
-                  </div>
-                  <div>
-                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.pending_written')}</h2>
-                    {@render gradingItems(pendingWritten)}
-                  </div>
-                </div>
-                {#if assessmentApi.gradingQueueError}<p role="alert">{assessmentApi.gradingQueueError}</p>{/if}
-              {/if}
-              <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
-                <div>
-                  <h2 class="mb-2 font-medium">{$t('enterprise.assessment.unfinished_plans')}</h2>
-                  <ol class="space-y-1 text-sm">
-                    {#each statistics.unfinishedPlans.slice(0, 5) as plan (plan.planId)}
-                      <li class="flex justify-between gap-3"><span>{plan.name}</span><span>{plan.count}</span></li>
-                    {/each}
-                  </ol>
-                </div>
-                <div>
-                  <h2 class="mb-2 font-medium">{$t('enterprise.assessment.by_department')}</h2>
-                  <ol class="space-y-1 text-sm">
-                    {#each [...statistics.byDepartment]
-                      .sort((left, right) => right.assigned - left.assigned)
-                      .slice(0, 5) as department (department.departmentId)}
-                      <li class="flex justify-between gap-3">
-                        <span
-                          >{overview.departments.find((item) => item.id === department.departmentId)?.name ??
-                            $t('enterprise.assessment.not_assigned')}</span
-                        >
-                        <span>{department.completionRate}%</span>
-                      </li>
-                    {/each}
-                  </ol>
-                </div>
-              </div>
-            {/if}
-          </section>
+          <Workbench {overview} />
         {/if}
         {#if activeView === 'departments'}
           <section class="training-panel space-y-4">

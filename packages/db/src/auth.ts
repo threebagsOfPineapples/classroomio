@@ -22,10 +22,12 @@ import { resolveTrustedBrowserOrigin } from './utils';
 import { sso } from '@better-auth/sso';
 import { syncUserWithProfile } from './auth/hooks/sync-user';
 import { tokenExchange } from './auth/plugins/token-exchange';
+import { dingtalk } from './auth/plugins/dingtalk';
 import { trackLoginHook } from './auth/hooks/track-login';
 import { syncProfileEmailVerificationFromAuthUser } from './queries/auth/profile';
 
 export { mintLoginLinkToken } from './auth/login-link';
+export type DingtalkPlugin = ReturnType<typeof dingtalk>;
 
 /**
  * Cloud (multi-tenant) only. Routes OAuth/SSO callbacks to the canonical
@@ -142,6 +144,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     ...buildOAuthProxyPlugin(),
     loginLink(),
     tokenExchange(),
+    dingtalk(),
     // Attaches the user's org memberships ({ [orgId]: roleId }) to the session
     // so org-scoped middlewares can authorize without a per-request DB query.
     // Refreshes when the session cookie cache expires (see session.cookieCache.maxAge).

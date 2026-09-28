@@ -4,7 +4,8 @@
   import { profile } from '$lib/utils/store/user';
   import { currentOrg } from '$lib/utils/store/org';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { lmsExercisesApi, type LMSExercise } from '$features/lms/api/exercises.svelte';
+  import { lmsExercisesApi } from '$features/lms/api/exercises.svelte';
+  import type { LMSExercise } from '$features/lms/utils/types';
   import { calDateDiff } from '$lib/utils/functions/date';
   import { t } from '$lib/utils/functions/translations';
 

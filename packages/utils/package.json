@@ -45,6 +45,10 @@
       "types": "./dist/validation/constants.d.ts",
       "default": "./dist/validation/constants.js"
     },
+    "./validation/auth/dingtalk": {
+      "types": "./dist/validation/auth/dingtalk.d.ts",
+      "default": "./dist/validation/auth/dingtalk.js"
+    },
     "./validation/*": {
       "types": "./dist/validation/*/index.d.ts",
       "default": "./dist/validation/*/index.js"

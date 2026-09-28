@@ -31,6 +31,7 @@
   import CourseTagsOverflow from './course-tags-overflow.svelte';
   import type { OrgCourses, UserEnrolledCourses } from '$features/course/types';
   import type { OrgPublicCourses } from '$features/org/utils/types';
+  import { getCourseLearningAction, getCourseLearningState } from '../utils/course-learning';
 
   export interface Props {
     course: OrgCourses[number] | UserEnrolledCourses[number] | OrgPublicCourses[number];
@@ -144,6 +145,11 @@
   let cost = $derived(calcCourseCost(course));
 
   const isExploreClickable = $derived(!!(isLMS && isExplore && onExploreClick));
+  const learningCourse = $derived(
+    isLMS && !isExplore && !isCertificateView ? (course as UserEnrolledCourses[number]) : null
+  );
+  const learningAction = $derived(learningCourse ? getCourseLearningAction(learningCourse) : null);
+  const learningState = $derived(learningCourse ? getCourseLearningState(learningCourse) : null);
 
   let courseUrl = $derived.by(() => {
     if (isExploreClickable) {
@@ -166,7 +172,7 @@
       return `/course/${slug}`;
     }
 
-    return `/courses/${id}${isLMS ? '/lessons?next=true' : ''}`;
+    return learningAction?.href ?? `/courses/${id}`;
   });
 
   const typeBadge = $derived(
@@ -244,12 +250,13 @@
     {#if bannerImage}
       <Image src={bannerImage} alt={title} className="w-full h-full rounded-sm object-cover" />
     {:else}
-      <div class="course-cover" aria-hidden="true">
-        <div class="course-cover-brand">
-          <img src="/enterprise-training-icon.png" alt="" width="24" height="24" />
-          <span>{$t('enterprise.interface.platform_name')}</span>
-        </div>
-        <span class="course-cover-title">{title}</span>
+      <div class="course-cover" data-course-type={type} aria-hidden="true">
+        {#if typeBadge}
+          {@const CoverIcon = typeBadge.icon}
+          <CoverIcon class="custom course-cover-icon" />
+        {:else}
+          <GlobeIcon class="custom course-cover-icon" />
+        {/if}
       </div>
     {/if}
   {/snippet}
@@ -259,9 +266,24 @@
       {@render actions()}
     {:else if !isOnLandingPage}
       {#if !isLMS}
-        <CardDropdown {id} {title} {description} {isPublished} courseType={type} {slug} />
+        <CardDropdown
+          {id}
+          {title}
+          {description}
+          {isPublished}
+          courseType={type ?? undefined}
+          slug={slug ?? undefined}
+        />
       {:else if showLmsPublicCourseMenu}
-        <CardDropdown {id} {title} {description} {isPublished} courseType={type} {slug} lmsPublicQuickOnly={true} />
+        <CardDropdown
+          {id}
+          {title}
+          {description}
+          {isPublished}
+          courseType={type ?? undefined}
+          slug={slug ?? undefined}
+          lmsPublicQuickOnly={true}
+        />
       {/if}
     {/if}
   {/snippet}
@@ -309,6 +331,15 @@
                 </p>
               {/if}
             {:else if !isExplore}
+              {#if learningState}
+                <p class="course-learning-state ui:text-muted-foreground mb-2 text-xs">
+                  {$t(
+                    progressRate >= 100 && learningState !== 'completed'
+                      ? 'enterprise.ui_v2.learning_done_assessment_pending'
+                      : `enterprise.ui_v2.${learningState}`
+                  )}
+                </p>
+              {/if}
               <div class="flex w-3/4 items-center gap-2">
                 <Progress value={progressRate} />
                 <p class="ui:text-muted-foreground text-xs">{progressRate}%</p>
@@ -337,23 +368,34 @@
       </div>
 
       {#if isLMS}
-        <Button
-          variant="outline"
-          onclick={(event) => {
-            if (isExploreClickable) {
-              event.stopPropagation();
-              onExploreClick?.();
-            }
-          }}
-        >
-          {isCertificateView
-            ? $t('certificates.view_certificate')
-            : isExplore
-              ? $t('courses.course_card.learn_more')
-              : $t('courses.course_card.continue_course')}
+        {#if !isExploreClickable}
+          <span class="course-action" data-slot="button">
+            {isCertificateView
+              ? $t('certificates.view_certificate')
+              : isExplore
+                ? $t('courses.course_card.learn_more')
+                : $t(learningAction?.key ?? 'courses.course_card.continue_course')}
+            <ArrowRightIcon class="size-4 shrink-0" />
+          </span>
+        {:else}
+          <Button
+            variant="outline"
+            onclick={(event) => {
+              if (isExploreClickable) {
+                event.stopPropagation();
+                onExploreClick?.();
+              }
+            }}
+          >
+            {isCertificateView
+              ? $t('certificates.view_certificate')
+              : isExplore
+                ? $t('courses.course_card.learn_more')
+                : $t(learningAction?.key ?? 'courses.course_card.continue_course')}
 
-          <ArrowRightIcon class="custom" />
-        </Button>
+            <ArrowRightIcon class="custom" />
+          </Button>
+        {/if}
       {:else if !isOnLandingPage}
         <div class="flex flex-col justify-end gap-1 text-right">
           <p class="pl-2 text-xs whitespace-nowrap dark:text-white">

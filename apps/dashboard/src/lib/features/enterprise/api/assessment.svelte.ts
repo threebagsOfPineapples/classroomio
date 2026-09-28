@@ -25,6 +25,7 @@ export class AssessmentApi {
   statistics = $state<TrainingStatistics | null>(null);
   gradingQueue = $state<EnterpriseGradingQueue>([]);
   gradingQueueError = $state('');
+  gradingQueueLoading = $state(false);
   detail = $state<EnrollmentAssessment | null>(null);
   loading = $state(false);
   busy = $state(false);
@@ -144,12 +145,15 @@ export class AssessmentApi {
 
   async loadGradingQueue(organizationId: string) {
     this.useOrganization(organizationId);
+    this.gradingQueueLoading = true;
     this.gradingQueueError = '';
     try {
       const queue = await enterpriseApi.request<EnterpriseGradingQueue>(organizationId, '/grading-queue');
       if (this.organizationId === organizationId) this.gradingQueue = queue;
     } catch {
       if (this.organizationId === organizationId) this.gradingQueueError = t.get('enterprise.load_failed');
+    } finally {
+      if (this.organizationId === organizationId) this.gradingQueueLoading = false;
     }
   }
 

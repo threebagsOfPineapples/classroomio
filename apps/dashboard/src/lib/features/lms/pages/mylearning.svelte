@@ -1,80 +1,23 @@
 <script lang="ts">
-  import * as UnderlineTabs from '@cio/ui/custom/underline-tabs';
-  import { Button } from '@cio/ui/base/button';
-  import { CoursesPage } from '$features/course/pages';
+  import { untrack } from 'svelte';
   import { profile } from '$lib/utils/store/user';
   import { currentOrg } from '$lib/utils/store/org';
-  import { t } from '$lib/utils/functions/translations';
   import { coursesApi } from '$features/course/api';
-  import { isStudentCourseComplete } from '$features/course/utils/compliance-utils';
+  import LearningCourses from '../components/learning-courses.svelte';
 
-  let searchValue = $state('');
-
-  function isCourseComplete(course: (typeof coursesApi.enrolledCourses)[number]): boolean {
-    return isStudentCourseComplete(course);
-  }
-
-  const coursesInProgress = $derived(coursesApi.enrolledCourses.filter((course) => !isCourseComplete(course)));
-  const coursesComplete = $derived(coursesApi.enrolledCourses.filter((course) => isCourseComplete(course)));
-  const normalizedSearch = $derived(searchValue.trim().toLowerCase());
-  const visibleInProgress = $derived(
-    coursesInProgress.filter((course) => course.title.toLowerCase().includes(normalizedSearch))
-  );
-  const visibleComplete = $derived(
-    coursesComplete.filter((course) => course.title.toLowerCase().includes(normalizedSearch))
-  );
-
+  let loadedFor = '';
   $effect(() => {
-    if (!$profile.id || !$currentOrg.id) return;
+    const key = $currentOrg.id + ':' + $profile.id;
+    if (!$profile.id || !$currentOrg.id || key === loadedFor) return;
 
-    coursesApi.getEnrolledCourses();
+    loadedFor = key;
+    untrack(() => void coursesApi.getEnrolledCourses());
   });
-
-  let tabs = $derived([
-    {
-      label: `${$t('my_learning.progress')} (${coursesInProgress.length})`,
-      value: '1'
-    },
-    {
-      label: `${$t('my_learning.complete')} (${coursesComplete.length})`,
-      value: '2'
-    }
-  ]);
-  let currentTab = $state('1');
 </script>
 
-<UnderlineTabs.Root bind:value={currentTab}>
-  <UnderlineTabs.List>
-    {#each tabs as tab (tab.value)}
-      <UnderlineTabs.Trigger value={tab.value}>
-        {tab.label}
-      </UnderlineTabs.Trigger>
-    {/each}
-  </UnderlineTabs.List>
-  <UnderlineTabs.Content value={tabs[0].value}>
-    <CoursesPage
-      bind:searchValue
-      courses={visibleInProgress}
-      emptyDescription={$t('my_learning.any_progress')}
-      emptyTitle={$t('my_learning.not_in_progress')}
-      isLMS={true}
-      isLoading={coursesApi.isLoading}
-      showSortSelect={false}
-    >
-      {#snippet emptyAction()}
-        <Button href="/lms/explore">{$t('my_learning.find_courses')}</Button>
-      {/snippet}
-    </CoursesPage>
-  </UnderlineTabs.Content>
-  <UnderlineTabs.Content value={tabs[1].value}>
-    <CoursesPage
-      bind:searchValue
-      courses={visibleComplete}
-      emptyDescription={$t('my_learning.any_course')}
-      emptyTitle={$t('my_learning.not_completed')}
-      isLMS={true}
-      isLoading={coursesApi.isLoading}
-      showSortSelect={false}
-    />
-  </UnderlineTabs.Content>
-</UnderlineTabs.Root>
+<LearningCourses
+  courses={coursesApi.enrolledCourses}
+  loading={coursesApi.isLoading}
+  error={coursesApi.error}
+  onRetry={() => void coursesApi.getEnrolledCourses()}
+/>

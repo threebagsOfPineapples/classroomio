@@ -17,6 +17,7 @@
   import ShieldIcon from '@lucide/svelte/icons/shield';
   import { buildSsoRedirectUrl, createSsoEmailChecker, type SsoAuthState } from '$features/auth/utils/auth-sso';
   import { authSsoStore, ensureSsoInfoLoaded } from '$features/auth/utils/auth-sso-store';
+  import Dingtalk from '$features/auth/components/dingtalk.svelte';
 
   const emailFromUrl = page.url.searchParams.get('email') ?? '';
   const isEmailPrefilled = !!emailFromUrl;
@@ -215,5 +216,6 @@
         </p>
       </div>
     {/if}
+    <Dingtalk />
   </div>
 </AuthUI>

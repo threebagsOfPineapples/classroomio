@@ -1,4 +1,4 @@
-import type { GetLMSExercisesSuccess, LMSExercise } from './exercises.svelte';
+import type { GetLMSExercisesSuccess, LMSExercise } from '../utils/types';
 import { classroomio } from '$lib/utils/services/api';
 import { getApiKeyHeaders, safeServerApi } from '$lib/utils/services/api/server';
 
