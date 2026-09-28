@@ -2221,7 +2221,11 @@
               "save_continue": "Guardar y continuar",
               "question_fallback": "Pregunta {number}",
               "zero_points_field": "La finalización aprobada necesita al menos un punto disponible."
-            }
+            },
+            "settings_exam_makeup": "Permitir otro intento",
+            "settings_exam_shuffle_questions": "Mezclar el orden de las preguntas",
+            "settings_exam_shuffle_options": "Mezclar las opciones de respuesta",
+            "settings_exam_show_answers": "Mostrar respuestas al cerrar el examen"
           },
           "new_exercise_modal": {
             "heading": "Nuevo ejercicio",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Formación en curso",
       "upcoming_plans": "Próximas formaciones",
-      "due_soon": "Formaciones que terminan en 7 días"
+      "due_soon": "Formaciones que terminan en 7 días",
+      "pending_assignments": "Tareas pendientes de calificación",
+      "pending_written": "Respuestas escritas pendientes de calificación",
+      "instructor_only": "Se requiere acceso como instructor del curso"
     }
   }
 }

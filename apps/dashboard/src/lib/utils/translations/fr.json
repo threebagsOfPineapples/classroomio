@@ -2221,7 +2221,11 @@
               "save_continue": "Enregistrer et continuer",
               "question_fallback": "Question {number}",
               "zero_points_field": "La réussite nécessite au moins un point disponible."
-            }
+            },
+            "settings_exam_makeup": "Autoriser une nouvelle tentative",
+            "settings_exam_shuffle_questions": "Mélanger les questions",
+            "settings_exam_shuffle_options": "Mélanger les réponses proposées",
+            "settings_exam_show_answers": "Afficher les réponses après la clôture de l’examen"
           },
           "new_exercise_modal": {
             "heading": "Nouvel exercice",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Formations en cours",
       "upcoming_plans": "Formations à venir",
-      "due_soon": "Formations se terminant sous 7 jours"
+      "due_soon": "Formations se terminant sous 7 jours",
+      "pending_assignments": "Devoirs à corriger",
+      "pending_written": "Réponses écrites à corriger",
+      "instructor_only": "Accès enseignant du cours requis"
     }
   }
 }

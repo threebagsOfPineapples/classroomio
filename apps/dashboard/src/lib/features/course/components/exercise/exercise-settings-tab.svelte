@@ -50,7 +50,7 @@
     saving = true;
 
     const allowMultipleAttempts = $questionnaire.isExam
-      ? ($questionnaire.maxAttempts ?? 1) > 1
+      ? !!$questionnaire.allowMakeup && ($questionnaire.maxAttempts ?? 1) > 1
       : !!$questionnaire.allowMultipleAttempts;
     const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
     const passThreshold = $questionnaire.passThreshold ?? 100;
@@ -59,6 +59,10 @@
     const closesAt = $questionnaire.closesAt ?? null;
     const maxAttempts = $questionnaire.maxAttempts ?? 1;
     const durationMinutes = $questionnaire.durationMinutes ?? null;
+    const allowMakeup = !!$questionnaire.allowMakeup;
+    const shuffleQuestions = !!$questionnaire.shuffleQuestions;
+    const shuffleOptions = !!$questionnaire.shuffleOptions;
+    const showAnswers = !!$questionnaire.showAnswers;
     const slugPayload = isPublicCourse && slug ? slug : undefined;
 
     await exerciseApi.update(courseApi.course.id, exerciseId, {
@@ -68,6 +72,10 @@
       closesAt,
       maxAttempts,
       durationMinutes,
+      allowMakeup,
+      shuffleQuestions,
+      shuffleOptions,
+      showAnswers,
       completionPolicy,
       passThreshold,
       slug: slugPayload
@@ -125,6 +133,18 @@
               durationMinutes: event.currentTarget.value ? Number(event.currentTarget.value) : null
             }))}
         />
+        {#each [{ field: 'allowMakeup', label: 'settings_exam_makeup' }, { field: 'shuffleQuestions', label: 'settings_exam_shuffle_questions' }, { field: 'shuffleOptions', label: 'settings_exam_shuffle_options' }, { field: 'showAnswers', label: 'settings_exam_show_answers' }] as setting (setting.field)}
+          <div class="flex items-center justify-between gap-4">
+            <Label for={setting.field} class="text-sm font-medium dark:text-gray-100">
+              {$t(`course.navItem.lessons.exercises.all_exercises.${setting.label}`)}
+            </Label>
+            <Switch
+              id={setting.field}
+              checked={!!$questionnaire[setting.field as keyof typeof $questionnaire]}
+              onCheckedChange={(checked) => questionnaire.update((state) => ({ ...state, [setting.field]: checked }))}
+            />
+          </div>
+        {/each}
         <p class="ui:text-muted-foreground text-sm">
           {$t('course.navItem.lessons.exercises.all_exercises.settings_exam_window_helper')}
         </p>

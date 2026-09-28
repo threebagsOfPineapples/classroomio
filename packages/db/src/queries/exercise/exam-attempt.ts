@@ -7,6 +7,10 @@ export function getExamExpiresAt(startedAt: string, closesAt: string, durationMi
   return new Date(Math.min(Date.parse(closesAt), durationDeadline)).toISOString();
 }
 
+export function canCreateExamAttempt(attemptCount: number, maxAttempts: number, allowMakeup: boolean) {
+  return attemptCount < maxAttempts && (attemptCount === 0 || allowMakeup);
+}
+
 export async function getExamCourseId(exerciseId: string) {
   const [row] = await db
     .select({ exerciseCourseId: schema.exercise.courseId, lessonCourseId: schema.lesson.courseId })
@@ -28,6 +32,7 @@ export async function startExamAttempt(exerciseId: string, groupMemberId: string
         closesAt: schema.exercise.closesAt,
         maxAttempts: schema.exercise.maxAttempts,
         durationMinutes: schema.exercise.durationMinutes,
+        allowMakeup: schema.exercise.allowMakeup,
         currentTime: sql<string>`clock_timestamp()::text`
       })
       .from(schema.exercise)
@@ -46,7 +51,7 @@ export async function startExamAttempt(exerciseId: string, groupMemberId: string
     const activeAttempt = attempts.find((attempt) => !attempt.submittedAt && Date.parse(attempt.expiresAt) > now);
     if (activeAttempt) return activeAttempt;
 
-    if (attempts.length >= exercise.maxAttempts) return null;
+    if (!canCreateExamAttempt(attempts.length, exercise.maxAttempts, exercise.allowMakeup)) return null;
 
     const expiresAt = getExamExpiresAt(exercise.currentTime, exercise.closesAt, exercise.durationMinutes);
     const [attempt] = await tx

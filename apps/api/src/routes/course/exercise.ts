@@ -42,12 +42,7 @@ import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-member-or-automation-key';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/services/submission';
-import {
-  assertExamOpen,
-  redactExamAnswers,
-  saveExamDraftService,
-  startExamAttemptService
-} from '@api/services/exercise/exam-policy';
+import { getLearnerExam, saveExamDraftService, startExamAttemptService } from '@api/services/exercise/exam-policy';
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
@@ -146,8 +141,6 @@ export const exerciseRouter = new Hono()
           exercise.isExam && user?.id ? await isCourseTeamMemberOrOrgAdmin(c.req.param('courseId')!, user.id) : false;
         const learnerExercise = exercise.isExam && user?.id && !isTeacher && !automationKey;
 
-        if (learnerExercise) assertExamOpen(exercise);
-
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'get_course_exercise', {
             courseId: c.req.param('courseId')!,
@@ -155,7 +148,7 @@ export const exerciseRouter = new Hono()
           });
         }
 
-        const data = learnerExercise ? redactExamAnswers(exercise) : exercise;
+        const data = learnerExercise ? getLearnerExam(exercise) : exercise;
         return c.json({ success: true, data }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to fetch exercise');

@@ -1,5 +1,5 @@
 {
-  "id": "46ffb201-e393-4210-9ab1-6d3b481ac390",
+  "id": "fe32f7e6-0cbd-4b5e-913e-1769d1339c36",
   "prevId": "190d6283-221a-499c-af5b-b8c76474ab6b",
   "version": "7",
   "dialect": "postgresql",
@@ -2486,6 +2486,136 @@
         "assessment_adjustment_amount_valid": {
           "name": "assessment_adjustment_amount_valid",
           "value": "\"assessment_adjustment\".\"amount\" <> 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.assessment_ai_suggestion": {
+      "name": "assessment_ai_suggestion",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "submission_id": {
+          "name": "submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "overall_score": {
+          "name": "overall_score",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dimensions": {
+          "name": "dimensions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence": {
+          "name": "confidence",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "review_status": {
+          "name": "review_status",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "reviewed_by_profile_id": {
+          "name": "reviewed_by_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "assessment_ai_suggestion_submission_idx": {
+          "name": "assessment_ai_suggestion_submission_idx",
+          "columns": [
+            {
+              "expression": "submission_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "assessment_ai_suggestion_submission_fkey": {
+          "name": "assessment_ai_suggestion_submission_fkey",
+          "tableFrom": "assessment_ai_suggestion",
+          "tableTo": "submission",
+          "columnsFrom": ["submission_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "assessment_ai_suggestion_reviewer_fkey": {
+          "name": "assessment_ai_suggestion_reviewer_fkey",
+          "tableFrom": "assessment_ai_suggestion",
+          "tableTo": "profile",
+          "columnsFrom": ["reviewed_by_profile_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "assessment_ai_suggestion_score_valid": {
+          "name": "assessment_ai_suggestion_score_valid",
+          "value": "\"assessment_ai_suggestion\".\"overall_score\" BETWEEN 0 AND 100"
+        },
+        "assessment_ai_suggestion_confidence_valid": {
+          "name": "assessment_ai_suggestion_confidence_valid",
+          "value": "\"assessment_ai_suggestion\".\"confidence\" BETWEEN 0 AND 1"
+        },
+        "assessment_ai_suggestion_status_valid": {
+          "name": "assessment_ai_suggestion_status_valid",
+          "value": "\"assessment_ai_suggestion\".\"review_status\" IN ('PENDING', 'ACCEPTED', 'REJECTED')"
         }
       },
       "isRLSEnabled": false
@@ -6866,6 +6996,34 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "allow_makeup": {
+          "name": "allow_makeup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "shuffle_questions": {
+          "name": "shuffle_questions",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "shuffle_options": {
+          "name": "shuffle_options",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "show_answers": {
+          "name": "show_answers",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "section_display_mode": {
           "name": "section_display_mode",

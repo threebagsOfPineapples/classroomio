@@ -2,6 +2,7 @@ import {
   createEnterpriseDepartment,
   getEnterpriseMember,
   getEnterpriseMemberByProfile,
+  listPendingGradingSubmissions,
   listEnterpriseDepartments,
   listEnterpriseEmployees,
   listEnterpriseRoles,
@@ -9,6 +10,7 @@ import {
   updateEnterpriseDepartment,
   updateEnterpriseEmployee
 } from '@cio/db/queries/enterprise';
+import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import type {
   TEnterpriseDepartment,
   TEnterpriseDepartmentUpdate,
@@ -70,6 +72,19 @@ export async function getEnterpriseOverview(organizationId: string, profileId: s
     isSuperAdmin: context.isSuperAdmin,
     departments
   };
+}
+
+export async function getEnterpriseGradingQueue(organizationId: string, profileId: string) {
+  const overview = await getEnterpriseOverview(organizationId, profileId);
+  requireManager(overview.canManage);
+
+  const submissions = await listPendingGradingSubmissions(organizationId);
+  const courseIds = [...new Set(submissions.map((item) => item.courseId))];
+  const permissions = await Promise.all(
+    courseIds.map(async (courseId) => [courseId, await isCourseTeamMemberOrOrgAdmin(courseId, profileId)] as const)
+  );
+  const canGradeByCourse = new Map(permissions);
+  return submissions.map((item) => ({ ...item, canGrade: canGradeByCourse.get(item.courseId) ?? false }));
 }
 
 export async function getEnterpriseEmployees(organizationId: string, profileId: string) {

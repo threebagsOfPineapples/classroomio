@@ -77,6 +77,10 @@ export interface QuestionnaireState {
   closesAt?: string | null;
   maxAttempts?: number;
   durationMinutes?: number | null;
+  allowMakeup?: boolean;
+  shuffleQuestions?: boolean;
+  shuffleOptions?: boolean;
+  showAnswers?: boolean;
   completionPolicy?: 'submitted' | 'passed';
   passThreshold?: number | null;
   slug?: string | null;
@@ -117,6 +121,10 @@ export const questionnaire: Writable<QuestionnaireState> = writable({
   closesAt: null,
   maxAttempts: 1,
   durationMinutes: null,
+  allowMakeup: false,
+  shuffleQuestions: false,
+  shuffleOptions: false,
+  showAnswers: false,
   completionPolicy: 'submitted',
   passThreshold: 100,
   slug: ''

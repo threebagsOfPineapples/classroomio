@@ -29,6 +29,8 @@ export type {
   DocumentUploadResult
 } from './types';
 
+export type { AiScoringProvider } from './scoring';
+
 // Providers
 export { createModel, getProviderConfigForProvider, pickAnyConfiguredProvider } from './providers';
 

@@ -2221,7 +2221,11 @@
               "save_continue": "Gem og fortsæt",
               "question_fallback": "Spørgsmål {number}",
               "zero_points_field": "Bestået afslutning kræver mindst et tilgængeligt point."
-            }
+            },
+            "settings_exam_makeup": "Tillad nyt forsøg",
+            "settings_exam_shuffle_questions": "Bland spørgsmålenes rækkefølge",
+            "settings_exam_shuffle_options": "Bland svarmulighederne",
+            "settings_exam_show_answers": "Vis svar efter prøvens afslutning"
           },
           "new_exercise_modal": {
             "heading": "Ny øvelse",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Igangværende uddannelse",
       "upcoming_plans": "Kommende uddannelse",
-      "due_soon": "Uddannelse afsluttes inden for 7 dage"
+      "due_soon": "Uddannelse afsluttes inden for 7 dage",
+      "pending_assignments": "Opgaver til bedømmelse",
+      "pending_written": "Skriftlige svar til bedømmelse",
+      "instructor_only": "Kræver adgang som kursusunderviser"
     }
   }
 }

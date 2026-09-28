@@ -1,6 +1,56 @@
 import { db } from '@db/drizzle';
-import { department, organizationMemberEnterpriseRole, organizationmember, profile } from '@db/schema';
-import { and, asc, eq, inArray, ne, or } from 'drizzle-orm';
+import {
+  course,
+  department,
+  exercise,
+  group,
+  groupmember,
+  organizationMemberEnterpriseRole,
+  organizationmember,
+  profile,
+  question,
+  submission
+} from '@db/schema';
+import { QUESTION_TYPE_IDS } from '@cio/question-types';
+import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
+
+export async function listPendingGradingSubmissions(organizationId: string) {
+  const rows = await db
+    .select({
+      id: submission.id,
+      exerciseId: exercise.id,
+      courseId: course.id,
+      courseTitle: course.title,
+      exerciseTitle: exercise.title,
+      isExam: exercise.isExam,
+      learnerName: profile.fullname,
+      submittedAt: submission.createdAt
+    })
+    .from(submission)
+    .innerJoin(course, eq(submission.courseId, course.id))
+    .innerJoin(group, eq(course.groupId, group.id))
+    .innerJoin(exercise, eq(submission.exerciseId, exercise.id))
+    .leftJoin(groupmember, eq(submission.submittedBy, groupmember.id))
+    .leftJoin(profile, eq(groupmember.profileId, profile.id))
+    .where(and(eq(group.organizationId, organizationId), eq(submission.gradingState, 'awaiting_manual')))
+    .orderBy(desc(submission.createdAt))
+    .limit(20);
+
+  const exerciseIds = [...new Set(rows.map((row) => row.exerciseId))];
+  const writtenQuestions = exerciseIds.length
+    ? await db
+        .select({ exerciseId: question.exerciseId })
+        .from(question)
+        .where(
+          and(
+            inArray(question.exerciseId, exerciseIds),
+            inArray(question.questionTypeId, [QUESTION_TYPE_IDS.TEXTAREA, QUESTION_TYPE_IDS.SHORT_ANSWER])
+          )
+        )
+    : [];
+  const writtenExerciseIds = new Set(writtenQuestions.map((item) => item.exerciseId));
+  return rows.map((row) => ({ ...row, hasWrittenQuestion: writtenExerciseIds.has(row.exerciseId) }));
+}
 
 export function getEnterpriseMemberByProfile(organizationId: string, profileId: string) {
   return db

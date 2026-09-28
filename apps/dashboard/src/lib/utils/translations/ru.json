@@ -2221,7 +2221,11 @@
               "save_continue": "Сохранить и продолжить",
               "question_fallback": "Вопрос {number}",
               "zero_points_field": "Для успешного завершения требуется хотя бы одна доступная точка."
-            }
+            },
+            "settings_exam_makeup": "Разрешить повторную попытку",
+            "settings_exam_shuffle_questions": "Перемешивать вопросы",
+            "settings_exam_shuffle_options": "Перемешивать варианты ответов",
+            "settings_exam_show_answers": "Показывать ответы после закрытия экзамена"
           },
           "new_exercise_modal": {
             "heading": "Новое упражнение",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Текущее обучение",
       "upcoming_plans": "Предстоящее обучение",
-      "due_soon": "Обучение завершается в течение 7 дней"
+      "due_soon": "Обучение завершается в течение 7 дней",
+      "pending_assignments": "Задания на проверке",
+      "pending_written": "Письменные ответы на проверке",
+      "instructor_only": "Требуется доступ преподавателя курса"
     }
   }
 }

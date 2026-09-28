@@ -5,6 +5,7 @@ import type {
   AssessmentExercises,
   AssessmentScheme,
   EnrollmentAssessment,
+  EnterpriseGradingQueue,
   TrainingArchive,
   TrainingArchiveSummary,
   TrainingEvaluationDraft,
@@ -22,6 +23,8 @@ export class AssessmentApi {
   archiveSummary = $state<TrainingArchiveSummary | null>(null);
   matrix = $state<TrainingMatrix | null>(null);
   statistics = $state<TrainingStatistics | null>(null);
+  gradingQueue = $state<EnterpriseGradingQueue>([]);
+  gradingQueueError = $state('');
   detail = $state<EnrollmentAssessment | null>(null);
   loading = $state(false);
   busy = $state(false);
@@ -39,6 +42,8 @@ export class AssessmentApi {
     this.archiveSummary = null;
     this.matrix = null;
     this.statistics = null;
+    this.gradingQueue = [];
+    this.gradingQueueError = '';
     this.detail = null;
   }
 
@@ -134,6 +139,17 @@ export class AssessmentApi {
       this.error = t.get('enterprise.load_failed');
     } finally {
       this.loading = false;
+    }
+  }
+
+  async loadGradingQueue(organizationId: string) {
+    this.useOrganization(organizationId);
+    this.gradingQueueError = '';
+    try {
+      const queue = await enterpriseApi.request<EnterpriseGradingQueue>(organizationId, '/grading-queue');
+      if (this.organizationId === organizationId) this.gradingQueue = queue;
+    } catch {
+      if (this.organizationId === organizationId) this.gradingQueueError = t.get('enterprise.load_failed');
     }
   }
 

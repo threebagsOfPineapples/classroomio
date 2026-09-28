@@ -2221,7 +2221,11 @@
               "save_continue": "Lưu và tiếp tục",
               "question_fallback": "Câu hỏi {number}",
               "zero_points_field": "Hoàn thành vượt qua cần có ít nhất một điểm."
-            }
+            },
+            "settings_exam_makeup": "Cho phép làm lại",
+            "settings_exam_shuffle_questions": "Xáo trộn thứ tự câu hỏi",
+            "settings_exam_shuffle_options": "Xáo trộn các lựa chọn trả lời",
+            "settings_exam_show_answers": "Hiển thị đáp án sau khi kỳ thi kết thúc"
           },
           "new_exercise_modal": {
             "heading": "Bài tập mới",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Đào tạo đang diễn ra",
       "upcoming_plans": "Đào tạo sắp tới",
-      "due_soon": "Đào tạo kết thúc trong vòng 7 ngày"
+      "due_soon": "Đào tạo kết thúc trong vòng 7 ngày",
+      "pending_assignments": "Bài tập chờ chấm điểm",
+      "pending_written": "Câu trả lời tự luận chờ chấm điểm",
+      "instructor_only": "Cần quyền giảng viên khóa học"
     }
   }
 }

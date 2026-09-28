@@ -2785,6 +2785,10 @@
             "settings_exam_closes": "Closes at",
             "settings_exam_max_attempts": "Maximum attempts",
             "settings_exam_duration": "Duration in minutes (optional)",
+            "settings_exam_makeup": "Allow another attempt",
+            "settings_exam_shuffle_questions": "Shuffle question order",
+            "settings_exam_shuffle_options": "Shuffle answer options",
+            "settings_exam_show_answers": "Show answers after exam closes",
             "settings_exam_window_helper": "Learners can view questions and submit answers only during this time window.",
             "settings_allow_multiple_helper": "Students can submit more than once and review past attempts on the results screen.",
             "settings_completion_policy": "Completion rule",
@@ -5691,7 +5695,10 @@
     "workbench": {
       "active_plans": "Training in progress",
       "upcoming_plans": "Upcoming training",
-      "due_soon": "Training ending within 7 days"
+      "due_soon": "Training ending within 7 days",
+      "pending_assignments": "Assignments awaiting grading",
+      "pending_written": "Written answers awaiting grading",
+      "instructor_only": "Course instructor access required"
     },
     "request_failed": "Request failed",
     "load_failed": "Could not load enterprise data",

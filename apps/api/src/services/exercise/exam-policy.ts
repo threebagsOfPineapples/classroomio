@@ -70,6 +70,16 @@ export function assertExamOpen(exercise: Pick<Exam, 'isExam' | 'opensAt' | 'clos
   }
 }
 
+export function getLearnerExam(exercise: Exam, now = new Date()): Exam {
+  const closed = exercise.closesAt && now.getTime() >= Date.parse(exercise.closesAt);
+  if (closed && exercise.isComplete) {
+    return exercise.showAnswers ? exercise : redactExamAnswers(exercise);
+  }
+
+  assertExamOpen(exercise, now);
+  return redactExamAnswers(exercise);
+}
+
 export function redactExamAnswers(exercise: Exam): Exam {
   const redactQuestion = (question: NonNullable<Exam['questions']>[number]) => ({
     ...question,

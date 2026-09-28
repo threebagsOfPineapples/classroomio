@@ -1289,6 +1289,10 @@ export const exercise = pgTable(
     closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }),
     maxAttempts: integer('max_attempts').default(1).notNull(),
     durationMinutes: integer('duration_minutes'),
+    allowMakeup: boolean('allow_makeup').default(false).notNull(),
+    shuffleQuestions: boolean('shuffle_questions').default(false).notNull(),
+    shuffleOptions: boolean('shuffle_options').default(false).notNull(),
+    showAnswers: boolean('show_answers').default(false).notNull(),
     sectionDisplayMode: varchar('section_display_mode').default('one_question'),
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),
@@ -2466,6 +2470,39 @@ export const assessmentInput = pgTable(
     }),
     index('assessment_input_enrollment_item_idx').on(table.enrollmentId, table.itemId),
     check('assessment_input_score_valid', sql`${table.score} >= 0`)
+  ]
+);
+
+export const assessmentAiSuggestion = pgTable(
+  'assessment_ai_suggestion',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    submissionId: uuid('submission_id').notNull(),
+    provider: varchar({ length: 100 }).notNull(),
+    overallScore: doublePrecision('overall_score').notNull(),
+    dimensions: jsonb().$type<Array<{ name: string; score: number; maxScore: number }>>().notNull(),
+    feedback: text().notNull(),
+    confidence: doublePrecision().notNull(),
+    reviewStatus: varchar('review_status', { length: 16 }).default('PENDING').notNull(),
+    reviewedByProfileId: uuid('reviewed_by_profile_id'),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true, mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.submissionId],
+      foreignColumns: [submission.id],
+      name: 'assessment_ai_suggestion_submission_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.reviewedByProfileId],
+      foreignColumns: [profile.id],
+      name: 'assessment_ai_suggestion_reviewer_fkey'
+    }),
+    index('assessment_ai_suggestion_submission_idx').on(table.submissionId),
+    check('assessment_ai_suggestion_score_valid', sql`${table.overallScore} BETWEEN 0 AND 100`),
+    check('assessment_ai_suggestion_confidence_valid', sql`${table.confidence} BETWEEN 0 AND 1`),
+    check('assessment_ai_suggestion_status_valid', sql`${table.reviewStatus} IN ('PENDING', 'ACCEPTED', 'REJECTED')`)
   ]
 );
 

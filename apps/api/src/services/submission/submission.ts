@@ -452,13 +452,14 @@ export async function listSubmissionsForGrading(courseId: string) {
 
       const questionKeyById: { [id: number]: string } = {};
       const questionTypeById: { [id: number]: number } = {};
+      const questionAnswerByPoint: { [questionId: number]: number } = {};
       for (const question of submission.exercise.questions || []) {
         questionKeyById[question.id] = question.name ? String(question.name) : String(question.id);
         questionTypeById[question.id] = question.questionTypeId;
+        questionAnswerByPoint[question.id] = 0;
       }
 
       const formattedAnswers: { [questionKey: string]: AnswerData } = {};
-      const questionAnswerByPoint: { [questionId: number]: number } = {};
 
       for (const answer of submission.answers || []) {
         const questionKey = questionKeyById[answer.questionId];

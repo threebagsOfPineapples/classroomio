@@ -6,7 +6,12 @@
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
   import { getTrainingWorkbenchPlans } from '$lib/features/enterprise/utils/training-workbench';
-  import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
+  import type {
+    EnterpriseDepartment,
+    EnterpriseEmployee,
+    EnterpriseGradingQueue,
+    EnterpriseRole
+  } from '$lib/features/enterprise/utils/types';
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
@@ -31,6 +36,8 @@
   const statistics = $derived(assessmentApi.statistics);
   const currentTime = Date.now();
   const workbenchPlans = $derived(getTrainingWorkbenchPlans(trainingPlansApi.plans, currentTime));
+  const pendingAssignments = $derived(assessmentApi.gradingQueue.filter((item) => !item.isExam));
+  const pendingWritten = $derived(assessmentApi.gradingQueue.filter((item) => item.hasWrittenQuestion));
   const employees = $derived(enterpriseApi.employees);
   const selectedEmployee = $derived(enterpriseApi.selectedEmployee);
   const loading = $derived(enterpriseApi.loading);
@@ -63,7 +70,10 @@
         (enterpriseApi.overview?.canManage || enterpriseApi.overview?.roles.includes('DEPARTMENT_MANAGER'))
       ) {
         void assessmentApi.loadStatistics(organizationId);
-        if (enterpriseApi.overview?.canManage) void trainingPlansApi.load(organizationId);
+        if (enterpriseApi.overview?.canManage) {
+          void trainingPlansApi.load(organizationId);
+          void assessmentApi.loadGradingQueue(organizationId);
+        }
       }
     });
   });
@@ -146,6 +156,27 @@
   <title>{$t('enterprise.title')}</title>
 </svelte:head>
 
+{#snippet gradingItems(items: EnterpriseGradingQueue)}
+  <ol class="space-y-1 text-sm">
+    {#each items.slice(0, 5) as item (item.id)}
+      <li class="py-1">
+        {#if item.canGrade}
+          <a
+            class="ui:hover:text-primary"
+            href={resolve(`/courses/${item.courseId}/submissions?submissionId=${item.id}`)}
+            >{item.exerciseTitle} · {item.learnerName ?? '—'}</a
+          >
+        {:else}
+          <span>{item.exerciseTitle} · {item.learnerName ?? '—'}</span>
+          <span class="ui:text-muted-foreground"> · {$t('enterprise.workbench.instructor_only')}</span>
+        {/if}
+      </li>
+    {:else}
+      <li class="ui:text-muted-foreground">—</li>
+    {/each}
+  </ol>
+{/snippet}
+
 <Page.Root role="main" class="mx-auto max-w-6xl px-6">
   <Page.Header>
     <Page.HeaderContent>
@@ -226,6 +257,17 @@
                     {/each}
                   </div>
                 </div>
+                <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
+                  <div>
+                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.pending_assignments')}</h2>
+                    {@render gradingItems(pendingAssignments)}
+                  </div>
+                  <div>
+                    <h2 class="mb-2 font-medium">{$t('enterprise.workbench.pending_written')}</h2>
+                    {@render gradingItems(pendingWritten)}
+                  </div>
+                </div>
+                {#if assessmentApi.gradingQueueError}<p role="alert">{assessmentApi.gradingQueueError}</p>{/if}
               {/if}
               <div class="grid gap-5 border-t pt-4 md:grid-cols-2">
                 <div>

@@ -676,6 +676,10 @@
             "settings_exam_closes": "结束时间",
             "settings_exam_duration": "时长（分钟，可选）",
             "settings_exam_max_attempts": "最多尝试次数",
+            "settings_exam_makeup": "允许补考",
+            "settings_exam_shuffle_questions": "随机题序",
+            "settings_exam_shuffle_options": "随机选项",
+            "settings_exam_show_answers": "考试结束后显示答案",
             "settings_exam_mode": "考试模式",
             "settings_exam_opens": "开始时间",
             "settings_exam_window_helper": "学员只能在指定时间内查看题目并提交答案。",
@@ -925,7 +929,10 @@
     "workbench": {
       "active_plans": "进行中的培训",
       "upcoming_plans": "即将开始的培训",
-      "due_soon": "7 天内到期的培训"
+      "due_soon": "7 天内到期的培训",
+      "pending_assignments": "待评分作业",
+      "pending_written": "待批改简答题",
+      "instructor_only": "需课程讲师处理"
     },
     "request_failed": "操作失败，请稍后重试",
     "load_failed": "企业数据加载失败",

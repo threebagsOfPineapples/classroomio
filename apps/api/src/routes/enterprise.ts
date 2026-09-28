@@ -7,6 +7,7 @@ import {
   editEnterpriseEmployee,
   getEnterpriseEmployee,
   getEnterpriseEmployees,
+  getEnterpriseGradingQueue,
   getEnterpriseOverview,
   setEnterpriseRoles
 } from '@api/services/enterprise';
@@ -111,6 +112,15 @@ function dateParam(raw: string | undefined) {
 
 export const enterpriseRouter = new Hono()
   .use('*', authMiddleware)
+  .get('/grading-queue', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const data = await getEnterpriseGradingQueue(organizationId, profileId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
   .get('/overview', async (c) => {
     try {
       const { organizationId, profileId } = enterpriseRequest(c);

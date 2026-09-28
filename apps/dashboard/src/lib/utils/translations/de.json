@@ -2221,7 +2221,11 @@
               "save_continue": "Speichern und fortfahren",
               "question_fallback": "Frage {number}",
               "zero_points_field": "Für den bestandenen Abschluss ist mindestens ein Punkt erforderlich."
-            }
+            },
+            "settings_exam_makeup": "Wiederholungsversuch erlauben",
+            "settings_exam_shuffle_questions": "Fragenreihenfolge mischen",
+            "settings_exam_shuffle_options": "Antwortoptionen mischen",
+            "settings_exam_show_answers": "Antworten nach Prüfungsende anzeigen"
           },
           "new_exercise_modal": {
             "heading": "Neue Übung",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Laufende Schulungen",
       "upcoming_plans": "Bevorstehende Schulungen",
-      "due_soon": "Schulungen enden innerhalb von 7 Tagen"
+      "due_soon": "Schulungen enden innerhalb von 7 Tagen",
+      "pending_assignments": "Aufgaben zur Bewertung",
+      "pending_written": "Schriftliche Antworten zur Bewertung",
+      "instructor_only": "Zugriff als Kursdozent erforderlich"
     }
   }
 }

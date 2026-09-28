@@ -446,7 +446,7 @@
       });
 
       const allowMultipleAttempts = $questionnaire.isExam
-        ? ($questionnaire.maxAttempts ?? 1) > 1
+        ? !!$questionnaire.allowMakeup && ($questionnaire.maxAttempts ?? 1) > 1
         : !!$questionnaire.allowMultipleAttempts;
       const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
       const passThreshold = $questionnaire.passThreshold ?? 100;
@@ -464,6 +464,10 @@
         closesAt: $questionnaire.closesAt,
         maxAttempts: $questionnaire.maxAttempts,
         durationMinutes: $questionnaire.durationMinutes,
+        allowMakeup: $questionnaire.allowMakeup,
+        shuffleQuestions: $questionnaire.shuffleQuestions,
+        shuffleOptions: $questionnaire.shuffleOptions,
+        showAnswers: $questionnaire.showAnswers,
         completionPolicy,
         passThreshold
       });

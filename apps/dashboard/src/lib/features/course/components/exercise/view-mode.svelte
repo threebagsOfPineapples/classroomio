@@ -57,6 +57,7 @@
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import type { Question } from '$features/course/types';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
+  import { arrangeExamQuestions } from '$features/course/utils/exam-order';
 
   interface Props {
     preview?: boolean;
@@ -114,6 +115,12 @@
 
       const attempt = result.data;
       finalDraftFlushStarted = false;
+      if ($questionnaire.shuffleQuestions || $questionnaire.shuffleOptions) {
+        questionnaire.update((state) => ({
+          ...state,
+          questions: arrangeExamQuestions(state.questions, attempt.id, !!state.shuffleQuestions, !!state.shuffleOptions)
+        }));
+      }
       const serverAnswers: Record<string, AnswerData> = {};
       for (const draftAnswer of attempt.draftAnswers ?? []) {
         const question = $questionnaire.questions.find((item) => Number(item.id) === draftAnswer.questionId);
@@ -743,7 +750,8 @@
   const canTryAgain = $derived(
     !!$questionnaire.allowMultipleAttempts &&
       (!$questionnaire.isExam ||
-        ($questionnaireMetaData.examAttemptNumber ?? submissionList.length) < ($questionnaire.maxAttempts ?? 1))
+        (!!$questionnaire.allowMakeup &&
+          ($questionnaireMetaData.examAttemptNumber ?? submissionList.length) < ($questionnaire.maxAttempts ?? 1)))
   );
 
   const progressValue = $derived(getProgressValue($questionnaireMetaData.currentQuestionIndex));

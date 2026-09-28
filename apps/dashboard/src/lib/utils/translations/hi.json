@@ -2221,7 +2221,11 @@
               "save_continue": "सहेजें और जारी रखें",
               "question_fallback": "प्रश्न {number}",
               "zero_points_field": "उत्तीर्ण पूर्णता के लिए कम से कम एक अंक उपलब्ध होना आवश्यक है।"
-            }
+            },
+            "settings_exam_makeup": "दोबारा प्रयास की अनुमति दें",
+            "settings_exam_shuffle_questions": "प्रश्नों का क्रम बदलें",
+            "settings_exam_shuffle_options": "उत्तर विकल्पों का क्रम बदलें",
+            "settings_exam_show_answers": "परीक्षा समाप्त होने के बाद उत्तर दिखाएँ"
           },
           "new_exercise_modal": {
             "heading": "नया व्यायाम",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "चल रहे प्रशिक्षण",
       "upcoming_plans": "आगामी प्रशिक्षण",
-      "due_soon": "7 दिनों में समाप्त होने वाले प्रशिक्षण"
+      "due_soon": "7 दिनों में समाप्त होने वाले प्रशिक्षण",
+      "pending_assignments": "मूल्यांकन की प्रतीक्षा में असाइनमेंट",
+      "pending_written": "मूल्यांकन की प्रतीक्षा में लिखित उत्तर",
+      "instructor_only": "पाठ्यक्रम प्रशिक्षक की पहुँच आवश्यक"
     }
   }
 }

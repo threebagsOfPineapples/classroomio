@@ -2221,7 +2221,11 @@
               "save_continue": "Zapisz i kontynuuj",
               "question_fallback": "Pytanie {number}",
               "zero_points_field": "Zaliczenie pozytywne wymaga posiadania co najmniej jednego punktu."
-            }
+            },
+            "settings_exam_makeup": "Zezwól na ponowne podejście",
+            "settings_exam_shuffle_questions": "Losuj kolejność pytań",
+            "settings_exam_shuffle_options": "Losuj kolejność odpowiedzi",
+            "settings_exam_show_answers": "Pokaż odpowiedzi po zakończeniu egzaminu"
           },
           "new_exercise_modal": {
             "heading": "Nowe ćwiczenie",
@@ -5853,7 +5857,10 @@
     "workbench": {
       "active_plans": "Trwające szkolenia",
       "upcoming_plans": "Nadchodzące szkolenia",
-      "due_soon": "Szkolenia kończące się w ciągu 7 dni"
+      "due_soon": "Szkolenia kończące się w ciągu 7 dni",
+      "pending_assignments": "Zadania oczekujące na ocenę",
+      "pending_written": "Odpowiedzi pisemne oczekujące na ocenę",
+      "instructor_only": "Wymagany dostęp instruktora kursu"
     }
   }
 }
