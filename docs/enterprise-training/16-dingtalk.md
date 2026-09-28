@@ -2,7 +2,7 @@
 
 ## 当前范围
 
-已实现网页钉钉授权登录、本人账号绑定及员工信息读取。登录页与“学员端 → 设置 → 集成”在后台未完整配置时隐藏钉钉入口。没有新增数据库迁移，沿用员工记录的外部身份字段与认证临时记录表。
+已实现网页钉钉授权登录、本人账号绑定及员工信息读取。用户要求替换 Google 登录后，登录页与注册页统一显示钉钉登录入口；未启用时按钮禁用并提示使用邮箱和密码登录。“学员端 → 设置 → 集成”在后台未完整配置时仍隐藏绑定入口。Google 登录提供者与 Google 登录设置项已移除。没有新增数据库迁移，沿用员工记录的外部身份字段与认证临时记录表。
 
 参考用户 GitHub 项目 [threebagsOfPineapples/boot](https://github.com/threebagsOfPineapples/boot) 中 `DingtalkAccountChoiceService` 的原账号绑定与受限授权原则。培训系统没有经核验的手机号字段，因此首次绑定要求先用原账号登录，不按姓名、工号或邮箱自动合并，也不静默创建新员工。
 
@@ -40,7 +40,7 @@ DINGTALK_REDIRECT_URI=https://培训系统域名/api/auth/dingtalk/callback
 
 云代理部署也可使用 `/proxy/api/auth/dingtalk/callback`。回调地址必须与 `DASHBOARD_ORIGIN` 同源；正式环境要求 HTTPS，只有 `localhost` 允许 HTTP。本地示例回调为 `http://localhost:4173/api/auth/dingtalk/callback`。
 
-`DINGTALK_ORGANIZATION_ID` 指培训系统数据库中的组织 UUID，不能填 Corp ID。当前为一个部署绑定一家企业，不支持多企业动态配置。设置完成后重启 API；关闭时设置 `DINGTALK_ENABLED=false` 并重启。
+`DINGTALK_ORGANIZATION_ID` 指培训系统数据库中的组织 UUID，不能填 Corp ID。当前为一个部署绑定一家企业，不支持多企业动态配置。设置完成后重启 API；关闭时设置 `DINGTALK_ENABLED=false` 并重启，登录按钮显示为暂未启用。
 
 授权请求使用 `openid corpid`，通过一次性授权码取得所选企业身份，再以 unionId 读取该企业员工。服务端核对 Corp ID、员工身份、培训账号状态和绑定归属；令牌留在服务器端。[钉钉官方授权流程](https://open-dingtalk.github.io/developerpedia/docs/develop/permission/token/browser/get_user_app_token_browser/)。
 
@@ -59,7 +59,7 @@ DINGTALK_REDIRECT_URI=https://培训系统域名/api/auth/dingtalk/callback
 
 真实应用令牌校验通过；使用一条既有员工绑定验证 unionId 到企业 userId 的映射和本人资料读取，均成功。姓名、职位、手机号及部门编号有值；测试员工的工号、企业邮箱为空。部门详情读取返回权限错误，因此本轮没有验证部门树读取或同步。
 
-当前配置对应本地验收组织 `coursera-test`，回调为 `http://localhost:4173/api/auth/dingtalk/callback`。配置解析和校验通过，但 `DINGTALK_ENABLED=false`，入口保持隐藏，等待管理员登记新回调。授权页返回 HTTP 200 不能证明回调已登记。
+当前配置对应本地验收组织 `coursera-test`，回调为 `http://localhost:4173/api/auth/dingtalk/callback`。配置解析和校验通过，但 `DINGTALK_ENABLED=false`，登录入口保持禁用，等待管理员登记新回调。授权页返回 HTTP 200 不能证明回调已登记。
 
 当前用户账号不是企业管理员。请由企业管理员或具有该应用管理权限的负责人，在钉钉开发者后台打开 zz-boot 使用的现有应用，在安全设置中新增上述重定向 URL，保留原有 zz-boot 回调。若平台不能保留多个回调，不要覆盖原地址，应创建培训专用应用并更新培训系统私有配置。
 

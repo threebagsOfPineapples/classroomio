@@ -5980,7 +5980,8 @@
         "account_conflict": "This identity or training account is already linked to another account. Contact an administrator.",
         "member_inactive": "This training account is unavailable. Contact an administrator.",
         "reauth_required": "Please sign in again before linking your DingTalk account."
-      }
+      },
+      "paused_hint": "DingTalk sign-in is not enabled yet. Please sign in with your email and password."
     }
   }
 }

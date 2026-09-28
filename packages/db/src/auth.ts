@@ -63,14 +63,6 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     sendVerificationEmail,
     afterEmailVerification: sendWelcomeEmailAfterVerification
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      accessType: 'offline',
-      prompt: 'select_account consent'
-    }
-  },
   trustedOrigins: (request) => {
     const origins = [...CONSTANTS.TRUSTED_ORIGINS];
     const originHeader = request?.headers.get('origin');

@@ -5,11 +5,8 @@
   import * as Avatar from '@cio/ui/base/avatar';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
-  import { GoogleIconColored } from '$features/ui/icons';
-  import { authClient } from '$lib/utils/services/auth/client';
-  import { snackbar } from '$features/ui/snackbar/store';
+  import Dingtalk from '$features/auth/components/dingtalk.svelte';
   import * as Card from '@cio/ui/base/card';
-  import { Button } from '@cio/ui/base/button';
   import { Separator } from '@cio/ui/base/separator';
   import { preventDefault } from '$lib/utils/functions/svelte';
   import { ROUTE } from '$lib/utils/constants/routes';
@@ -20,9 +17,6 @@
     showOnlyContent?: boolean;
     isLoading?: boolean;
     showLogo?: boolean;
-    hideGoogleAuth?: boolean;
-    redirectPathname?: string;
-    newUserCallbackPathname?: string;
     handleSubmit?: () => void;
     children?: Snippet;
     getPasswordAuthAlternative?: Snippet;
@@ -33,46 +27,10 @@
     showOnlyContent = false,
     isLoading = false,
     showLogo = false,
-    hideGoogleAuth = false,
-    redirectPathname = '',
-    newUserCallbackPathname,
     handleSubmit = () => {},
     children,
     getPasswordAuthAlternative
   }: Props = $props();
-
-  async function signInWithGoogle() {
-    if (isLoading) {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    console.log({ params });
-    // const redirectTo = `https://app.classroomio.com?forwardTo=${
-    //   window.location.origin + params.get('redirect')
-    // }`;
-    const pathname = redirectPathname || params.get('redirect') || '';
-    const redirectTo = `${window.location.origin + pathname}`;
-    const errorCallbackURL = `${window.location.origin + ROUTE.AUTH_FAILED}`;
-    const newUserCallbackURL = newUserCallbackPathname
-      ? `${window.location.origin}${newUserCallbackPathname}`
-      : undefined;
-
-    try {
-      const result = await authClient.signIn.social({
-        provider: 'google',
-        callbackURL: redirectTo,
-        errorCallbackURL,
-        ...(newUserCallbackURL ? { newUserCallbackURL } : {})
-      });
-
-      if (result?.error) {
-        snackbar.error('snackbar.social_auth_not_enabled');
-      }
-    } catch (error) {
-      console.log('catch error', error);
-    }
-  }
 
   const authBackgroundUrl = $derived($currentOrg.customization.auth?.backgroundImage?.trim() ?? '');
 </script>
@@ -118,7 +76,7 @@
         {@render children?.()}
       </form>
 
-      {#if !showOnlyContent && !hideGoogleAuth}
+      {#if !showOnlyContent}
         <div class="mt-6 flex flex-col gap-6">
           <div class="relative flex items-center justify-center">
             <Separator />
@@ -128,12 +86,7 @@
           {#if getPasswordAuthAlternative}
             {@render getPasswordAuthAlternative()}
           {:else}
-            <Button variant="outline" onclick={signInWithGoogle} disabled={isLoading} class="w-full">
-              <GoogleIconColored />
-              <span>
-                {isLogin ? $t('login.login_with_google') : $t('login.signup_with_google')}
-              </span>
-            </Button>
+            <Dingtalk disabled={isLoading} />
           {/if}
         </div>
       {/if}

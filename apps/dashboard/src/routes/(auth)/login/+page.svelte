@@ -17,7 +17,6 @@
   import ShieldIcon from '@lucide/svelte/icons/shield';
   import { buildSsoRedirectUrl, createSsoEmailChecker, type SsoAuthState } from '$features/auth/utils/auth-sso';
   import { authSsoStore, ensureSsoInfoLoaded } from '$features/auth/utils/auth-sso-store';
-  import Dingtalk from '$features/auth/components/dingtalk.svelte';
 
   const emailFromUrl = page.url.searchParams.get('email') ?? '';
   const isEmailPrefilled = !!emailFromUrl;
@@ -31,8 +30,6 @@
   let discoveryState = $state<SsoAuthState | null>(null);
 
   const redirectUrl = $derived(page.url.searchParams.get('redirect'));
-
-  const hideGoogleAuth = $derived(!!($globalStore.isOrgSite && $currentOrg.disableGoogleAuth));
 
   const ssoState = $derived(discoveryState ?? $authSsoStore.ssoState);
   const orgSupportsSso = $derived($authSsoStore.orgSupportsSso);
@@ -151,7 +148,6 @@
   isLogin={true}
   {handleSubmit}
   isLoading={loading}
-  {hideGoogleAuth}
   getPasswordAuthAlternative={ssoState.available ? getPasswordAuthAlternative : undefined}
 >
   <div class="flex flex-col gap-6">
@@ -216,6 +212,5 @@
         </p>
       </div>
     {/if}
-    <Dingtalk />
   </div>
 </AuthUI>

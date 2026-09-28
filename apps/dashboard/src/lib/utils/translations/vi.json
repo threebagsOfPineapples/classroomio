@@ -5997,7 +5997,8 @@
         "account_conflict": "Tài khoản đã được liên kết với danh tính khác. Liên hệ quản trị viên.",
         "member_inactive": "Tài khoản đào tạo này không khả dụng.",
         "reauth_required": "Đăng nhập lại trước khi liên kết DingTalk."
-      }
+      },
+      "paused_hint": "Đăng nhập bằng DingTalk chưa được bật. Vui lòng đăng nhập bằng email và mật khẩu."
     }
   }
 }

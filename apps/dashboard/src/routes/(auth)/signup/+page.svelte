@@ -67,9 +67,6 @@
   const inviteOnly = $derived(!!org?.settings?.signup?.inviteOnly);
   const signupRestricted = $derived($globalStore.isOrgSite && (org.disableSignup || (inviteOnly && !hasInviteContext)));
 
-  // Hide Google Auth if disabled for org
-  const hideGoogleAuth = $derived(!!($globalStore.isOrgSite && org.disableGoogleAuth));
-
   // Check if signup is disabled
   onMount(() => {
     if ($globalStore.isOrgSite && org.disableSignup) {
@@ -273,8 +270,6 @@
     isLogin={false}
     {handleSubmit}
     isLoading={loading}
-    {hideGoogleAuth}
-    {newUserCallbackPathname}
     getPasswordAuthAlternative={ssoState.available ? getPasswordAuthAlternative : undefined}
   >
     <div class="flex flex-col gap-6">

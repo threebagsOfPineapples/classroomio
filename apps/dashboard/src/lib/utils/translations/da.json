@@ -5997,7 +5997,8 @@
         "account_conflict": "Kontoen er allerede tilknyttet en anden identitet. Kontakt en administrator.",
         "member_inactive": "Denne uddannelseskonto er ikke tilgængelig.",
         "reauth_required": "Log ind igen før tilknytning."
-      }
+      },
+      "paused_hint": "DingTalk-login er endnu ikke aktiveret. Log ind med din e-mail og adgangskode."
     }
   }
 }

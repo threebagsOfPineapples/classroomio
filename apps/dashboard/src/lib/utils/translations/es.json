@@ -5997,7 +5997,8 @@
         "account_conflict": "Esta cuenta ya está vinculada a otra identidad. Contacta con el administrador.",
         "member_inactive": "Esta cuenta de formación no está disponible.",
         "reauth_required": "Vuelve a iniciar sesión antes de vincular DingTalk."
-      }
+      },
+      "paused_hint": "El inicio de sesión con DingTalk aún no está habilitado. Inicia sesión con tu correo y contraseña."
     }
   }
 }

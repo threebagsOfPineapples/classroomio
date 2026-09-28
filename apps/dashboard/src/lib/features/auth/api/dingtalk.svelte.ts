@@ -3,7 +3,7 @@ import { ZDingtalkError } from '@cio/utils/validation/auth/dingtalk';
 import type { DingtalkEmployee } from '../utils/types';
 
 export class DingtalkApi {
-  enabled = $state(false);
+  enabled = $state<boolean | null>(null);
   loading = $state(false);
   linked = $state(false);
   employee = $state<DingtalkEmployee>(null);
@@ -40,6 +40,7 @@ export class DingtalkApi {
       this.linked = result.data.linked;
       this.employee = result.data.employee;
     } catch (error) {
+      this.enabled = null;
       this.setError(error);
     } finally {
       this.loading = false;

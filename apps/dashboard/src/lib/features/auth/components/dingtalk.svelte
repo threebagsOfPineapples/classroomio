@@ -7,7 +7,7 @@
   import { DingtalkApi } from '../api/dingtalk.svelte';
   import { ZDingtalkError } from '@cio/utils/validation/auth/dingtalk';
 
-  let { intent = 'login' }: { intent?: 'login' | 'link' } = $props();
+  let { intent = 'login', disabled = false }: { intent?: 'login' | 'link'; disabled?: boolean } = $props();
   const api = new DingtalkApi();
   const callbackCode = $derived(ZDingtalkError.safeParse(page.url.searchParams.get('dingtalk_error')));
   const callbackError = $derived(callbackCode.success ? `enterprise.dingtalk.errors.${callbackCode.data}` : '');
@@ -18,7 +18,7 @@
   });
 </script>
 
-{#if api.enabled || api.errorKey || callbackError}
+{#if intent === 'login' || api.enabled || api.errorKey || callbackError}
   <section class="space-y-4" aria-label={$t('enterprise.dingtalk.title')}>
     {#if intent === 'link'}
       <div>
@@ -72,19 +72,21 @@
       >
         {$t('enterprise.dingtalk.refresh')}
       </Button>
-    {:else if api.enabled && !(intent === 'link' && api.errorKey)}
+    {:else if intent === 'login' || (api.enabled && !api.errorKey)}
       <Button
         type="button"
         variant="outline"
         class="w-full"
         loading={api.loading}
-        disabled={api.loading}
+        disabled={disabled || api.loading || !api.enabled}
         onclick={() => api.start($currentOrg.id, intent)}
       >
         {$t(intent === 'login' ? 'enterprise.dingtalk.login' : 'enterprise.dingtalk.link')}
       </Button>
       {#if intent === 'link'}
         <p class="ui:text-muted-foreground text-xs">{$t('enterprise.dingtalk.binding_help')}</p>
+      {:else if api.enabled === false && !api.loading && !api.errorKey && !callbackError}
+        <p class="ui:text-muted-foreground text-xs">{$t('enterprise.dingtalk.paused_hint')}</p>
       {/if}
     {/if}
   </section>

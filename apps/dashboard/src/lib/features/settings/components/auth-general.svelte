@@ -21,7 +21,6 @@
   let disableSignupMessage = $state($currentOrg?.disableSignupMessage ?? '');
   let allowPublicSignups = $state(!$currentOrg?.settings?.signup?.inviteOnly);
   let disableEmailPassword = $state($currentOrg?.disableEmailPassword ?? false);
-  let disableGoogleAuth = $state($currentOrg?.disableGoogleAuth ?? false);
   let internalEnrollmentOnly = $state($currentOrg?.settings?.internalEnrollmentOnly ?? false);
   let isSaving = $state(false);
 
@@ -32,7 +31,6 @@
       disableSignupMessage = $currentOrg.disableSignupMessage ?? '';
       allowPublicSignups = !$currentOrg.settings?.signup?.inviteOnly;
       disableEmailPassword = $currentOrg.disableEmailPassword ?? false;
-      disableGoogleAuth = $currentOrg.disableGoogleAuth ?? false;
       internalEnrollmentOnly = $currentOrg.settings?.internalEnrollmentOnly ?? false;
     }
   });
@@ -44,7 +42,6 @@
       disableSignupMessage !== ($currentOrg?.disableSignupMessage ?? '') ||
       allowPublicSignups !== currentAllowPublicSignups ||
       disableEmailPassword !== ($currentOrg?.disableEmailPassword ?? false) ||
-      disableGoogleAuth !== ($currentOrg?.disableGoogleAuth ?? false) ||
       internalEnrollmentOnly !== ($currentOrg?.settings?.internalEnrollmentOnly ?? false)
   );
 
@@ -73,8 +70,7 @@
           },
           internalEnrollmentOnly
         },
-        disableEmailPassword,
-        disableGoogleAuth
+        disableEmailPassword
       },
       {
         onSuccess: () => {
@@ -92,7 +88,6 @@
     disableSignupMessage = $currentOrg.disableSignupMessage ?? '';
     allowPublicSignups = !$currentOrg.settings?.signup?.inviteOnly;
     disableEmailPassword = $currentOrg.disableEmailPassword ?? false;
-    disableGoogleAuth = $currentOrg.disableGoogleAuth ?? false;
     internalEnrollmentOnly = $currentOrg.settings?.internalEnrollmentOnly ?? false;
     hasUnsavedChanges = false;
   }
@@ -181,20 +176,6 @@
           </Field.Label>
           <Field.Description>
             {$t('settings.auth.general.disable_email_password.description')}
-          </Field.Description>
-        </div>
-      </Field.Field>
-
-      <!-- Disable Google Auth -->
-      <Field.Field orientation="horizontal">
-        <Switch bind:checked={disableGoogleAuth} disabled={!$isEnterprisePlan || isSaving} />
-        <div class="space-y-0.5">
-          <Field.Label class="flex items-center gap-2">
-            {$t('settings.auth.general.disable_google_auth.label')}
-            <UpgradeLock locked={!$isEnterprisePlan} />
-          </Field.Label>
-          <Field.Description>
-            {$t('settings.auth.general.disable_google_auth.description')}
           </Field.Description>
         </div>
       </Field.Field>
