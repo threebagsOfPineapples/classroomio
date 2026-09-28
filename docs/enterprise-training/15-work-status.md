@@ -5,7 +5,8 @@
 - 工作目录：`E:\Work\enterprise-trainins`。
 - 分支：`codex/enterprise-training-completion`。
 - 当前提交前基线：`fcfb2ce8d`。
-- 配置的远端：`https://github.com/classroomio/classroomio.git`。本次按用户要求提交并尝试推送该分支，推送结果以 Git 回执为准。
+- `origin` 拉取及推送远端：用户 Fork `https://github.com/threebagsOfPineapples/classroomio.git`；`upstream` 保留官方仓库 `https://github.com/classroomio/classroomio.git`。
+- 功能提交：`80c3b6b80`，已成功推送 `codex/enterprise-training-completion`，远端 SHA 核对一致。最初向官方仓库推送返回 403，用户提供 Fork 地址后改用该仓库。
 - 企业名称：河南至臻数字生活科技有限公司；使用用户提供的图标，界面优先中文。
 
 ## 实现进度
@@ -21,6 +22,7 @@
 - 合并迁移在全新数据库执行通过；企业队列隔离与 AI 建议分独立存储验证通过。
 - 浏览器已验证管理/员工首页、队列入口和修复后的批改弹窗。
 - 翻译脚本因外部翻译服务 401/429 未成功生成内容，新增键已人工补齐全部 11 个语言文件，并检查占位符一致。
+- 2026-09-28 提交前复验：Node 20 下依赖、API、Dashboard 完整构建、9 项定向测试、暂存格式检查与 Git 差异检查全部通过。
 - 2026-09-28 检查时，3002、4173、5432、6379 没有监听服务。历史验证不代表当前服务正在运行。
 
 ## 待继续处理
@@ -37,3 +39,7 @@
 验收使用演示企业 `coursera-test` 及独立测试数据库。批改弹窗回归样例“验收简答作业”保留在本地演示数据中；再次验收前可按固定样例 ID 清理，勿将其视为正式课程。截图和构建日志位于系统临时目录，不纳入 Git；认证信息不写入此文档。
 
 详细证据及限制见 [验收记录](./14-acceptance.md)。当前结论是核心案例已通过、功能补齐已提交待最终验收，不能标记为生产上线或全量验收完成。
+
+## 备份
+
+完整代码与 Git 历史备份：`E:\Work\enterprise-training-backups\enterprise-training-20260928-80c3b6b80.bundle`，已通过 `git bundle verify`；恢复说明在同目录 `RECOVERY-20260928.md`。该本地备份不包含数据库卷或环境密钥，功能提交另已保存在用户 Fork 远端。
