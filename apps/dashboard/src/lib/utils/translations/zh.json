@@ -2010,5 +2010,42 @@
     "quiz": {
       "title": "互动测验"
     }
+  },
+  "widgets": {
+    "heading": "课程展示组件",
+    "subtitle": "将课程集合嵌入外部网站展示。",
+    "empty_state": "暂无课程展示组件，可新建组件生成可嵌入的课程展示区。",
+    "empty": {
+      "heading": "暂无课程展示组件",
+      "description": "新建组件后，可将课程展示区嵌入外部网站。"
+    },
+    "tabs": {
+      "active": "使用中",
+      "archived": "已归档"
+    },
+    "actions": {
+      "create": "新建组件",
+      "edit": "编辑",
+      "back": "返回组件列表",
+      "save": "保存",
+      "discard": "放弃修改",
+      "publish": "发布",
+      "archive": "归档",
+      "restore": "恢复",
+      "copy_embed": "复制嵌入代码",
+      "copy_url": "复制链接",
+      "rename": "重命名",
+      "delete_permanently": "永久删除"
+    },
+    "create": {
+      "description": "为课程展示组件命名。"
+    },
+    "form": {
+      "name": "组件名称"
+    },
+    "archived": {
+      "empty": "暂无已归档组件",
+      "empty_description": "已归档的组件将显示在这里，可随时恢复。"
+    }
   }
 }

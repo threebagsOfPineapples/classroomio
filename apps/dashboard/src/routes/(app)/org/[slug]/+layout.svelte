@@ -14,9 +14,12 @@
   import { OrgSidebar } from '$features/ui/sidebar/org-sidebar';
   import SettingsSidebar from '$features/ui/sidebar/settings-sidebar.svelte';
   import { AddOrgModal } from '$features/org';
+  import EnterpriseSidebar from '$features/ui/navigation/enterprise-sidebar.svelte';
+  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
 
   let { data, children } = $props();
   const isSettingsRoute = $derived(/\/settings(?:\/|$)/.test(page.url.pathname));
+  const useEnterpriseShell = $derived(PUBLIC_IS_SELFHOSTED === 'true' && !isSettingsRoute);
 
   function redirect(siteName: string | null) {
     if (!siteName) return;
@@ -42,9 +45,14 @@
   <AddOrgModal />
 {/if}
 
-<Sidebar.Provider class="training-shell training-shell--admin">
+<Sidebar.Provider
+  class="training-shell training-shell--admin"
+  style={useEnterpriseShell ? '--sidebar-width: 14.5rem;' : undefined}
+>
   {#if isSettingsRoute}
     <SettingsSidebar />
+  {:else if useEnterpriseShell}
+    <EnterpriseSidebar />
   {:else}
     <OrgSidebar />
   {/if}
@@ -60,7 +68,7 @@
         />
       </div>
     {:else}
-      <AppHeader />
+      <AppHeader enterprise={useEnterpriseShell} />
     {/if}
 
     <div class="training-page-container">
@@ -76,4 +84,5 @@
       {/if}
     </div>
   </Sidebar.Inset>
+  <ScrollToTop label={$t('common.scroll_to_top')} />
 </Sidebar.Provider>

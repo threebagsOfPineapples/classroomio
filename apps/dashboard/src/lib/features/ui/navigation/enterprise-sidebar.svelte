@@ -9,7 +9,10 @@
   import ClipboardCheck from '@lucide/svelte/icons/clipboard-check';
   import Grid from '@lucide/svelte/icons/grid-2x2';
   import Chart from '@lucide/svelte/icons/chart-no-axes-combined';
-  import { currentOrgPath } from '$lib/utils/store/org';
+  import Library from '@lucide/svelte/icons/library';
+  import Tags from '@lucide/svelte/icons/tags';
+  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
+  import { currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { SidebarFooterMenu } from '$features/ui/sidebar/footer';
 
@@ -21,7 +24,10 @@
     { key: 'enterprise.plans.title', href: '/admin/plans', icon: Calendar },
     { key: 'enterprise.assessment.title', href: '/admin/assessment', icon: ClipboardCheck },
     { key: 'enterprise.assessment.matrix', href: '/admin/matrix', icon: Grid },
-    { key: 'org_navigation.stats', href: '/admin/statistics', icon: Chart }
+    { key: 'org_navigation.stats', href: '/admin/statistics', icon: Chart },
+    { key: 'org_navigation.cohorts', href: `${$currentOrgPath}/cohorts`, icon: GraduationCap },
+    { key: 'org_navigation.media', href: `${$currentOrgPath}/media`, icon: Library },
+    ...($isOrgAdmin ? [{ key: 'org_navigation.tags', href: `${$currentOrgPath}/tags`, icon: Tags }] : [])
   ]);
   const currentView = $derived(page.url.searchParams.get('view'));
 </script>
