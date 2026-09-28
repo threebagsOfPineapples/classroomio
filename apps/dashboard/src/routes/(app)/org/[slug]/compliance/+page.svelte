@@ -58,7 +58,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('compliance.title')} - ClassroomIO</title>
+  <title>{$t('compliance.title')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="w-full">

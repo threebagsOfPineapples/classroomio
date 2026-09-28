@@ -41,10 +41,6 @@
 
     return fields;
   });
-
-  function handleSupport() {
-    window.open('mailto:help@classroomio.com?subject=Email Verification Issue&body=Error Type: ' + type, '_blank');
-  }
 </script>
 
 <svelte:head>
@@ -58,7 +54,6 @@
   icon={OctagonAlertIcon}
   variant="page"
   layout="full-page"
-  showLogo={true}
   class="h-fit! max-h-none! flex-none!"
 >
   {#if type === 'legacy_method_blocked'}
@@ -77,8 +72,8 @@
     </div>
   {/if}
   <div class="lex w-full flex-col justify-center gap-4 md:flex-row">
-    <Button onclick={handleSupport} variant="ghost">
-      {$t('email_verification.actions.contact_support')}
+    <Button onclick={() => goto(resolve('/login', {}))} variant="outline">
+      {$t('login.signup_disabled.go_to_login')}
     </Button>
     <Button onclick={() => goto(resolve('/', {}))}>
       {$t('email_verification.actions.back_to_dashboard')}

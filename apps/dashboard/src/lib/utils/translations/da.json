@@ -12,7 +12,13 @@
     },
     "discard": "Kassér",
     "save_changes": "Gem ændringer",
-    "scroll_to_top": "Rul til toppen"
+    "scroll_to_top": "Rul til toppen",
+    "page_not_found": "Siden blev ikke fundet",
+    "page_not_found_description": "Denne side findes ikke, eller du har ikke adgang til den. Vend tilbage til forsiden.",
+    "organization_not_found": "Organisationen blev ikke fundet",
+    "restricted_title": "Begrænset adgang",
+    "restricted_description": "Adgangen til denne organisation er begrænset. Kontakt din virksomheds administrator.",
+    "toggle_sidebar": "Vis eller skjul sidepanel"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Vis adgangskode",
+    "hide_password": "Skjul adgangskode",
+    "logging_out": "Logger ud…",
+    "invalid_credentials": "Forkert e-mail eller adgangskode. Prøv igen."
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "Log ind igen før tilknytning."
       },
       "paused_hint": "DingTalk-login er endnu ikke aktiveret. Log ind med din e-mail og adgangskode."
-    }
+    },
+    "platform_description": "Administrer medarbejderuddannelse, kurser, vurderinger, læringshistorik og certifikater."
   }
 }

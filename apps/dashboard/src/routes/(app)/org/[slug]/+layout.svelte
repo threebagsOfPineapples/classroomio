@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -51,7 +52,12 @@
   <Sidebar.Inset>
     {#if isSettingsRoute}
       <div class="flex h-10 items-center px-3 md:hidden">
-        <Sidebar.Trigger testId="settings-sidebar-trigger-mobile" />
+        <Sidebar.Trigger
+          aria-label={$t('common.toggle_sidebar')}
+          title={$t('common.toggle_sidebar')}
+          testId="settings-sidebar-trigger-mobile"
+          variant="secondary"
+        />
       </div>
     {:else}
       <AppHeader />

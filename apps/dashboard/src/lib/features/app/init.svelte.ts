@@ -342,8 +342,7 @@ class AppInitApi extends BaseApi {
       return;
     }
 
-    // This allows you to be on the landing page of an organization site and not be redirected
-    if (isPublicRoute(path) && (path !== '/' || isOrgSite)) {
+    if (isPublicRoute(path) && (path !== '/' || (isOrgSite && isCloud))) {
       console.log('no redirect is needed');
       return;
     }

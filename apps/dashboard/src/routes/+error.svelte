@@ -2,7 +2,8 @@
   import { page } from '$app/state';
   import { Button } from '@cio/ui/base/button';
   import { Empty } from '@cio/ui/custom/empty';
-  import { ExternalLinkIcon, HomeIcon, HoverableItem } from '@cio/ui/custom/moving-icons';
+  import { HomeIcon, HoverableItem } from '@cio/ui/custom/moving-icons';
+  import { t } from '$lib/utils/functions/translations';
   import HeartCrack from '@lucide/svelte/icons/heart-crack';
 
   const isNotFound = $derived(page.status === 404);
@@ -11,29 +12,32 @@
   console.error('Error page:', page.url);
 
   function goHome() {
-    window.location.href = 'https://classroomio.com';
+    window.location.href = '/';
   }
 </script>
 
 <svelte:head>
-  <title>{isNotFound ? 'Page not found' : 'Something unexpected occurred'}</title>
+  <title
+    >{isNotFound ? $t('common.page_not_found') : $t('login.auth_failure.title')} · {$t(
+      'enterprise.company_name'
+    )}</title
+  >
 </svelte:head>
 
 {#if isNotFound}
   <Empty
-    title="Page not found"
-    description="The page you're looking for doesn't exist or you don't have permission to view it."
+    title={$t('common.page_not_found')}
+    description={$t('common.page_not_found_description')}
     icon={HeartCrack}
     variant="page"
     layout="full-page"
-    showLogo={true}
   >
     <div class="flex gap-2">
       <HoverableItem>
         {#snippet children(isHovered)}
           <Button onclick={goHome}>
             <HomeIcon {isHovered} size={16} ariaHidden={true} />
-            Go Home
+            {$t('login.auth_failure.back_home')}
           </Button>
         {/snippet}
       </HoverableItem>
@@ -41,27 +45,21 @@
   </Empty>
 {:else}
   <Empty
-    title="Something unexpected occurred."
-    description="Don't worry, your learning is safe. It isn't your fault, it is ours. We have gotten the error notification and will push a fix ASAP. In the meantime, take a short break and come back a bit later."
+    title={$t('login.auth_failure.title')}
+    description={$t('login.auth_failure.description')}
     icon={HeartCrack}
     variant="page"
     layout="full-page"
-    showLogo={true}
   >
     <div class="flex gap-2">
-      <HoverableItem>
-        {#snippet children(isHovered)}
-          <Button href="https://classroomio.com/tools" variant="secondary" size="xs">
-            <ExternalLinkIcon {isHovered} size={16} ariaHidden={true} />
-            Try Free Tools
-          </Button>
-        {/snippet}
-      </HoverableItem>
+      <Button variant="secondary" size="xs" onclick={() => window.location.reload()}
+        >{$t('common.app_update.reload')}</Button
+      >
       <HoverableItem>
         {#snippet children(isHovered)}
           <Button size="xs" onclick={goHome}>
             <HomeIcon {isHovered} size={16} ariaHidden={true} />
-            Go Home
+            {$t('login.auth_failure.back_home')}
           </Button>
         {/snippet}
       </HoverableItem>

@@ -12,7 +12,13 @@
     },
     "discard": "त्यागें",
     "save_changes": "परिवर्तन सहेजें",
-    "scroll_to_top": "शीर्ष पर स्क्रॉल करें"
+    "scroll_to_top": "शीर्ष पर स्क्रॉल करें",
+    "page_not_found": "पृष्ठ नहीं मिला",
+    "page_not_found_description": "यह पृष्ठ मौजूद नहीं है या आपको इसे देखने की अनुमति नहीं है। कृपया मुख्य पृष्ठ पर लौटें।",
+    "organization_not_found": "संगठन नहीं मिला",
+    "restricted_title": "पहुँच प्रतिबंधित",
+    "restricted_description": "इस संगठन की पहुँच प्रतिबंधित है। कृपया अपनी कंपनी के व्यवस्थापक से संपर्क करें।",
+    "toggle_sidebar": "साइडबार दिखाएँ या छिपाएँ"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "पासवर्ड दिखाएँ",
+    "hide_password": "पासवर्ड छिपाएँ",
+    "logging_out": "साइन आउट किया जा रहा है…",
+    "invalid_credentials": "ईमेल या पासवर्ड गलत है। कृपया फिर से प्रयास करें।"
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "DingTalk जोड़ने से पहले फिर से लॉगिन करें।"
       },
       "paused_hint": "DingTalk साइन-इन अभी सक्षम नहीं है। कृपया अपने ईमेल और पासवर्ड से साइन इन करें।"
-    }
+    },
+    "platform_description": "कर्मचारी प्रशिक्षण, पाठ्यक्रम, मूल्यांकन, सीखने के रिकॉर्ड और प्रमाणपत्र प्रबंधित करें।"
   }
 }

@@ -41,7 +41,7 @@
 </script>
 
 <svelte:head>
-  <title>Setup - ClassroomIO</title>
+  <title>{$t('org_navigation.setup')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="w-full md:max-w-4xl lg:mx-auto">

@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>Integrations - ClassroomIO</title>
+  <title>{$t('settings.tabs.integrations_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Header>

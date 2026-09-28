@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>Billing - ClassroomIO</title>
+  <title>{$t('settings.tabs.billing_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Header>

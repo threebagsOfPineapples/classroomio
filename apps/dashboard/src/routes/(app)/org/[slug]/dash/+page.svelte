@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard - ClassroomIO</title>
+  <title>{$t('org_navigation.dashboard')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="w-full">

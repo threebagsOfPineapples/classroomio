@@ -326,7 +326,13 @@
     "discard": "Discard",
     "save_changes": "Save changes",
     "refresh": "Refresh",
-    "scroll_to_top": "Scroll to top"
+    "scroll_to_top": "Scroll to top",
+    "page_not_found": "Page not found",
+    "page_not_found_description": "This page does not exist or you do not have permission to view it. Please return to the homepage.",
+    "organization_not_found": "Organization not found",
+    "restricted_title": "Access restricted",
+    "restricted_description": "Access to this organization is restricted. Please contact your company administrator.",
+    "toggle_sidebar": "Toggle sidebar"
   },
   "compliance": {
     "title": "Compliance",
@@ -430,7 +436,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "logging_out": "Signing out…",
+    "invalid_credentials": "Incorrect email or password. Please try again."
   },
   "profileMenu": {
     "profile": "PROFILE",
@@ -5982,6 +5992,7 @@
         "reauth_required": "Please sign in again before linking your DingTalk account."
       },
       "paused_hint": "DingTalk sign-in is not enabled yet. Please sign in with your email and password."
-    }
+    },
+    "platform_description": "Manage employee training, courses, assessments, learning records, and certificates."
   }
 }

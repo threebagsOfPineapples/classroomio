@@ -12,7 +12,13 @@
     },
     "discard": "Verwerfen",
     "save_changes": "Änderungen speichern",
-    "scroll_to_top": "Zum Seitenanfang scrollen"
+    "scroll_to_top": "Zum Seitenanfang scrollen",
+    "page_not_found": "Seite nicht gefunden",
+    "page_not_found_description": "Diese Seite existiert nicht oder Sie haben keine Zugriffsberechtigung. Bitte kehren Sie zur Startseite zurück.",
+    "organization_not_found": "Organisation nicht gefunden",
+    "restricted_title": "Zugriff eingeschränkt",
+    "restricted_description": "Der Zugriff auf diese Organisation ist eingeschränkt. Bitte wenden Sie sich an Ihren Unternehmensadministrator.",
+    "toggle_sidebar": "Seitenleiste umschalten"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Passwort anzeigen",
+    "hide_password": "Passwort ausblenden",
+    "logging_out": "Abmeldung läuft…",
+    "invalid_credentials": "E-Mail-Adresse oder Passwort falsch. Bitte versuchen Sie es erneut."
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "Melden Sie sich vor der Verknüpfung erneut an."
       },
       "paused_hint": "Die DingTalk-Anmeldung ist noch nicht aktiviert. Melden Sie sich mit E-Mail und Passwort an."
-    }
+    },
+    "platform_description": "Verwalten Sie Mitarbeiterschulungen, Kurse, Prüfungen, Lernnachweise und Zertifikate."
   }
 }

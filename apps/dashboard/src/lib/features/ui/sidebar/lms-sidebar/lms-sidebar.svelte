@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { profile } from '$lib/utils/store/user';
   import { orgs } from '$lib/utils/store/org';
@@ -27,6 +28,6 @@
       <SidebarFooterMenu />
     </Sidebar.Footer>
 
-    <Sidebar.Rail />
+    <Sidebar.Rail aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} />
   </Sidebar.Root>
 {/if}

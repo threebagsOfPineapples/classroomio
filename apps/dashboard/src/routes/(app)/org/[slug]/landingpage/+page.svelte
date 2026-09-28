@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title>Landing Page Settings - ClassroomIO</title>
+  <title>{$t('settings.tabs.landing_page_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Header isSticky>

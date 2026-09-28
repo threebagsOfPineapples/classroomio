@@ -45,7 +45,13 @@
     "discard": "放弃修改",
     "save_changes": "保存修改",
     "refresh": "刷新",
-    "scroll_to_top": "返回顶部"
+    "scroll_to_top": "返回顶部",
+    "page_not_found": "页面不存在",
+    "page_not_found_description": "页面不存在或你没有访问权限，请返回首页。",
+    "organization_not_found": "企业不存在",
+    "restricted_title": "访问受限",
+    "restricted_description": "当前企业的访问受到限制，请联系公司管理员。",
+    "toggle_sidebar": "展开或收起侧栏"
   },
   "compliance": {
     "title": "合规培训",
@@ -162,7 +168,7 @@
     },
     "auth": {
       "email": {
-        "invalid_email": "电子邮箱地址无效"
+        "invalid_email": "请输入有效的邮箱地址。"
       },
       "password": {
         "min_char": "密码至少需要 8 个字符"
@@ -303,7 +309,11 @@
       "description": "发生意外错误，请重试或返回首页。",
       "code": "错误代码",
       "back_home": "返回首页"
-    }
+    },
+    "show_password": "显示密码",
+    "hide_password": "隐藏密码",
+    "logging_out": "正在退出登录…",
+    "invalid_credentials": "邮箱或密码错误，请重新输入。"
   },
   "profileMenu": {
     "profile": "个人资料",
@@ -332,18 +342,117 @@
     },
     "profile": {
       "heading": "个人资料",
-      "logout": "退出登录"
+      "logout": "退出登录",
+      "page_subtitle": "管理你的姓名、邮箱和培训平台中的个人资料。",
+      "profile_picture": {
+        "heading": "头像",
+        "upload_image": "上传头像",
+        "file_size": "最大文件大小：",
+        "accepted": "支持格式：",
+        "validation_error": "文件大小超过上限："
+      },
+      "personal_information": {
+        "heading": "个人信息",
+        "full_name": "姓名",
+        "username": "用户名",
+        "email": "邮箱",
+        "confirm": "确认",
+        "cancel": "取消",
+        "email_change_verification_note": "验证邮件已发送至原邮箱，确认后新邮箱才会生效。",
+        "email_change_verification_sent": "验证邮件已发送至新邮箱，请查收并完成验证。"
+      },
+      "update_profile": "更新个人资料"
     },
     "notifications": {
       "heading": "通知设置",
-      "page_subtitle": "选择要接收的邮件通知，以及组织向成员发送的邮件。"
+      "page_subtitle": "选择要接收的邮件通知，以及组织向成员发送的邮件。",
+      "page_title": "通知设置",
+      "personal_page_subtitle": "选择你希望接收的培训平台邮件通知。",
+      "personal": {
+        "heading": "个人通知偏好",
+        "description": "这些设置适用于本企业发送给你的邮件。企业管理员仍可统一关闭某类通知。",
+        "description_with_org": "这些设置适用于 {orgName} 发送给你的邮件。企业管理员仍可统一关闭某类通知。",
+        "save": "保存个人通知偏好",
+        "save_success": "个人通知偏好已保存"
+      },
+      "org": {
+        "heading": "企业默认通知",
+        "description": "关闭后，本企业所有成员都不会收到该类邮件。对于仍启用的通知，成员可以自行选择不接收。",
+        "save": "保存企业默认设置",
+        "save_success": "企业默认通知设置已保存"
+      },
+      "sections": {
+        "course": {
+          "heading": "课程通知",
+          "description": "课程加入、作业提交、课时、公告及完成通知。"
+        },
+        "cohort": {
+          "heading": "培训班通知",
+          "description": "培训班学习目标与截止日期提醒。"
+        },
+        "enrollment": {
+          "heading": "加入培训通知",
+          "description": "工作人员将成员加入课程或培训班时发送的欢迎邮件。"
+        }
+      },
+      "toggles": {
+        "newStudent": {
+          "label": "新学员加入",
+          "description": "学员加入课程时向讲师发送邮件。"
+        },
+        "newSubmission": {
+          "label": "待评分的新提交",
+          "description": "学员提交需要评分的作业时向讲师发送邮件。"
+        },
+        "gradingResult": {
+          "label": "评分结果",
+          "description": "作业完成评分或评分更新时向学员发送邮件。"
+        },
+        "newsfeed": {
+          "label": "课程公告与评论",
+          "description": "课程动态中出现新公告或评论时向成员发送邮件。"
+        },
+        "quizAssigned": {
+          "label": "练习分配",
+          "description": "分配练习或提醒完成练习时向学员发送邮件。"
+        },
+        "cohortReminder": {
+          "label": "培训班目标提醒",
+          "description": "提醒学员即将到期或已逾期的培训班学习目标。"
+        },
+        "session": {
+          "label": "直播课程提醒与变更",
+          "description": "直播课程开始前或安排变更时向学员发送邮件。"
+        },
+        "enrollmentWelcome": {
+          "label": "加入培训欢迎邮件",
+          "description": "工作人员将学员加入课程或培训班时发送欢迎邮件。"
+        },
+        "courseCompletion": {
+          "label": "课程完成与证书",
+          "description": "学员完成课程或获得证书时发送邮件。"
+        }
+      }
     },
     "integrations": {
       "heading": "账号集成"
     },
     "tabs": {
       "organization_tab": "企业",
-      "notifications_tab": "通知"
+      "notifications_tab": "通知",
+      "profile_tab": "个人资料",
+      "landing_page_tab": "门户首页",
+      "billing_tab": "账单",
+      "ai_credits_tab": "AI 额度",
+      "ai_tutor_tab": "AI 助手",
+      "integrations_tab": "集成设置",
+      "language_tab": "语言",
+      "auth_tab": "登录与注册",
+      "sso_tab": "单点登录",
+      "token_auth_tab": "令牌登录",
+      "customize_lms_tab": "学员界面",
+      "domains_tab": "域名设置",
+      "teams_tab": "管理团队"
     },
     "organization": {
       "page_subtitle": "设置员工看到的企业名称、图标和主题。",
@@ -382,6 +491,59 @@
       "heading": "企业首页",
       "editor": {
         "page_builder": "页面编辑器"
+      }
+    },
+    "subheadings": {
+      "view_site": "查看培训门户"
+    },
+    "teams": {
+      "page_subtitle": "邀请管理人员并设置企业培训管理权限。"
+    },
+    "auth": {
+      "page_subtitle": "设置本企业的注册、登录、单点登录和令牌访问方式。",
+      "title": "登录与注册",
+      "tabs": {
+        "general": "常规设置",
+        "sso": "单点登录",
+        "token_auth": "令牌登录"
+      },
+      "login": {
+        "or_continue_with": "或使用邮箱和密码登录",
+        "sso_enabled": "本企业已启用 {provider}",
+        "sso_redirect_error": "单点登录配置不完整，请联系管理员检查登录服务地址。",
+        "sso_required": "请使用单点登录，密码登录已关闭。",
+        "sign_in_with_sso": "使用 {provider} 登录",
+        "email_password_disabled": "邮箱密码登录已关闭，请使用单点登录。",
+        "email_password_disabled_message": "本企业已关闭邮箱密码登录。",
+        "signup_disabled_error": "本企业暂不开放注册，请联系管理员。"
+      },
+      "general": {
+        "heading": "登录与注册设置",
+        "description": "设置员工注册账号及登录本企业培训平台的方式。",
+        "allow_public_signups": {
+          "label": "开放自主注册",
+          "description": "启用后，任何人都可以创建账号；关闭后，仅持有有效邀请链接的人员可以注册。"
+        },
+        "disable_signup": {
+          "label": "关闭所有新账号注册",
+          "description": "禁止创建新账号，包括收到邀请的人员。现有账号不受影响。"
+        },
+        "disable_signup_message": {
+          "label": "关闭注册时的提示",
+          "description": "注册关闭后向访问者展示的说明。",
+          "placeholder": "例如：暂不开放注册，请联系公司管理员获取账号。"
+        },
+        "disable_email_password": {
+          "label": "关闭邮箱密码登录",
+          "description": "要求员工使用已启用的单点登录或企业账号登录方式。"
+        },
+        "save_button": "保存修改",
+        "note_title": "说明",
+        "note_description": "这些设置仅影响本企业。管理员保留紧急情况下使用账号密码登录的权限。",
+        "internal_enrollment_only": {
+          "label": "仅允许企业成员加入课程",
+          "description": "启用后，仅本企业现有成员可以加入课程。其他人员需要先收到企业邀请，不能在课程页面自行加入。"
+        }
       }
     }
   },
@@ -1595,7 +1757,8 @@
         "reauth_required": "绑定前请重新登录培训账号，以确认账号归属。"
       },
       "paused_hint": "钉钉登录暂未启用，请先使用邮箱和密码登录。"
-    }
+    },
+    "platform_description": "统一管理员工培训、课程学习、考核、学习档案与证书。"
   },
   "schedule": {
     "join": "加入会议"
@@ -1635,7 +1798,8 @@
     "lms": {
       "empty_description": "您尚未加入任何培训班。",
       "empty_title": "暂无培训班"
-    }
+    },
+    "page_title": "培训班"
   },
   "community": {
     "title": "交流社区",
@@ -1785,5 +1949,66 @@
     "ask_ai": "询问课程助手",
     "ask_ai_expand_aria": "打开课程助手输入框",
     "ask_ai_input_aria": "向课程助手询问当前内容"
+  },
+  "email_verification": {
+    "errors": {
+      "invalid_token": {
+        "title": "验证链接无效",
+        "message": "验证链接无效，请使用邮件中的完整链接，或重新申请验证邮件。"
+      },
+      "token_used": {
+        "title": "验证链接已使用",
+        "message": "该链接已经使用。如需再次验证邮箱，请重新申请验证邮件。"
+      },
+      "token_expired": {
+        "title": "验证链接已过期",
+        "message": "为保护账号安全，该链接已过期。请重新申请验证邮件。"
+      },
+      "email_mismatch": {
+        "title": "邮箱地址已变更",
+        "message": "你的邮箱已在生成此链接后发生变更，请为当前邮箱重新申请验证邮件。"
+      },
+      "legacy_blocked": {
+        "title": "验证方式不再支持",
+        "message": "此验证方式已停用，请通过当前邮箱验证流程重新申请验证邮件。"
+      },
+      "database": {
+        "title": "系统暂时不可用",
+        "message": "暂时无法完成验证，请稍后重试。问题持续时请联系公司管理员。"
+      },
+      "unknown": {
+        "title": "邮箱验证失败",
+        "message": "邮箱验证未完成，请重试或联系公司管理员。"
+      }
+    },
+    "security_notice": {
+      "title": "安全提示",
+      "message": "邮箱验证流程已更新，旧验证链接不再有效，请申请新的验证邮件。"
+    },
+    "actions": {
+      "request_new": "重新申请验证邮件",
+      "contact_support": "联系管理员",
+      "back_to_dashboard": "返回首页"
+    },
+    "security_footer": "邮箱验证记录用于账号安全检查。"
+  },
+  "verify_email_modal": {
+    "heading": "验证邮箱",
+    "sent_verification": "验证邮件已发送至",
+    "to_confirm": "，请查收并完成验证。",
+    "loading": "加载中…",
+    "resend": "重新发送验证邮件",
+    "resend_in": "可再次发送的等待时间：",
+    "seconds": "秒",
+    "snackbar_error": "验证邮件发送失败",
+    "wrong_address": "注册时填错了邮箱？",
+    "switch_account": "切换账号",
+    "confirm_link_prefix": "请点击发送至",
+    "confirm_link_suffix": "的验证链接，完成账号验证。"
+  },
+  "components": {
+    "quiz": {
+      "title": "互动测验"
+    }
   }
 }

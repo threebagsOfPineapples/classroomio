@@ -56,6 +56,10 @@
       <Field.Label for="password">{$t('login.fields.password')}</Field.Label>
       <Field.Content>
         <Password
+          showPasswordTooltip={$t('login.show_password')}
+          hidePasswordTooltip={$t('login.hide_password')}
+          showPasswordAriaLabel={$t('login.show_password')}
+          hidePasswordAriaLabel={$t('login.hide_password')}
           id="password"
           bind:value={fields.password}
           placeholder="************"
@@ -75,6 +79,10 @@
       <Field.Label for="confirmPassword">{$t('login.fields.confirm_password')}</Field.Label>
       <Field.Content>
         <Password
+          showPasswordTooltip={$t('login.show_password')}
+          hidePasswordTooltip={$t('login.hide_password')}
+          showPasswordAriaLabel={$t('login.show_password')}
+          hidePasswordAriaLabel={$t('login.hide_password')}
           id="confirmPassword"
           bind:value={fields.confirmPassword}
           placeholder="************"

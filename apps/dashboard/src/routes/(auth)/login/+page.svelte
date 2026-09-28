@@ -66,6 +66,7 @@
   }
 
   async function handleSubmit() {
+    submitError = undefined;
     if (ssoState.required && ssoState.available) {
       handleSsoLogin();
       return;
@@ -77,7 +78,6 @@
     }
 
     const validationRes = authValidation(fields, { skipPassword: true });
-    console.log('validationRes', validationRes);
 
     if (Object.keys(validationRes).length) {
       errors = Object.assign(errors, validationRes);
@@ -87,7 +87,7 @@
     try {
       loading = true;
 
-      const { data, error } = await authClient.signIn.email(
+      const { error } = await authClient.signIn.email(
         {
           email: fields.email,
           password: fields.password
@@ -110,12 +110,12 @@
         }
       );
 
-      console.log('data', data);
-
       if (error) throw error;
     } catch (error) {
-      const err = error as { error_description?: string; message?: string };
-      submitError = err?.error_description ?? err?.message ?? '';
+      const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
+      submitError = t.get(
+        errorCode === 'INVALID_EMAIL_OR_PASSWORD' ? 'login.invalid_credentials' : 'login.auth_failure.description'
+      );
       loading = false;
     }
   }
@@ -184,6 +184,10 @@
         </div>
         <Field.Content>
           <Password
+            showPasswordTooltip={$t('login.show_password')}
+            hidePasswordTooltip={$t('login.hide_password')}
+            showPasswordAriaLabel={$t('login.show_password')}
+            hidePasswordAriaLabel={$t('login.hide_password')}
             id="password"
             bind:value={fields.password}
             data-testid="auth-login-password"

@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Organization Settings - ClassroomIO</title>
+  <title>{$t('settings.tabs.organization_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <OrgPage bind:this={orgComponent} bind:hasUnsavedChanges />

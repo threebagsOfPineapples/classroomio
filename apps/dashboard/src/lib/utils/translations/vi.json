@@ -12,7 +12,13 @@
     },
     "discard": "Hủy",
     "save_changes": "Lưu thay đổi",
-    "scroll_to_top": "Cuộn lên đầu trang"
+    "scroll_to_top": "Cuộn lên đầu trang",
+    "page_not_found": "Không tìm thấy trang",
+    "page_not_found_description": "Trang này không tồn tại hoặc bạn không có quyền xem. Vui lòng quay lại trang chủ.",
+    "organization_not_found": "Không tìm thấy tổ chức",
+    "restricted_title": "Quyền truy cập bị hạn chế",
+    "restricted_description": "Quyền truy cập vào tổ chức này bị hạn chế. Vui lòng liên hệ quản trị viên công ty.",
+    "toggle_sidebar": "Hiện hoặc ẩn thanh bên"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Hiện mật khẩu",
+    "hide_password": "Ẩn mật khẩu",
+    "logging_out": "Đang đăng xuất…",
+    "invalid_credentials": "Email hoặc mật khẩu không đúng. Vui lòng thử lại."
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "Đăng nhập lại trước khi liên kết DingTalk."
       },
       "paused_hint": "Đăng nhập bằng DingTalk chưa được bật. Vui lòng đăng nhập bằng email và mật khẩu."
-    }
+    },
+    "platform_description": "Quản lý đào tạo nhân viên, khóa học, đánh giá, hồ sơ học tập và chứng chỉ."
   }
 }

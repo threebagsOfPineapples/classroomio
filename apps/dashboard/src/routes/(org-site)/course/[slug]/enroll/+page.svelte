@@ -229,7 +229,10 @@
 </script>
 
 <svelte:head>
-  <title>Join {data.course?.title ?? 'Course'} on ClassroomIO</title>
+  <title
+    >{$t('login.create_to_join')}
+    {data.course?.title ?? $t('org_navigation.courses')} · {$t('enterprise.company_name')}</title
+  >
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 

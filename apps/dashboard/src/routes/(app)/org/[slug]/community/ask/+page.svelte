@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-  <title>Ask the Community - ClassroomIO</title>
+  <title>{$t('community.ask.ask_the')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-[90%]!">

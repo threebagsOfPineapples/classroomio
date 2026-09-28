@@ -51,7 +51,7 @@
 </script>
 
 <svelte:head>
-  <title>Audience - ClassroomIO</title>
+  <title>{$t('org_navigation.audience')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-6xl">

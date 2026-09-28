@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { cohortApi } from '../api';
@@ -8,7 +9,7 @@
   class="ui:border-border ui:bg-background ui:z-app-bar sticky top-0 flex h-12 w-full shrink-0 items-center gap-2 border-b backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
 >
   <div class="flex w-full items-center gap-2 px-4">
-    <Sidebar.Trigger />
+    <Sidebar.Trigger aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} variant="secondary" />
 
     <div class="h-4 w-2">
       <Separator orientation="vertical" />

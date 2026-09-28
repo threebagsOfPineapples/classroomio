@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { onDestroy } from 'svelte';
   import { page } from '$app/state';
   import * as Sidebar from '@cio/ui/base/sidebar';
@@ -146,7 +147,12 @@
       {/if}
     </Sidebar.Content>
 
-    <Sidebar.Rail onclick={handleRailClick} onpointerdown={handleRailPointerDown} />
+    <Sidebar.Rail
+      aria-label={$t('common.toggle_sidebar')}
+      title={$t('common.toggle_sidebar')}
+      onclick={handleRailClick}
+      onpointerdown={handleRailPointerDown}
+    />
 
     <Sidebar.Footer>
       {#if showStudentFooterNav}

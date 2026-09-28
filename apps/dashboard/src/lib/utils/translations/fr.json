@@ -12,7 +12,13 @@
     },
     "discard": "Abandonner les modifications",
     "save_changes": "Enregistrer les modifications",
-    "scroll_to_top": "Remonter en haut"
+    "scroll_to_top": "Remonter en haut",
+    "page_not_found": "Page introuvable",
+    "page_not_found_description": "Cette page n’existe pas ou vous n’avez pas l’autorisation de la consulter. Revenez à l’accueil.",
+    "organization_not_found": "Organisation introuvable",
+    "restricted_title": "Accès restreint",
+    "restricted_description": "L’accès à cette organisation est restreint. Contactez l’administrateur de votre entreprise.",
+    "toggle_sidebar": "Afficher ou masquer la barre latérale"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Afficher le mot de passe",
+    "hide_password": "Masquer le mot de passe",
+    "logging_out": "Déconnexion en cours…",
+    "invalid_credentials": "Adresse e-mail ou mot de passe incorrect. Réessayez."
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "Reconnectez-vous avant d’associer DingTalk."
       },
       "paused_hint": "La connexion avec DingTalk n’est pas encore activée. Connectez-vous avec votre e-mail et votre mot de passe."
-    }
+    },
+    "platform_description": "Gérez la formation des employés, les cours, les évaluations, les dossiers d’apprentissage et les certificats."
   }
 }

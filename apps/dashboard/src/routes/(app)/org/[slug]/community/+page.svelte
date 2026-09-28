@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-  <title>Community - ClassroomIO</title>
+  <title>{$t('org_navigation.community')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Root class="mx-auto w-full max-w-3xl">

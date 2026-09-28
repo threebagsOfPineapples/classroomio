@@ -4,12 +4,12 @@ import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 import { env as publicEnv } from '$env/dynamic/public';
 import { buildOrgSiteTitle, extractOrgSiteMetaCopy } from '$lib/utils/functions/org-site-meta';
 import { resolveOrgSiteOgImageUrl } from '$lib/utils/functions/org-site-og-url';
+import messages from '$lib/utils/translations/zh.json';
 
 const isSelfHosted = PUBLIC_IS_SELFHOSTED === 'true';
 
-const DEFAULT_TITLE = 'ClassroomIO | One Platform for Customer, Partner, and Employee Training';
-const DEFAULT_DESCRIPTION =
-  'One platform for customer academies, partner certification, and employee training. Build courses with AI, publish under your domain, and track completions.';
+const DEFAULT_TITLE = `${messages.enterprise.title} · ${messages.enterprise.company_name}`;
+const DEFAULT_DESCRIPTION = messages.enterprise.platform_description;
 const CLOUD_OG_IMAGE = 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.jpg';
 const ORG_OG_WIDTH = 1200;
 const ORG_OG_HEIGHT = 630;
@@ -36,7 +36,7 @@ async function resolveOgImageUrl(url: URL, orgSiteInfo: OrgSiteInfo): Promise<st
   if (isSelfHosted) {
     const org = orgSiteInfo.org;
     if (!org) {
-      return CLOUD_OG_IMAGE;
+      return new URL('/enterprise-training-icon.png', url.origin).href;
     }
 
     const orgImage =
@@ -46,10 +46,10 @@ async function resolveOgImageUrl(url: URL, orgSiteInfo: OrgSiteInfo): Promise<st
     if (orgImage) {
       try {
         return new URL(orgImage, url.origin).href;
-      } catch {
-        // fall through to bundled default
-      }
+      } catch {}
     }
+
+    return new URL('/enterprise-training-icon.png', url.origin).href;
   }
 
   return CLOUD_OG_IMAGE;
@@ -59,7 +59,7 @@ function buildOrgOpenGraphImages(ogImageUrl: string, orgName: string) {
   return [
     {
       url: ogImageUrl,
-      alt: `${orgName} learning platform`,
+      alt: `${orgName} · ${messages.enterprise.title}`,
       width: ORG_OG_WIDTH,
       height: ORG_OG_HEIGHT,
       secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
@@ -82,11 +82,9 @@ function resolveOrgSiteMeta(orgSiteInfo: OrgSiteInfo): {
   const metaCopy = extractOrgSiteMetaCopy(org.landingpage);
 
   return {
-    title: publicEnv.PUBLIC_APP_TITLE?.trim() || buildOrgSiteTitle(orgName, metaCopy.heading),
-    description:
-      publicEnv.PUBLIC_APP_DESCRIPTION?.trim() ||
-      metaCopy.description ||
-      `Explore courses and training programs from ${orgName}.`,
+    title:
+      publicEnv.PUBLIC_APP_TITLE?.trim() || buildOrgSiteTitle(orgName, metaCopy.heading || messages.enterprise.title),
+    description: publicEnv.PUBLIC_APP_DESCRIPTION?.trim() || metaCopy.description || DEFAULT_DESCRIPTION,
     siteName: orgName
   };
 }
@@ -97,7 +95,7 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
   const title =
     orgMeta?.title ||
     publicEnv.PUBLIC_APP_TITLE?.trim() ||
-    (isSelfHosted && orgSiteInfo.org?.name ? `${orgSiteInfo.org.name} | Learning Platform` : DEFAULT_TITLE);
+    (orgSiteInfo.org?.name ? `${messages.enterprise.title} · ${orgSiteInfo.org.name}` : DEFAULT_TITLE);
 
   const description = orgMeta?.description || publicEnv.PUBLIC_APP_DESCRIPTION?.trim() || DEFAULT_DESCRIPTION;
 
@@ -105,36 +103,35 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
     orgMeta?.siteName ||
     publicEnv.PUBLIC_APP_TITLE?.trim() ||
     (isSelfHosted && orgSiteInfo.org?.name ? orgSiteInfo.org.name : null) ||
-    'ClassroomIO';
+    messages.enterprise.company_name;
 
   const ogImageUrl = await resolveOgImageUrl(url, orgSiteInfo);
   const usesDynamicOrgOg =
     orgSiteInfo.isOrgSite && Boolean(orgSiteInfo.org?.siteName) && !publicEnv.PUBLIC_OG_IMAGE_URL?.trim();
 
-  const openGraphImages = usesDynamicOrgOg
-    ? buildOrgOpenGraphImages(ogImageUrl, siteName)
-    : [
-        {
-          url: ogImageUrl,
-          alt: `${siteName} platform for customer, partner, and employee education`,
-          width: 1920,
-          height: 1080,
-          secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
-          type: 'image/jpeg'
-        },
-        {
-          url: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
-          alt: `${siteName} platform for customer, partner, and employee education`,
-          width: 1920,
-          height: 1080,
-          secureUrl: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
-          type: 'image/webp'
-        }
-      ];
+  const openGraphImages =
+    usesDynamicOrgOg || isSelfHosted
+      ? buildOrgOpenGraphImages(ogImageUrl, siteName)
+      : [
+          {
+            url: ogImageUrl,
+            alt: `${siteName} platform for customer, partner, and employee education`,
+            width: 1920,
+            height: 1080,
+            secureUrl: ogImageUrl.startsWith('https://') ? ogImageUrl : undefined,
+            type: 'image/jpeg'
+          },
+          {
+            url: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
+            alt: `${siteName} platform for customer, partner, and employee education`,
+            width: 1920,
+            height: 1080,
+            secureUrl: 'https://brand.cdn.clsrio.com/og/classroomio-opengraph.webp',
+            type: 'image/webp'
+          }
+        ];
 
-  const imageAlt = usesDynamicOrgOg
-    ? `${siteName} learning platform`
-    : `${siteName} platform for customer, partner, and employee education`;
+  const imageAlt = `${siteName} · ${messages.enterprise.title}`;
 
   return Object.freeze({
     title,
@@ -143,15 +140,14 @@ export async function getBaseMetaTags(url: URL, orgSiteInfo: OrgSiteInfo): Promi
     openGraph: {
       type: 'website',
       url: new URL(url.pathname, url.origin).href,
-      locale: 'en_US',
+      locale: 'zh_CN',
       title,
       description,
       siteName,
       images: openGraphImages
     },
     twitter: {
-      handle: '@classroomio',
-      site: '@classroomio',
+      ...(!isSelfHosted ? { handle: '@classroomio', site: '@classroomio' } : {}),
       cardType: 'summary_large_image' as const,
       title,
       description,

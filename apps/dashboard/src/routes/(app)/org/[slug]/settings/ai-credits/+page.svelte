@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>AI Credits - ClassroomIO</title>
+  <title>{$t('settings.tabs.ai_credits_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <Page.Header>

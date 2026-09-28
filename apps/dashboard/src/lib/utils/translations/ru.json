@@ -12,7 +12,13 @@
     },
     "discard": "Отменить",
     "save_changes": "Сохранить изменения",
-    "scroll_to_top": "Прокрутить вверх"
+    "scroll_to_top": "Прокрутить вверх",
+    "page_not_found": "Страница не найдена",
+    "page_not_found_description": "Эта страница не существует или у вас нет прав для её просмотра. Вернитесь на главную страницу.",
+    "organization_not_found": "Организация не найдена",
+    "restricted_title": "Доступ ограничен",
+    "restricted_description": "Доступ к этой организации ограничен. Обратитесь к администратору вашей компании.",
+    "toggle_sidebar": "Показать или скрыть боковую панель"
   },
   "validations": {
     "generic": {
@@ -4334,7 +4340,11 @@
       "description": "An unexpected error occurred. Please try again or return to the home page.",
       "code": "Error code",
       "back_home": "Go home"
-    }
+    },
+    "show_password": "Показать пароль",
+    "hide_password": "Скрыть пароль",
+    "logging_out": "Выход из системы…",
+    "invalid_credentials": "Неверный адрес электронной почты или пароль. Попробуйте ещё раз."
   },
   "app": {
     "search": {
@@ -5999,6 +6009,7 @@
         "reauth_required": "Войдите повторно перед привязкой DingTalk."
       },
       "paused_hint": "Вход через DingTalk пока не включён. Войдите с помощью электронной почты и пароля."
-    }
+    },
+    "platform_description": "Управляйте обучением сотрудников, курсами, оценками, учебными записями и сертификатами."
   }
 }

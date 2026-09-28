@@ -47,7 +47,12 @@
   <Sidebar.Header class="gap-2">
     <div class="flex items-center justify-between gap-1">
       <BackButton href={currentPath} label={t.get('org_navigation.back_to_app')} class="min-w-0 px-2! py-2!" />
-      <Sidebar.Trigger testId="settings-sidebar-trigger" />
+      <Sidebar.Trigger
+        aria-label={$t('common.toggle_sidebar')}
+        title={$t('common.toggle_sidebar')}
+        testId="settings-sidebar-trigger"
+        variant="secondary"
+      />
     </div>
     <Search compact placeholder={t.get('settings.sidebar.search')} />
   </Sidebar.Header>
@@ -72,5 +77,5 @@
       </Sidebar.Group>
     {/each}
   </Sidebar.Content>
-  <Sidebar.Rail />
+  <Sidebar.Rail aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} />
 </Sidebar.Root>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { page } from '$app/state';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { Skeleton } from '@cio/ui/base/skeleton';
@@ -57,7 +58,7 @@
       {/if}
     </Sidebar.Content>
 
-    <Sidebar.Rail />
+    <Sidebar.Rail aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} />
 
     <Sidebar.Footer>
       <PoweredBy

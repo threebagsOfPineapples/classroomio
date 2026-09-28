@@ -62,5 +62,5 @@
   <Sidebar.Footer>
     <SidebarFooterMenu />
   </Sidebar.Footer>
-  <Sidebar.Rail />
+  <Sidebar.Rail aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} />
 </Sidebar.Root>

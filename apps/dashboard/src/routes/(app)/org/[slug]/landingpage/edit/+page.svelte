@@ -132,7 +132,7 @@
 </script>
 
 <svelte:head>
-  <title>Landing Page Editor - ClassroomIO</title>
+  <title>{$t('settings.tabs.landing_page_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <div
@@ -163,7 +163,11 @@
       onclick={handlePreviewClick}
     >
       <div class="absolute top-2 left-2 z-60">
-        <Sidebar.Trigger variant="secondary" />
+        <Sidebar.Trigger
+          aria-label={$t('common.toggle_sidebar')}
+          title={$t('common.toggle_sidebar')}
+          variant="secondary"
+        />
       </div>
 
       <ThemeComponent {...previewProps} disableCourseLinks={true} />

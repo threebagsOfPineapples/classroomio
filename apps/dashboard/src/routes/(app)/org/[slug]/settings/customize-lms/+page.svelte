@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Customize LMS - ClassroomIO</title>
+  <title>{$t('settings.tabs.customize_lms_tab')} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 <CustomizeLmsPage bind:this={customizeLmsComponent} bind:hasUnsavedChanges />

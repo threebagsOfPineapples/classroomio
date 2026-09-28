@@ -86,7 +86,11 @@
       </Sidebar.Root>
       <Sidebar.Inset class="relative h-screen! overflow-y-auto">
         <div class="absolute top-2 left-2 z-60">
-          <Sidebar.Trigger variant="secondary" />
+          <Sidebar.Trigger
+            aria-label={$t('common.toggle_sidebar')}
+            title={$t('common.toggle_sidebar')}
+            variant="secondary"
+          />
         </div>
         <CourseLandingPage bind:courseData={courseApi.course} editMode={true} />
       </Sidebar.Inset>
