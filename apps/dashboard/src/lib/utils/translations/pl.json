@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "Logowanie przez DingTalk nie jest jeszcze włączone. Zaloguj się za pomocą adresu e-mail i hasła."
     },
-    "platform_description": "Zarządzaj szkoleniami pracowników, kursami, ocenami, zapisami nauki i certyfikatami."
+    "platform_description": "Zarządzaj szkoleniami pracowników, kursami, ocenami, zapisami nauki i certyfikatami.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

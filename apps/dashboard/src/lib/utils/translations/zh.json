@@ -1758,7 +1758,14 @@
       },
       "paused_hint": "钉钉登录暂未启用，请先使用邮箱和密码登录。"
     },
-    "platform_description": "统一管理员工培训、课程学习、考核、学习档案与证书。"
+    "platform_description": "统一管理员工培训、课程学习、考核、学习档案与证书。",
+    "navigation": {
+      "organization": "组织管理",
+      "training": "培训管理",
+      "results": "培训结果",
+      "import_employees": "导入员工",
+      "course_resources": "课程与资源"
+    }
   },
   "schedule": {
     "join": "加入会议"
@@ -1781,7 +1788,54 @@
     },
     "name": "姓名",
     "import": {
-      "back": "返回"
+      "page_subtitle": "通过邮箱批量添加员工，确认名单后导入。",
+      "title": "导入员工",
+      "description": "填写员工邮箱，可按需分配课程并发送邀请邮件。",
+      "emails_label": "员工邮箱",
+      "emails_placeholder": "每行一个邮箱，也可用逗号或分号分隔\n例如：zhangsan@example.com",
+      "course_access": "课程分配",
+      "no_courses": "暂不分配课程",
+      "all_courses": "全部课程",
+      "select_courses": "指定课程",
+      "select_courses_placeholder": "请选择课程",
+      "select_cohorts_placeholder": "请选择培训班",
+      "send_email": "向导入的员工发送邀请邮件",
+      "back": "返回",
+      "start_over": "重新选择文件",
+      "snackbar_success": "新增邀请 {imported} 人，为 {assigned} 名已有学员分配权限，更新 {pendingInvitesRenewed} 条待接受邀请，已发送 {emailsSent} 封邮件",
+      "snackbar_no_emails": "请至少填写一个邮箱",
+      "snackbar_failed": "导入失败，请重试",
+      "cohort_access": "培训班分配",
+      "no_cohorts": "暂不分配培训班",
+      "all_cohorts": "全部培训班",
+      "select_cohorts": "指定培训班",
+      "drop_csv": "点击选择或拖入 CSV 文件",
+      "csv_hint": "请上传包含 email 列的 UTF-8 CSV 文件，最多 {rows} 行、5 MB。",
+      "download_template": "下载导入模板",
+      "paste_hint": "每行一个邮箱，或使用逗号分隔。",
+      "review": "预览并检查",
+      "done": "完成并返回",
+      "submit_count": "确认导入 {count} 人",
+      "count_ready": "可导入 {count} 人",
+      "count_duplicate": "重复 {count} 人",
+      "count_invalid": "需处理 {count} 人",
+      "truncated": "已忽略超出 {rows} 行限制的 {count} 行，请拆分文件后继续导入。",
+      "unknown_columns": "已忽略无法识别的列：{columns}",
+      "result_heading": "已导入 {count} 人",
+      "download_errors": "下载失败记录",
+      "status": {
+        "ready": "可导入",
+        "already_member": "已加入企业",
+        "invalid_email": "邮箱格式错误",
+        "duplicate_in_file": "文件内重复",
+        "is_staff": "该账号已有管理或讲师身份",
+        "over_seat_limit": "可用名额不足",
+        "missing_email": "未填写邮箱"
+      }
+    },
+    "status": "状态",
+    "assign": {
+      "select_courses": "选择课程"
     }
   },
   "certificates": {

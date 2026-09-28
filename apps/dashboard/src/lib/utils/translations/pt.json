@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "O login com DingTalk ainda não está ativado. Entre com seu e-mail e senha."
     },
-    "platform_description": "Gerencie treinamentos de funcionários, cursos, avaliações, registros de aprendizagem e certificados."
+    "platform_description": "Gerencie treinamentos de funcionários, cursos, avaliações, registros de aprendizagem e certificados.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

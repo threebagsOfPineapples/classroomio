@@ -5,7 +5,7 @@
   import { resolve } from '$app/paths';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { Skeleton } from '@cio/ui/base/skeleton';
-  import { currentOrg } from '$lib/utils/store/org';
+  import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { isOrgStudent } from '$lib/utils/store/app';
   import { appInitApi } from '$features/app/init.svelte';
   import { AppHeader } from '$features/ui';
@@ -20,6 +20,12 @@
   let { data, children } = $props();
   const isSettingsRoute = $derived(/\/settings(?:\/|$)/.test(page.url.pathname));
   const useEnterpriseShell = $derived(PUBLIC_IS_SELFHOSTED === 'true' && !isSettingsRoute);
+  const courseSections = $derived([
+    { path: 'courses', key: 'org_navigation.courses' },
+    { path: 'media', key: 'org_navigation.media' },
+    ...($isOrgAdmin ? [{ path: 'tags', key: 'org_navigation.tags' }] : [])
+  ]);
+  const currentSection = $derived(page.url.pathname.slice($currentOrgPath.length + 1).split('/')[0]);
 
   function redirect(siteName: string | null) {
     if (!siteName) return;
@@ -72,6 +78,22 @@
     {/if}
 
     <div class="training-page-container">
+      {#if useEnterpriseShell && courseSections.some((section) => section.path === currentSection)}
+        <nav
+          aria-label={$t('enterprise.navigation.course_resources')}
+          class="ui:border-border mb-4 flex gap-6 overflow-x-auto border-b px-1"
+        >
+          {#each courseSections as section (section.path)}
+            <a
+              href={`${$currentOrgPath}/${section.path}`}
+              aria-current={section.path === currentSection ? 'page' : undefined}
+              class="shrink-0 border-b-2 px-1 py-3 text-sm font-medium {section.path === currentSection
+                ? 'ui:border-primary ui:text-primary'
+                : 'ui:text-muted-foreground ui:hover:text-foreground border-transparent'}">{$t(section.key)}</a
+            >
+          {/each}
+        </nav>
+      {/if}
       {#if data.orgName === '*'}
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
           <Skeleton class="aspect-video rounded-xl" />

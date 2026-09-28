@@ -23,7 +23,7 @@
   import { orgApi } from '$features/org/api/org.svelte';
   import { snackbar } from '$features/ui/snackbar/store';
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
+  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
   import { page } from '$app/state';
   import { SvelteSet } from 'svelte/reactivity';
   import {
@@ -77,7 +77,9 @@
   let isSubmitting = $state(false);
 
   const summary = $derived(summariseImportRows(parsedRows));
-  const audiencePath = $derived(page.url.pathname.replace(/\/import$/, ''));
+  const audiencePath = $derived(
+    PUBLIC_IS_SELFHOSTED === 'true' ? '/admin?view=employees' : page.url.pathname.replace(/\/import$/, '')
+  );
 
   function toggleCourse(courseId: string) {
     if (selectedCourseIds.has(courseId)) selectedCourseIds.delete(courseId);
@@ -309,36 +311,38 @@
       {/if}
     </div>
 
-    <div class="space-y-3">
-      <Label class="text-sm font-medium">{$t('audience.import.cohort_access')}</Label>
-      <RadioGroup.Root bind:value={cohortAccessMode} class="space-y-2">
-        <div class="flex items-center gap-2">
-          <RadioGroup.Item value="none" id="cohort-none" />
-          <Label for="cohort-none" class="font-normal">{$t('audience.import.no_cohorts')}</Label>
-        </div>
-        <div class="flex items-center gap-2">
-          <RadioGroup.Item value="all" id="cohort-all" />
-          <Label for="cohort-all" class="font-normal">{$t('audience.import.all_cohorts')}</Label>
-        </div>
-        <div class="flex items-center gap-2">
-          <RadioGroup.Item value="select" id="cohort-select" />
-          <Label for="cohort-select" class="font-normal">{$t('audience.import.select_cohorts')}</Label>
-        </div>
-      </RadioGroup.Root>
+    {#if PUBLIC_IS_SELFHOSTED !== 'true'}
+      <div class="space-y-3">
+        <Label class="text-sm font-medium">{$t('audience.import.cohort_access')}</Label>
+        <RadioGroup.Root bind:value={cohortAccessMode} class="space-y-2">
+          <div class="flex items-center gap-2">
+            <RadioGroup.Item value="none" id="cohort-none" />
+            <Label for="cohort-none" class="font-normal">{$t('audience.import.no_cohorts')}</Label>
+          </div>
+          <div class="flex items-center gap-2">
+            <RadioGroup.Item value="all" id="cohort-all" />
+            <Label for="cohort-all" class="font-normal">{$t('audience.import.all_cohorts')}</Label>
+          </div>
+          <div class="flex items-center gap-2">
+            <RadioGroup.Item value="select" id="cohort-select" />
+            <Label for="cohort-select" class="font-normal">{$t('audience.import.select_cohorts')}</Label>
+          </div>
+        </RadioGroup.Root>
 
-      {#if cohortAccessMode === 'select'}
-        <MultiSelectList
-          class="ml-6"
-          listClass="max-h-40"
-          heading={$t('audience.import.select_cohorts')}
-          emptyMessage={$t('audience.import.select_cohorts_placeholder')}
-          items={cohorts.map((p) => ({ id: p.id, label: p.name || p.id }))}
-          isSelected={(id) => selectedCohortIds.has(id)}
-          onToggle={toggleCohort}
-          namePrefix="import-cohort"
-        />
-      {/if}
-    </div>
+        {#if cohortAccessMode === 'select'}
+          <MultiSelectList
+            class="ml-6"
+            listClass="max-h-40"
+            heading={$t('audience.import.select_cohorts')}
+            emptyMessage={$t('audience.import.select_cohorts_placeholder')}
+            items={cohorts.map((p) => ({ id: p.id, label: p.name || p.id }))}
+            isSelected={(id) => selectedCohortIds.has(id)}
+            onToggle={toggleCohort}
+            namePrefix="import-cohort"
+          />
+        {/if}
+      </div>
+    {/if}
   </div>
 {:else}
   <div class="space-y-6 pb-10">
@@ -373,7 +377,7 @@
           {$t('audience.import.download_errors')}
         </Button>
       {/if}
-      <Button onclick={() => goto(resolve(audiencePath, {}))}>
+      <Button onclick={() => goto(audiencePath)}>
         {$t('audience.import.done')}
       </Button>
     </div>

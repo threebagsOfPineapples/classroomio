@@ -20,6 +20,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { showUserJotWidget } from '$lib/utils/services/userjot';
   import { ROLE } from '@cio/utils/constants';
+  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
   const SUPPORT_EMAIL = 'help@classroomio.com';
   const DOCS_URL = 'https://classroomio.com/docs';
@@ -123,7 +124,7 @@
 
         <DropdownMenu.Group>
           <div class="cursor-pointer space-y-2">
-            {#if !$globalStore.isOrgSite}
+            {#if !$globalStore.isOrgSite && PUBLIC_IS_SELFHOSTED !== 'true'}
               <div class="space-y-4">
                 <DropdownMenu.Item class="m-0" onclick={() => showUserJotWidget('updates')}>
                   <span class="flex w-full items-center gap-2">

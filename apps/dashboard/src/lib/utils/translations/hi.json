@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "DingTalk साइन-इन अभी सक्षम नहीं है। कृपया अपने ईमेल और पासवर्ड से साइन इन करें।"
     },
-    "platform_description": "कर्मचारी प्रशिक्षण, पाठ्यक्रम, मूल्यांकन, सीखने के रिकॉर्ड और प्रमाणपत्र प्रबंधित करें।"
+    "platform_description": "कर्मचारी प्रशिक्षण, पाठ्यक्रम, मूल्यांकन, सीखने के रिकॉर्ड और प्रमाणपत्र प्रबंधित करें।",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

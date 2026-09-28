@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "Вход через DingTalk пока не включён. Войдите с помощью электронной почты и пароля."
     },
-    "platform_description": "Управляйте обучением сотрудников, курсами, оценками, учебными записями и сертификатами."
+    "platform_description": "Управляйте обучением сотрудников, курсами, оценками, учебными записями и сертификатами.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

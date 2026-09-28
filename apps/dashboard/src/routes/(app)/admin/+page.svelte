@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import Workbench from '$features/enterprise/components/workbench.svelte';
   import { page } from '$app/state';
-  import { currentOrg } from '$lib/utils/store/org';
+  import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
   import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
@@ -170,17 +169,10 @@
             href="/admin/statistics">{$t('org_navigation.stats')}</Button
           >{/if}
         {#if overview?.canManage}<Button size="sm" href="/admin/plans">{$t('enterprise.ui_v2.new_plan')}</Button>{/if}
-      {:else}
-        {#if overview?.canManage}
-          <Button variant="secondary" href={resolve('/admin/plans', {})}>{$t('enterprise.plans.title')}</Button>
-          <Button variant="secondary" href={resolve('/admin/assessment', {})}
-            >{$t('enterprise.assessment.title')}</Button
-          >
-        {/if}
-        {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}
-          <Button variant="secondary" href={resolve('/admin/matrix', {})}>{$t('enterprise.assessment.matrix')}</Button>
-          <Button variant="secondary" href={resolve('/admin/statistics', {})}>{$t('org_navigation.stats')}</Button>
-        {/if}
+      {:else if activeView === 'employees' && $isOrgAdmin}
+        <Button size="sm" href={`${$currentOrgPath}/audience/import`}
+          >{$t('enterprise.navigation.import_employees')}</Button
+        >
       {/if}
     </Page.Action>
   </Page.Header>

@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "Đăng nhập bằng DingTalk chưa được bật. Vui lòng đăng nhập bằng email và mật khẩu."
     },
-    "platform_description": "Quản lý đào tạo nhân viên, khóa học, đánh giá, hồ sơ học tập và chứng chỉ."
+    "platform_description": "Quản lý đào tạo nhân viên, khóa học, đánh giá, hồ sơ học tập và chứng chỉ.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

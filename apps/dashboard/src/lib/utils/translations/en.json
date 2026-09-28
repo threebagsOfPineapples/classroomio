@@ -5993,6 +5993,13 @@
       },
       "paused_hint": "DingTalk sign-in is not enabled yet. Please sign in with your email and password."
     },
-    "platform_description": "Manage employee training, courses, assessments, learning records, and certificates."
+    "platform_description": "Manage employee training, courses, assessments, learning records, and certificates.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

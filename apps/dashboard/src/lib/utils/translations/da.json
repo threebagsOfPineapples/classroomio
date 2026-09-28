@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "DingTalk-login er endnu ikke aktiveret. Log ind med din e-mail og adgangskode."
     },
-    "platform_description": "Administrer medarbejderuddannelse, kurser, vurderinger, læringshistorik og certifikater."
+    "platform_description": "Administrer medarbejderuddannelse, kurser, vurderinger, læringshistorik og certifikater.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }

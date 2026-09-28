@@ -6010,6 +6010,13 @@
       },
       "paused_hint": "La connexion avec DingTalk n’est pas encore activée. Connectez-vous avec votre e-mail et votre mot de passe."
     },
-    "platform_description": "Gérez la formation des employés, les cours, les évaluations, les dossiers d’apprentissage et les certificats."
+    "platform_description": "Gérez la formation des employés, les cours, les évaluations, les dossiers d’apprentissage et les certificats.",
+    "navigation": {
+      "organization": "Organization",
+      "training": "Training management",
+      "results": "Training results",
+      "import_employees": "Import employees",
+      "course_resources": "Course resources"
+    }
   }
 }
