@@ -51,7 +51,8 @@ export function initUserJot(isOrgSite: boolean): void {
 
   window.uj.init(USERJOT_PROJECT_ID, {
     widget: {
-      launcher: true,
+      launcher: false,
+      whispers: false,
       position: 'right',
       theme: 'auto'
     }

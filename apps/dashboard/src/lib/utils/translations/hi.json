@@ -5881,7 +5881,11 @@
       "platform_name": "झिझेन प्रशिक्षण",
       "admin_portal": "प्रशासन",
       "learner_portal": "शिक्षण केंद्र",
-      "workbench": "कार्य पटल"
+      "workbench": "कार्य पटल",
+      "appearance": "दिखावट",
+      "light": "हल्का",
+      "dark": "गहरा",
+      "system": "सिस्टम"
     }
   }
 }

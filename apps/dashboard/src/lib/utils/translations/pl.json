@@ -5881,7 +5881,11 @@
       "platform_name": "Szkolenia Zhizhen",
       "admin_portal": "Administracja",
       "learner_portal": "Centrum nauki",
-      "workbench": "Panel pracy"
+      "workbench": "Panel pracy",
+      "appearance": "Wygląd",
+      "light": "Jasny",
+      "dark": "Ciemny",
+      "system": "System"
     }
   }
 }

@@ -104,7 +104,7 @@
 </script>
 
 <div class="space-y-6 pb-8">
-  <section class="training-panel space-y-5" aria-label={$t('enterprise.my_training.title')}>
+  <section class="training-panel learner-overview space-y-5" aria-label={$t('enterprise.my_training.title')}>
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 class="text-lg font-semibold">{$profile.fullname}</h2>

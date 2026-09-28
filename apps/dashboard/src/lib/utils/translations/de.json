@@ -5881,7 +5881,11 @@
       "platform_name": "Zhizhen Schulung",
       "admin_portal": "Verwaltung",
       "learner_portal": "Lernzentrum",
-      "workbench": "Arbeitsübersicht"
+      "workbench": "Arbeitsübersicht",
+      "appearance": "Darstellung",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
     }
   }
 }

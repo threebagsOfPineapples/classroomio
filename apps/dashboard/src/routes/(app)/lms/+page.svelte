@@ -53,7 +53,6 @@
 <Page.Root class="w-full">
   <Page.Header>
     <Page.HeaderContent>
-      <Page.Subtitle>{todayLabel}</Page.Subtitle>
       <Page.Title>
         {$t(getGreeting())},
         <span>{firstName}</span>
@@ -66,6 +65,7 @@
         {/if}
       </Page.Subtitle>
     </Page.HeaderContent>
+    <p class="learner-date">{todayLabel}</p>
   </Page.Header>
 
   <Page.Body>

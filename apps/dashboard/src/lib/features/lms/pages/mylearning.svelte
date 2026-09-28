@@ -16,6 +16,13 @@
 
   const coursesInProgress = $derived(coursesApi.enrolledCourses.filter((course) => !isCourseComplete(course)));
   const coursesComplete = $derived(coursesApi.enrolledCourses.filter((course) => isCourseComplete(course)));
+  const normalizedSearch = $derived(searchValue.trim().toLowerCase());
+  const visibleInProgress = $derived(
+    coursesInProgress.filter((course) => course.title.toLowerCase().includes(normalizedSearch))
+  );
+  const visibleComplete = $derived(
+    coursesComplete.filter((course) => course.title.toLowerCase().includes(normalizedSearch))
+  );
 
   $effect(() => {
     if (!$profile.id || !$currentOrg.id) return;
@@ -40,18 +47,19 @@
   <UnderlineTabs.List>
     {#each tabs as tab (tab.value)}
       <UnderlineTabs.Trigger value={tab.value}>
-        {$t(tab.label)}
+        {tab.label}
       </UnderlineTabs.Trigger>
     {/each}
   </UnderlineTabs.List>
   <UnderlineTabs.Content value={tabs[0].value}>
     <CoursesPage
       bind:searchValue
-      courses={coursesInProgress}
+      courses={visibleInProgress}
       emptyDescription={$t('my_learning.any_progress')}
       emptyTitle={$t('my_learning.not_in_progress')}
       isLMS={true}
       isLoading={coursesApi.isLoading}
+      showSortSelect={false}
     >
       {#snippet emptyAction()}
         <Button href="/lms/explore">{$t('my_learning.find_courses')}</Button>
@@ -61,11 +69,12 @@
   <UnderlineTabs.Content value={tabs[1].value}>
     <CoursesPage
       bind:searchValue
-      courses={coursesComplete}
+      courses={visibleComplete}
       emptyDescription={$t('my_learning.any_course')}
       emptyTitle={$t('my_learning.not_completed')}
       isLMS={true}
       isLoading={coursesApi.isLoading}
+      showSortSelect={false}
     />
   </UnderlineTabs.Content>
 </UnderlineTabs.Root>

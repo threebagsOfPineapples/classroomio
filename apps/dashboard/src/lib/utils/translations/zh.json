@@ -331,7 +331,8 @@
       "search": "搜索设置…"
     },
     "profile": {
-      "heading": "个人资料"
+      "heading": "个人资料",
+      "logout": "退出登录"
     },
     "notifications": {
       "heading": "通知设置",
@@ -341,7 +342,8 @@
       "heading": "Telegram 集成"
     },
     "tabs": {
-      "organization_tab": "企业"
+      "organization_tab": "企业",
+      "notifications_tab": "通知"
     },
     "organization": {
       "page_subtitle": "设置员工看到的企业名称、图标和主题。",
@@ -1475,7 +1477,11 @@
       "platform_name": "至臻企业培训",
       "admin_portal": "管理后台",
       "learner_portal": "学习中心",
-      "workbench": "工作台"
+      "workbench": "工作台",
+      "appearance": "显示模式",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
     }
   },
   "schedule": {

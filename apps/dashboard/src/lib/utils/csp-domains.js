@@ -18,6 +18,7 @@ const saasDefaults = {
     'https://accounts.google.com'
   ],
   styleSrc: [
+    'https://cdn.userjot.com',
     'https://cdn.plyr.io',
     'https://unpkg.com/katex@0.12.0/dist/katex.min.css',
     'https://assets.cdn.clsrio.com/eqneditor_1.css',

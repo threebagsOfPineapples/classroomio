@@ -87,3 +87,20 @@
 最终 Node 20 依赖/API/Dashboard 完整构建通过。恢复已停止的本地 PostgreSQL/Redis 和测试登录后，可重复浏览器检查通过：搜索“主播”只返回“主播话术”，清空恢复 6 门课程，手机账户菜单按账户名称可打开。原考试页面保留 92 分，未出现 AI 链接或 AI 评分/助手按钮，管理工作台综合成绩仍为 89.9。临时测试登录脚本已移除；可重复 UI 检查脚本位于系统临时验收目录 `ui-smoke.js`。
 
 设计规范与产品约束位于 `apps/dashboard/DESIGN.md`、`apps/dashboard/.impeccable/design.json` 和 `apps/dashboard/PRODUCT.md`。界面以中文为主，遗留共享菜单及其他上游页面仍需继续复核英文文案。本轮没有新增迁移、生产部署或业务签收。
+
+## 2026-09-28 配色与课程密度复核
+
+按用户反馈强化现有 PlayEdu 结构：墨色侧栏与学员学习概览、冷灰工作区、白色内容面板、克制的橙色操作；课程无图时显示真实完整标题和公司标识，媒体区域为 164px，保留原有真实图片与作者内容。
+
+验证结果：
+
+- Node 20 下依赖、API 与 Dashboard 构建通过；最终 Dashboard 构建日志为系统临时目录 `enterprise-ui-polish-build-final.log`，121 项测试通过。
+- 翻译脚本完成，无新增待生成键；显示模式四个新增键在 11 个语言文件齐全，占位符检查通过。
+- 学员可见“已完成”页签中搜索“ 主播 ”返回“主播话术”，无匹配时零课程，清空恢复四门已完成课程；浅深色切换及中文退出菜单通过。脚本为临时验收目录 `my-learning-polish-smoke.js`。
+- 管理与学员端在 1440px 和 390px 下均无页面横向溢出；课程媒体实测 164px；手机管理抽屉实测背景 `rgb(23,36,58)`，选中项文字 `rgb(255,180,73)`；学员 AI 设置链接为零。
+- 五张最终截图为临时验收目录 `output/playwright/` 下的 `admin-professional-desktop.png`、`learner-professional-desktop.png`、`admin-professional-mobile.png`、`learner-professional-mobile.png`、`admin-professional-mobile-menu.png`。初次抽屉截图未等待过渡完成，已作废并在抽屉稳定后重拍；最终截图均已打开确认。
+- 独立复核的三项材料修正——手机主题、课程密度、外部反馈启动器遮挡——均为 resolved，disposition 为 ship；这是三项修复的结论，并非全量业务验收。
+- 上游 UserJot 的默认启动器/自动提示已关闭；此前受信 SDK 样式源被 CSP 阻断已修复，回归检查确认该默认许可没有扩大到自部署配置。[配置参考](https://userjot.com/docs/widget-v3-control)。显式反馈菜单保留；本地分析 `/ingest` 404 与供应商预加载提示仍存在。
+- 实际设计规则同步到 `apps/dashboard/DESIGN.md` 与 `apps/dashboard/.impeccable/design.json`，未写入成绩或学时常量。
+
+工作台平均成绩仍为 89.9。没有新增迁移、修改正式成绩或部署生产；真实用户业务签收和正式数据库升级验证仍待完成。

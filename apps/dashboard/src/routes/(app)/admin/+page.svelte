@@ -211,7 +211,7 @@
       {/if}
       {#if overview?.canManage || overview?.roles.includes('DEPARTMENT_MANAGER')}
         <Button variant="secondary" href={resolve('/admin/matrix')}>{$t('enterprise.assessment.matrix')}</Button>
-        <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('enterprise.assessment.subtitle')}</Button>
+        <Button variant="secondary" href={resolve('/admin/statistics')}>{$t('org_navigation.stats')}</Button>
       {/if}
     </Page.Action>
   </Page.Header>

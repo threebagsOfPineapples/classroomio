@@ -2,18 +2,27 @@
 name: 至臻企业培训平台
 description: 河南至臻数字生活科技有限公司的中文企业培训界面
 colors:
-  primary: '#b45309'
+  primary: '#bd4b00'
   primary-foreground: '#ffffff'
-  sidebar-accent-foreground: '#92400e'
-  training-ground: '#f5f6f8'
+  training-brand: '#f59a18'
+  sidebar: '#17243a'
+  sidebar-foreground: '#d5deeb'
+  sidebar-accent: '#2b3850'
+  sidebar-accent-foreground: '#ffb449'
+  training-ground: '#f3f5f8'
   training-paper: '#ffffff'
-  training-line: '#e8ebef'
-  training-muted: '#626b78'
-  training-accent: '#fff4e6'
-  foreground: 'oklch(0.145 0 0)'
-  secondary: 'oklch(0.967 0.001 286.375)'
-  secondary-foreground: 'oklch(0.21 0.006 285.885)'
-  input: 'oklch(0.922 0 0)'
+  training-line: '#e2e7ee'
+  training-muted: '#617083'
+  training-accent: '#fff5e8'
+  foreground: '#202c3d'
+  secondary: '#f0f3f7'
+  secondary-foreground: '#28384c'
+  input: '#d9e0e9'
+  learner-overview: '#202e44'
+  learner-overview-foreground: '#f7f9fc'
+  learner-overview-muted: '#bfccdc'
+  course-cover: '#eaf0f6'
+  course-cover-foreground: '#293b53'
 typography:
   title:
     fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif"
@@ -33,8 +42,20 @@ typography:
     fontSize: '30px'
     fontWeight: 600
     lineHeight: 1.2
+  overview-metric:
+    fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif"
+    fontSize: '28px'
+    fontWeight: 600
+    lineHeight: 1.2
+  course-cover-title:
+    fontFamily: "'Microsoft YaHei', 'PingFang SC', sans-serif"
+    fontSize: '23px'
+    fontWeight: 600
+    lineHeight: 1.4
 rounded:
-  panel: '10px'
+  panel: '12px'
+  brand: '10px'
+  course-media: '8px'
   md: 'calc(0.625rem - 2px)'
 spacing:
   panel: '24px'
@@ -67,7 +88,7 @@ components:
     typography: '{typography.label}'
     padding: '14px 0'
   admin-navigation-active:
-    backgroundColor: '{colors.training-accent}'
+    backgroundColor: '{colors.sidebar-accent}'
     textColor: '{colors.sidebar-accent-foreground}'
     typography: '{typography.label}'
   progress:
@@ -82,119 +103,127 @@ components:
 
 **Creative North Star: "清晰的企业培训工作台"**
 
-这份文档记录当前已实现的培训界面。管理端沿用用户确认的 PlayEdu 参考：左侧管理导航、白色顶部栏和信息明确的表格。学员端使用顶部导航，以课程、培训任务和进度为主。企业名称为河南至臻数字生活科技有限公司，品牌图标沿用 `/enterprise-training-icon.png`。
+这份文档记录现有 PlayEdu 参考结构的配色和密度强化。河南至臻数字生活科技有限公司的企业图标与橙色品牌保持一致，管理端使用墨色侧栏、白色顶部栏与任务表格，学员端使用白色顶部导航、墨色学习概览和冷灰课程封面。页面底色与内容面板通过冷灰、白色和细边框建立层次。
 
-公司图标的橙色是已确认的主色。白色内容面板与浅灰页面底色承载主要信息，橙色标识操作、选中位置和学习进度。中文优先，AI 功能默认隐藏。布局和交互继续使用现有 `@cio/ui` 组件。
+首屏承载管理任务或学员学习概览与课程。用户从侧栏或顶部导航进入课程、培训和档案；课程查询随输入实时过滤，清空即恢复列表。中文优先，AI 默认隐藏，控件继续沿用现有共享库；这次强化没有引入新的图片、图标组件或装饰动画。
 
 **Key Characteristics:**
 
-- 企业橙色、白色内容面板与浅灰背景。
-- 管理端侧栏与表格，学员端顶部导航与课程进度。
-- 中文信息层级、清晰焦点和可辨识的当前导航位置。
-- 实际样式来源为 `src/training.css`；共享组件来源为 `../../packages/ui/src`。
+- 墨色导航与学习概览、冷灰页面、白色面板、公司品牌橙色。
+- 管理端任务表格与学员端学习指标、课程卡片。
+- 真实课程标题与公司标识组成无图封面，已有课程照片保留。
+- 桌面与手机沿用同一主题，手机指标双列、课程单列。
+- 实际样式来源为 `src/training.css`，共享组件沿用 `../../packages/ui/src`。
 
 ## Colors
 
-培训界面只有一个品牌强调色，配合中性表面；前置 token 记录默认浅色模式的实际值。
+前置 token 记录最终源码中的默认浅色配色。企业品牌橙和白字主操作深橙各自承担已实现的角色。
 
 ### Primary
 
-- **企业深橙**（`primary`）：主要按钮、学员激活导航、进度条和培训界面的键盘焦点。
-- **橙色浅底**（`training-accent`）：管理端激活导航、表格行悬停和无课程封面时的占位区域。
-- **橙色深文字**（`sidebar-accent-foreground`）：浅橙色导航背景上的选中标签。
-- **主操作白字**（`primary-foreground`）：主要按钮的文字。
+- **主操作深橙**（`primary`）：普通主要按钮、学员选中导航、进度指示条与培训外壳键盘焦点；文字使用 `primary-foreground`。
+- **企业品牌橙**（`training-brand`）：课程无图封面顶部细线，以及学习概览中的继续学习按钮。
+- **导航选中橙**（`sidebar-accent-foreground`）：墨色管理侧栏选中项文字；底色使用 `sidebar-accent`。
+- **浅橙提示底**（`training-accent`）：表格行悬停及培训正文选择状态。
 
 ### Neutral
 
-- **页面浅灰**（`training-ground`）：页面底色和表头背景。
-- **内容白色**（`training-paper`）：顶部栏、面板和表格。
-- **细分隔灰**（`training-line`）：面板边框和学员顶部栏分隔线。
-- **辅助文字灰**（`training-muted`）：副标题、品牌辅助文字和表头。
-- **正文深色**（`foreground`）：沿用共享库正文语义色。
-- **次操作中性灰**（`secondary`、`secondary-foreground`）与 **输入边框灰**（`input`）：沿用现有共享按钮和输入组件。
+- **管理侧栏墨色**（`sidebar`）与 **侧栏浅灰字**（`sidebar-foreground`）：由侧栏根组件自身携带，在手机抽屉移入 portal 后仍保持配色。
+- **页面冷灰**（`training-ground`）、**内容白色**（`training-paper`）与 **细分隔灰**（`training-line`）：页面、顶部栏、面板和表格层级。
+- **正文墨色**（`foreground`）与 **辅助蓝灰**（`training-muted`）：正文、表头、副标题和日期。
+- **次操作冷灰**（`secondary`、`secondary-foreground`）与 **输入边框灰**（`input`）：共享控件的培训外壳覆写。
+- **学习概览墨色**（`learner-overview`）、**概览浅白字**（`learner-overview-foreground`）与 **概览次级字**（`learner-overview-muted`）：学员概览面板；统计数字为纯白，继续学习按钮为品牌橙底与侧栏墨色文字。
+- **课程封面冷灰**（`course-cover`）与 **封面墨字**（`course-cover-foreground`）：没有真实图片时的公司标识与真实课程标题。
 
-暗色模式沿用现有共享库切换。培训覆写中的主色为 `#fbbf24`、主色文字为 `#1c1917`，页面底色为 `#111113`，内容面板为 `#18181b`，分隔线为 `#303037`，辅助文字为 `#a1a1aa`，强调底色为 `#36291e`。这些是模式覆写，不是第二套品牌方向。
+暗色模式仍沿用现有模式切换。培训外壳覆写为主色（`#fbbf24`）、主色文字（`#1c1917`）、正文（`#edf1f7`）、页面（`#101a29`）、面板（`#192537`）、分隔线（`#334156`）、辅助文字（`#aab7c8`）、次操作（`#263448`）、输入边框（`#42516a`）和强调底色（`#36291e`）。管理侧栏与学习概览保留自己的墨色表面。
 
-**The Brand Color Rule.** 公司橙色用于培训界面的主操作与导航状态；共享组件通过现有语义色变量接收品牌色。
+**The Brand Color Rule.** 普通主要操作使用深橙与白字；学习概览中的继续学习使用品牌橙与墨字；管理选中项使用墨色底与橙色文字。
 
 ## Typography
 
-培训外壳的字体栈为微软雅黑、苹方与系统无衬线字体。共享组件继承培训外壳的字体，不新增展示字体。
+培训外壳和共享 UI 的字体变量均使用微软雅黑、苹方与系统无衬线字体。没有新增展示字体。
 
 ### Hierarchy
 
-- **Title**：页面标题，采用前置 `title` token；手机下调整为（22px）。
-- **Body**：页面副标题采用前置 `body` token；其他正文保留共享组件本身的字号。
-- **Label**：侧栏和学员导航采用前置 `label` token；选中项加粗为（600）。
-- **Metric**：工作台统计数字采用前置 `metric` token；手机下调整为（26px）。表格与统计使用等宽数字排列。
-- **品牌文字**：平台名称（17px、600），手机下（15px）；辅助名称（12px）。
+- **Title**：页面标题采用前置 `title` token；手机下（22px）。
+- **Body**：副标题采用前置 `body` token；其他正文保留共享组件的既有字号。
+- **Label**：侧栏和学员导航采用前置 `label` token；选中项字重（600）。
+- **Metric**：管理统计使用 `metric`，学员概览使用 `overview-metric`；手机下均为（26px），数字沿用等宽排列。
+- **Course cover title**：使用 `course-cover-title`，绑定真实完整标题字段，以两行裁切控制高度。
+- **品牌与日期**：平台名称（17px、600），手机下（15px）；顶部品牌辅助名称（12px）、封面品牌（11px）、学员日期（13px）。
 
 ## Layout
 
-管理端采用共享可折叠侧栏：常规宽度（16rem）、图标模式（3rem）、手机抽屉（18rem）。顶部栏高（64px）。主要内容居中，最大宽度（1440px），左右留白采用 `page-inset`，底部留白（36px）。
+`/admin` 的管理侧栏明确覆写常规宽度为（14.5rem）；组织管理路由保留共享默认（16rem）。图标模式（3rem）和手机抽屉（18rem）沿用共享库。两类管理侧栏都在根组件绑定企业侧栏主题。管理顶部栏高（64px），内容居中最大宽度（1440px），左右留白使用 `page-inset`，底部（36px）。
 
-学员端不使用管理侧栏，顶部栏保持粘滞定位。工具行最低高度（72px），导航行可水平滚动，激活项有底部线。工具栏和正文最大宽度（1256px），导航项间距采用 `navigation-gap`。
+学员顶部栏粘滞定位，工具行最低高度（76px），工具栏与正文最大宽度（1256px）。导航行可水平滚动，间距使用 `navigation-gap`；当前项有底部线。日期与页面标题同处标题行，置于标题内容右侧，窄屏允许换行。页面标题区域上下内距为（26px 20px）。
 
-培训样式的手机断点为最大宽度（767px）。该范围内左右留白采用 `mobile-inset`，面板内距缩为（16px），统计区域改为两列，学员导航间距缩为（24px），顶部品牌辅助文字隐藏，用户菜单缩为（48px）。页面标题和操作区域允许换行。
+课程网格填满可用宽度，默认单列、中等屏两列、宽屏三列，卡片不再受共享库的固定最大宽度限制。每张卡片媒体区固定（164px），根圆角使用 `panel`，媒体圆角使用 `course-media`。真实照片继续覆盖媒体区；无图封面用公司标识与真实课程标题，内距（20px 20px 38px），顶部品牌橙线（3px）。
 
-表格单元格内距为（15px 16px），表头使用浅灰底。继续复用现有页面容器、表格和长页面的共享回到顶部控件。
+最大宽度（767px）时，左右留白采用 `mobile-inset`，面板内距（16px），统计双列，课程保持单列，导航间距（24px），品牌辅助名称隐藏，用户菜单缩为（48px）。桌面（1440px）与手机（390px）沿用同一配色；横向滚动只属于导航或表格等局部容器，不扩展为整页溢出。
+
+表格单元格内距仍为（15px 16px），表头冷灰底。长页面复用已有回到顶部控件。
 
 ## Elevation & Depth
 
-培训定制面板以纯色层次和细边框区分层级；`training.css` 没有新增面板阴影。共享按钮和输入框仍保留其既有轻阴影、焦点环和状态过渡。不要把“培训面板无新增阴影”扩大为对共享弹层、菜单或控件的全局禁令。
+墨色侧栏、墨色概览、白色面板与冷灰页面通过色块和细边框建立深度；培训定制面板不新增阴影。共享控件保留既有轻阴影与焦点环。
 
 ### Shadow Vocabulary
 
-- **共享按钮轻阴影**（`0 1px rgb(0 0 0 / 0.05)`）：现有 `shadow-2xs`，用于主要、次要和描边按钮。
-- **共享输入轻阴影**（`0 1px 2px 0 rgb(0 0 0 / 0.05)`）：现有 `shadow-xs`，用于输入框。
+- **共享按钮轻阴影**（`0 1px rgb(0 0 0 / 0.05)`）：既有 `shadow-2xs`。
+- **共享输入轻阴影**（`0 1px 2px 0 rgb(0 0 0 / 0.05)`）：既有 `shadow-xs`。
 
-共享控件默认状态过渡沿用当前安装的 Tailwind 主题（150ms，`cubic-bezier(0.4, 0, 0.2, 1)`）；培训定制样式没有新增动画令牌。
+共享控件默认过渡沿用当前安装的 Tailwind 主题（150ms，`cubic-bezier(0.4, 0, 0.2, 1)`）；课程查询没有新增动画。
 
 ## Shapes
 
-培训面板与品牌图标使用前置 `panel` 圆角。共享按钮、输入框和进度条继续使用共享库的 `md` 圆角；状态标签沿用共享库的完整圆角。面板边框为（1px），学员激活导航下划线为（2px）。
+培训面板和课程卡片使用 `panel` 圆角，课程媒体使用 `course-media`，企业顶部图标使用 `brand`，封面小图标圆角（6px）。按钮、输入与进度条继续使用共享库 `md` 圆角，状态标签沿用完整圆角。普通面板细边框（1px）；学习概览取消外边框，内部指标分隔线保留；学员选中导航底部线（2px）。
 
 ## Components
 
 ### Buttons
 
-复用 `@cio/ui/base/button` 的现有变体和尺寸。主要操作使用品牌主色，次操作使用中性 `secondary`，取消或边界操作使用 `outline`。图标按钮沿用 `secondary`。默认尺寸参考前置 token；小尺寸及对话框按钮保留现有组件约定。
+复用共享 `Button` 变体。普通主要操作为深橙白字，学习概览继续学习为品牌橙墨字，次操作为冷灰。课程卡片内按钮高（32px）、左右内距（10px）、文字（12px）。图标按钮沿用 `secondary`，其图标来自已有组件库。
 
 ### Inputs / Fields
 
-复用共享输入组件及应用已有字段封装，保留错误、禁用、占位文字和焦点状态。默认输入高度与内距见前置 token，手机文字与桌面文字继续采用组件已有响应规则。
+共享输入框保留现有错误、禁用、占位与焦点状态。课程查询绑定页面查询值，按去除首尾空白并忽略大小写的课程标题实时筛选；清空输入恢复原列表，未引入新的搜索框组件。
 
 ### Cards / Containers
 
-培训统计和任务面板使用 `training-panel`：白色表面、细边框和温和圆角。课程仍使用已有课程卡片；已有课程图片照常展示，无图片时使用浅橙色占位封面，不合成新的图片或装饰。
+普通培训面板为白色细边框。学员学习概览为墨色面板，姓名与指标使用浅白及纯白，次级说明使用浅蓝灰，内距（22px 24px），手机沿用面板内距覆写。真实成绩、培训次数与学习时长来自已有接口，加载、错误或缺失值按实现显示“—”。
+
+课程卡片保留真实封面图片。无图封面绑定完整课程标题和公司标识，不用截取两个字代替标题。根卡片填满网格列；媒体高（164px），标题区域最低高（48px），描述区域最低高（42px），悬停边框为（`#abb8c9`）。媒体高度在 `@layer utilities` 中覆写共享重要样式，这个来源约束需要在复用时保留。
 
 ### Chips
 
-使用现有 `Badge` 的 `default`、`secondary`、`outline` 及已有语义状态变体。状态不仅通过颜色区分，也保留文字标签。
+使用既有 `Badge` 变体和文字状态。课程类型、完成与未开始状态继续使用现有标签，不新增图标或状态类型。
 
 ### Navigation
 
-管理导航使用共享侧栏的折叠和手机抽屉行为，激活项为浅橙底、深橙字与加粗标签。学员顶部导航以橙色文字及底部线标示当前位置。两类导航保留 `aria-current`。
+管理侧栏根组件携带墨色主题，选中项墨蓝底、橙色字、字重（600）；菜单最低高度（44px）。`EnterpriseSidebar` 和共享 `OrgSidebar` 使用相同企业侧栏类，手机抽屉迁移后主题仍在。学员默认导航为辅助蓝灰，当前项和悬停为深橙；两类导航保留 `aria-current`。
+
+账号外观入口使用中文标签与可访问名称，选中模式通过 `aria-pressed` 标记，并显示主色轮廓（1px）。
 
 ### Tables / Progress
 
-管理表格使用白底、浅灰表头和浅橙行悬停，不将所有表格替换为卡片。学习进度复用共享 `Progress`，橙色指示条置于主色的淡色轨道上；未知进度显示“—”，不伪造零进度。
+管理表格白底、冷灰表头、浅橙行悬停。共享进度条的橙色指示条保留，课程卡片内轨道改用分隔线灰；其他进度条仍保留自己的现有变体。
 
-培训外壳的键盘焦点为主色轮廓（2px），外移（3px）；共享控件自身的焦点环仍保留。
+培训外壳键盘焦点为主色轮廓（2px），外移（3px）。第三方反馈 SDK 的默认悬浮入口与 whispers 已关闭，受信 CSS 域用于已有 SDK；它不是公司新增功能，也不组成设计系统组件。
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** 保留公司图标和已确认的企业橙色。
-- **Do** 沿用管理端侧栏与表格、学员端顶部导航与课程进度的已实现结构。
-- **Do** 优先使用中文翻译、现有共享组件和现有语义色变量。
-- **Do** 保留当前导航标记、键盘焦点和文字状态标签。
-- **Do** 用“—”表达未知业务数据。
+- **Do** 保留墨色侧栏、冷灰表面、白色面板与公司品牌橙的现有分工。
+- **Do** 在管理侧栏根组件保留主题，使手机 portal 中的导航继续使用同一配色。
+- **Do** 保留真实课程图片；无图时使用公司标识和真实完整标题。
+- **Do** 保留课程实时过滤、清空恢复与真实学习指标。
+- **Do** 在桌面与手机保留同一主题，并使用手机双列指标、单列课程。
 
 ### Don't:
 
-- **Don't** 将这份扫描文档当作新的组件、配色或页面改版提案。
-- **Don't** 新增未经确认的品牌颜色、字体或装饰组件。
-- **Don't** 默认显示已要求隐藏的 AI 入口。
-- **Don't** 用历史截图或本地展示数据证明生产上线或全量业务验收。
+- **Don't** 将这次配色强化变成新的概念、动画、图片或图标组件提案。
+- **Don't** 恢复大号两字课程封面或卡片固定窄宽度。
+- **Don't** 默认显示 AI 入口或第三方 SDK 默认悬浮入口。
+- **Don't** 将第三方 SDK 的配置与受信 CSS 域处理描述成公司新功能。

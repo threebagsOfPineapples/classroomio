@@ -5881,7 +5881,11 @@
       "platform_name": "Formation Zhizhen",
       "admin_portal": "Administration",
       "learner_portal": "Centre de formation",
-      "workbench": "Tableau de bord"
+      "workbench": "Tableau de bord",
+      "appearance": "Apparence",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
     }
   }
 }

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseCspDomains } from './csp';
+import { getCspDomains } from './csp-domains.js';
+
+it('allows the feedback SDK stylesheet only in the SaaS defaults', () => {
+  expect(getCspDomains(false, undefined).styleSrc).toContain('https://cdn.userjot.com');
+  expect(getCspDomains(true, undefined).styleSrc).not.toContain('https://cdn.userjot.com');
+});
 
 describe('parseCspDomains', () => {
   it('returns an empty list for missing or blank input', () => {

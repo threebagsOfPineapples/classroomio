@@ -21,7 +21,7 @@
     { key: 'enterprise.plans.title', href: '/admin/plans', icon: Calendar },
     { key: 'enterprise.assessment.title', href: '/admin/assessment', icon: ClipboardCheck },
     { key: 'enterprise.assessment.matrix', href: '/admin/matrix', icon: Grid },
-    { key: 'enterprise.assessment.subtitle', href: '/admin/statistics', icon: Chart }
+    { key: 'org_navigation.stats', href: '/admin/statistics', icon: Chart }
   ]);
   const currentView = $derived(page.url.searchParams.get('view'));
 </script>

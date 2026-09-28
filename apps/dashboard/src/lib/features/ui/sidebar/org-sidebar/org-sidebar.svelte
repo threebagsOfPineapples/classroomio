@@ -21,7 +21,7 @@
 {#if !isOrgLoaded}
   <SidebarSkeleton />
 {:else}
-  <Sidebar.Root collapsible="icon">
+  <Sidebar.Root collapsible="icon" class="enterprise-sidebar">
     <Sidebar.Header>
       <AppLogo />
     </Sidebar.Header>

@@ -5881,7 +5881,11 @@
       "platform_name": "Обучение Zhizhen",
       "admin_portal": "Управление",
       "learner_portal": "Учебный центр",
-      "workbench": "Рабочая панель"
+      "workbench": "Рабочая панель",
+      "appearance": "Оформление",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "system": "Системная"
     }
   }
 }

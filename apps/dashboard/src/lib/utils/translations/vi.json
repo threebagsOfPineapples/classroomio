@@ -5881,7 +5881,11 @@
       "platform_name": "Đào tạo Zhizhen",
       "admin_portal": "Quản trị",
       "learner_portal": "Trung tâm học tập",
-      "workbench": "Bảng công việc"
+      "workbench": "Bảng công việc",
+      "appearance": "Giao diện",
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Hệ thống"
     }
   }
 }

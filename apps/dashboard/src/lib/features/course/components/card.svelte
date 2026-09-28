@@ -3,7 +3,6 @@
   import type { Component, Snippet } from 'svelte';
   import { resolve } from '$app/paths';
   import { CourseCard } from '@cio/ui';
-  import BookOpenIcon from '@lucide/svelte/icons/book-open';
   import UserIcon from '@lucide/svelte/icons/user';
   import CircleDotIcon from '@lucide/svelte/icons/circle-dot';
   import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
@@ -17,7 +16,7 @@
   import pluralize from 'pluralize';
 
   import { Image } from '$features/ui';
-  import { t } from '$lib/utils/functions/translations';
+  import { t, locale } from '$lib/utils/functions/translations';
   import { calcCourseCost } from '$lib/utils/functions/course';
   import getCurrencyFormatter from '$lib/utils/functions/getCurrencyFormatter';
   import { calcCourseProgress, calcProgressRate } from '$features/course/utils/functions';
@@ -226,7 +225,7 @@
       return '';
     }
 
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat($locale === 'zh' ? 'zh-CN' : $locale, {
       dateStyle: 'medium'
     }).format(date);
   }
@@ -239,15 +238,18 @@
   {description}
   {typeBadge}
   {visibilityBadge}
-  class="group relative"
+  class="training-course-card group relative"
 >
   {#snippet media()}
     {#if bannerImage}
       <Image src={bannerImage} alt={title} className="w-full h-full rounded-sm object-cover" />
     {:else}
       <div class="course-cover" aria-hidden="true">
-        <BookOpenIcon class="size-8" />
-        <span>{title.trim().slice(0, 2)}</span>
+        <div class="course-cover-brand">
+          <img src="/enterprise-training-icon.png" alt="" width="24" height="24" />
+          <span>{$t('enterprise.interface.platform_name')}</span>
+        </div>
+        <span class="course-cover-title">{title}</span>
       </div>
     {/if}
   {/snippet}
@@ -279,7 +281,7 @@
               {totalLessons}
               {$t('courses.course_card.lessons_number')}
             </span>
-            &
+            ·
             <span>
               {pluralize($t('courses.course_card.exercise'), totalExercises, true)}
             </span>
