@@ -81,6 +81,7 @@ export interface QuestionnaireState {
   shuffleQuestions?: boolean;
   shuffleOptions?: boolean;
   showAnswers?: boolean;
+  answersVisible?: boolean;
   completionPolicy?: 'submitted' | 'passed';
   passThreshold?: number | null;
   slug?: string | null;

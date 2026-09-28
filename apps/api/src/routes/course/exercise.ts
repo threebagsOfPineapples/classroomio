@@ -148,7 +148,7 @@ export const exerciseRouter = new Hono()
           });
         }
 
-        const data = learnerExercise ? getLearnerExam(exercise) : exercise;
+        const data = learnerExercise ? getLearnerExam(exercise) : { ...exercise, answersVisible: true };
         return c.json({ success: true, data }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to fetch exercise');

@@ -2859,7 +2859,8 @@
         "label": "Navigation i kursusindhold",
         "previous": "Forrige",
         "next": "Næste"
-      }
+      },
+      "ungrouped": "Uden gruppe"
     },
     "navItems": {
       "nav_news_feed": "Nyhedsfeed",
@@ -2979,6 +2980,10 @@
       "description": "Du er ved at se, hvad en studerende vil se, når de tilmelder sig dette kursus",
       "copy_link": "Kopiér link",
       "go_to_lms": "Gå til LMS"
+    },
+    "loading": {
+      "title": "Indlæser kursus…",
+      "description": "Vent, mens vi indlæser dine kursusdata."
     }
   },
   "courses": {

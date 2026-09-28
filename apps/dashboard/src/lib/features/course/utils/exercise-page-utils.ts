@@ -114,6 +114,7 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     shuffleQuestions: exercise.shuffleQuestions,
     shuffleOptions: exercise.shuffleOptions,
     showAnswers: exercise.showAnswers,
+    answersVisible: exercise.answersVisible,
     completionPolicy: (exercise.completionPolicy as 'submitted' | 'passed' | undefined) ?? 'submitted',
     passThreshold: exercise.passThreshold ?? 100,
     slug: exercise.slug ?? ''

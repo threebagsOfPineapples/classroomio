@@ -7,7 +7,8 @@
   import { submissionApi, courseApi } from '$features/course/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { SubmissionIdData, SubmissionItem, SubmissionSection } from '$features/course/utils/types';
-  import { t } from '$lib/utils/functions/translations';
+  import { t, locale } from '$lib/utils/functions/translations';
+  import { formatSubmittedDate } from '$features/course/utils/submissions-utils';
 
   import { Chip } from '@cio/ui/custom/chip';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
@@ -24,6 +25,11 @@
   let { courseId, sections: initialSections = [], submissionIdData: initialSubmissionIdData = {} }: Props = $props();
 
   const flipDurationMs = 300;
+  const boardStatusKeys: Record<number, string> = {
+    [STATUS.SUBMITTED]: 'course.navItem.submissions.submission_status.submitted',
+    [STATUS.IN_PROGRESS]: 'course.navItem.submissions.submission_status.in_progress',
+    [STATUS.GRADED]: 'course.navItem.submissions.submission_status.graded'
+  };
   let sections = $state<SubmissionSection[]>([]);
   let submissionIdData = $state<Record<string, SubmissionIdData>>({});
   let isGradeWithAI = $state(false);
@@ -213,14 +219,14 @@
 />
 
 <div class="flex items-center overflow-x-scroll">
-  {#each sections as { id, title, items }, idx (id)}
+  {#each sections as { id, items }, idx (id)}
     <div
       class="section ui:bg-muted ui:border-border mr-3 h-80 overflow-hidden rounded-md border p-3"
       animate:flip={{ duration: flipDurationMs }}
     >
       <div class="mb-2 flex items-center">
         <Chip value={items.length} />
-        <p class="ml-2 dark:text-white">{title}</p>
+        <p class="ml-2 dark:text-white">{$t(boardStatusKeys[id])}</p>
       </div>
       <div
         class="content mb-3 overflow-y-auto pr-2"
@@ -243,9 +249,13 @@
               class="mb-2 flex w-full cursor-pointer items-center text-black"
               href={`${page.url.pathname}?submissionId=${item.id}`}
             >
-              <UserAvatar src={item.student.avatarUrl} alt="Student avatar" class="h-6 w-6" />
+              <UserAvatar
+                src={item.student?.avatarUrl}
+                alt={$t('course.navItem.submissions.grading_modal.student_avatar')}
+                class="h-6 w-6"
+              />
               <p class="ml-2 text-sm dark:text-white">
-                {item.student.username}
+                {item.student?.fullname ?? item.student?.username ?? '—'}
               </p>
             </a>
             <a class="ui:text-primary text-md" href="{page.url.pathname}?submissionId={item.id}">
@@ -266,7 +276,7 @@
               </p>
             {/if}
             <p class="text-xs text-gray-500 dark:text-white">
-              {item.submittedAt}
+              {formatSubmittedDate(item.submittedAt, $locale || 'zh')}
             </p>
           </div>
         {/each}

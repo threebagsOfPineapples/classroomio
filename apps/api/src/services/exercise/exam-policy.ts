@@ -7,6 +7,7 @@ import {
   startExamAttempt
 } from '@cio/db/queries/exercise';
 import type { TExamDraftSave } from '@cio/utils/validation/exercise';
+import { QUESTION_TYPE_ID_TO_KEY, QUESTION_TYPE_KEY } from '@cio/question-types';
 
 type Exam = Awaited<ReturnType<typeof getExercise>>;
 
@@ -70,22 +71,44 @@ export function assertExamOpen(exercise: Pick<Exam, 'isExam' | 'opensAt' | 'clos
   }
 }
 
-export function getLearnerExam(exercise: Exam, now = new Date()): Exam {
+export function getLearnerExam(exercise: Exam, now = new Date()) {
   const closed = exercise.closesAt && now.getTime() >= Date.parse(exercise.closesAt);
   if (closed && exercise.isComplete) {
-    return exercise.showAnswers ? exercise : redactExamAnswers(exercise);
+    const answersVisible = !!exercise.showAnswers;
+    const learnerExercise = answersVisible ? exercise : redactExamAnswers(exercise);
+    return { ...learnerExercise, answersVisible };
   }
 
   assertExamOpen(exercise, now);
-  return redactExamAnswers(exercise);
+  const learnerExercise = redactExamAnswers(exercise);
+  return { ...learnerExercise, answersVisible: false };
 }
 
 export function redactExamAnswers(exercise: Exam): Exam {
-  const redactQuestion = (question: NonNullable<Exam['questions']>[number]) => ({
-    ...question,
-    settings: {},
-    options: question.options.map((option) => ({ ...option, isCorrect: false, settings: {} }))
-  });
+  const redactQuestion = (question: NonNullable<Exam['questions']>[number]) => {
+    const settings = getExamTakeSettings(question.settings);
+    const questionType = QUESTION_TYPE_ID_TO_KEY[question.questionTypeId];
+    const options = question.options.map((option) => ({
+      ...option,
+      isCorrect: false,
+      settings: getExamTakeSettings(option.settings)
+    }));
+
+    if (questionType === QUESTION_TYPE_KEY.WORD_BANK) {
+      const correctAnswers = Array.isArray(question.settings?.correctAnswers) ? question.settings.correctAnswers : [];
+      const distractors = Array.isArray(question.settings?.distractors) ? question.settings.distractors : [];
+      settings.distractors = [...correctAnswers, ...distractors].map(String).sort();
+    }
+
+    if (questionType === QUESTION_TYPE_KEY.ORDERING) {
+      options.sort((first, second) => String(first.label).localeCompare(String(second.label)));
+      if (!options.length && Array.isArray(question.settings?.items)) {
+        settings.items = question.settings.items.map(String).sort();
+      }
+    }
+
+    return { ...question, settings, options };
+  };
 
   return {
     ...exercise,
@@ -95,4 +118,19 @@ export function redactExamAnswers(exercise: Exam): Exam {
       questions: section.questions.map(redactQuestion)
     }))
   };
+}
+
+function getExamTakeSettings(settings: Record<string, unknown> = {}) {
+  const allowedKeys = [
+    'instructions',
+    'template',
+    'minCharacters',
+    'maxCharacters',
+    'maxStars',
+    'acceptedTypes',
+    'maxSizeMb',
+    'maxDurationSeconds',
+    'imageUrl'
+  ];
+  return Object.fromEntries(Object.entries(settings).filter(([key]) => allowedKeys.includes(key)));
 }

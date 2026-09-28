@@ -20,14 +20,9 @@ export const isOrgStudent = derived(currentOrg, ($currentOrg) => {
   return $currentOrg.roleId === ROLE.STUDENT;
 });
 
-/**
- * The goal of this store is to determine whether we should display the app in student or admin/teacher mode.
- * Cloud: orgSite is always student (a teacher on an org subdomain sees the student view).
- * Self-hosted: derived from isOrgStudent (role-based).
- */
 export const isStudentExperience = derived([globalStore, isOrgStudent], ([$gs, $isStudent]) => {
   const isCloud = PUBLIC_IS_SELFHOSTED !== 'true';
-  if (isCloud) return $gs.isOrgSite;
+  if (isCloud) return $gs.isOrgSite || $isStudent === true;
 
   return $isStudent ?? false;
 });

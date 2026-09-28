@@ -8,6 +8,7 @@
   import { ContentType } from '@cio/utils/constants/content';
   import ContentActions from './content-actions.svelte';
   import ContentCountBadges from '../content-count-badges.svelte';
+  import { t } from '$lib/utils/functions/translations';
 
   type ContentSection = CourseContent['sections'][number];
 
@@ -67,7 +68,7 @@
   {:else}
     <div class="flex w-4/6 items-center gap-2">
       <CourseContentIcon type={ContentType.Section} size={16} />
-      <p class="text-sm">{section.title}</p>
+      <p class="text-sm">{section.id === 'ungrouped' ? $t('course.sidebar.ungrouped') : section.title}</p>
       <ContentCountBadges lessons={sectionCount.lessons} exercises={sectionCount.exercises} />
     </div>
   {/if}

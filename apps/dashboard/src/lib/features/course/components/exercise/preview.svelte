@@ -18,6 +18,7 @@
     /** Per-question scores (e.g. from `questionnaireMetaData.grades` or grading modal `questionAnswerByPoint`). */
     grades?: Record<string, number>;
     disableGrading?: boolean;
+    showCorrectAnswers?: boolean;
     isGradeWithAI?: boolean;
     isLoading?: boolean;
     /** Optional AI grading copy keyed by question id. */
@@ -30,6 +31,7 @@
     questionnaireMetaData: _questionnaireMetaData = {},
     grades = $bindable({}),
     disableGrading = true,
+    showCorrectAnswers = true,
     isGradeWithAI = $bindable(false),
     isLoading = $bindable(false),
     reasons = $bindable({})
@@ -101,7 +103,7 @@
 
         <ExerciseQuestion.QuestionList
           contract={{
-            mode: disableGrading ? 'review' : 'review',
+            mode: showCorrectAnswers ? 'review' : 'take',
             questions: sectionQuestionModels,
             answersByKey,
             labels: questionLabels,
@@ -114,7 +116,13 @@
   </div>
 {:else if disableGrading && !Object.keys(grades || {}).length}
   <ExerciseQuestion.QuestionList
-    contract={{ mode: 'review', questions: questionModels, answersByKey, labels: questionLabels, disabled: true }}
+    contract={{
+      mode: showCorrectAnswers ? 'review' : 'take',
+      questions: questionModels,
+      answersByKey,
+      labels: questionLabels,
+      disabled: true
+    }}
     itemClass="mb-4"
   />
 {:else if disableGrading && Object.keys(grades || {}).length}
@@ -128,7 +136,7 @@
 
       <ExerciseQuestion.QuestionRenderer
         contract={{
-          mode: 'review',
+          mode: showCorrectAnswers ? 'review' : 'take',
           question: questionModel,
           answer: getAnswerForQuestion(questionModel, index),
           labels: questionLabels,
@@ -148,7 +156,7 @@
 
       <ExerciseQuestion.QuestionRenderer
         contract={{
-          mode: 'review',
+          mode: showCorrectAnswers ? 'review' : 'take',
           question: questionModel,
           answer: getAnswerForQuestion(questionModel, index),
           labels: questionLabels,

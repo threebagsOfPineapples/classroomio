@@ -336,9 +336,13 @@ export async function getExercise(
     const questionsWithOptions = transformQuestions(questionsForTransform, allOptions, questionTypeMap);
     const sections = await getExerciseSectionsByExerciseId(exerciseId, dbClient);
     const sectionGroups = groupQuestionsBySections(sections, questionsWithOptions);
+    const opensAt = exercise.opensAt ? new Date(exercise.opensAt).toISOString() : null;
+    const closesAt = exercise.closesAt ? new Date(exercise.closesAt).toISOString() : null;
 
     return {
       ...exercise,
+      opensAt,
+      closesAt,
       isComplete,
       questions: questionsWithOptions,
       sections: sectionGroups.sections

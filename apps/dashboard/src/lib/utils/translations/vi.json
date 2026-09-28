@@ -2859,7 +2859,8 @@
         "label": "Điều hướng nội dung khóa học",
         "previous": "Trước",
         "next": "Tiếp"
-      }
+      },
+      "ungrouped": "Chưa phân nhóm"
     },
     "navItems": {
       "nav_news_feed": "Nguồn cấp tin tức",
@@ -2979,6 +2980,10 @@
       "description": "Bạn sắp biết học viên sẽ thấy gì khi họ đăng ký khóa học này",
       "copy_link": "Sao chép liên kết",
       "go_to_lms": "Đi tới LMS"
+    },
+    "loading": {
+      "title": "Đang tải khóa học…",
+      "description": "Vui lòng chờ trong khi tải dữ liệu khóa học."
     }
   },
   "courses": {

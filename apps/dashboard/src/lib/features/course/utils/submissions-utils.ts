@@ -37,10 +37,10 @@ export function getMaxPoints(questions: Array<{ points: number }>): number {
  * @param date ISO date string
  * @returns Formatted date string
  */
-export function formatSubmittedDate(date: string): string {
-  const d = new Date(date);
-  return new Intl.DateTimeFormat('en-US', {
+export function formatSubmittedDate(date: string, locale = 'zh'): string {
+  const submittedDate = new Date(date);
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'full',
     timeStyle: 'medium'
-  }).format(d);
+  }).format(submittedDate);
 }

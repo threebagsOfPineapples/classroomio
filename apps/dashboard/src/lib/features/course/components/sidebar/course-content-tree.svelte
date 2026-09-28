@@ -156,7 +156,9 @@
                 <Sidebar.MenuSubButton {...props} class="flex w-full items-center gap-2 font-medium">
                   <CourseContentIcon type={ContentType.Section} size={12} />
 
-                  <span class="flex-1 truncate">{section.title}</span>
+                  <span class="flex-1 truncate"
+                    >{section.id === 'ungrouped' ? $t('course.sidebar.ungrouped') : section.title}</span
+                  >
 
                   <div class="ml-auto flex items-center gap-1">
                     {#if isStudent}

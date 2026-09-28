@@ -2859,7 +2859,8 @@
         "label": "Navegación del contenido del curso",
         "previous": "Anterior",
         "next": "Siguiente"
-      }
+      },
+      "ungrouped": "Sin agrupar"
     },
     "navItems": {
       "nav_news_feed": "Noticias",
@@ -2979,6 +2980,10 @@
       "description": "Estás a punto de ver lo que verá un estudiante cuando se inscriba en este curso.",
       "copy_link": "Copiar enlace",
       "go_to_lms": "Ir a LMS"
+    },
+    "loading": {
+      "title": "Cargando curso…",
+      "description": "Espera mientras cargamos los datos del curso."
     }
   },
   "courses": {

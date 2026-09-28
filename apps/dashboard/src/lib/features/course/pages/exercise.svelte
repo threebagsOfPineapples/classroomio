@@ -31,7 +31,7 @@
   import { ZExerciseUpdate, type TExerciseUpdate } from '@cio/utils/validation/exercise';
   import { mapZodErrorsToTranslations } from '$lib/utils/validation';
   import { transformQuestionsToApiFormat } from '$features/course/components/exercise/functions';
-  import { isOrgStudent, isCourseLearnerView, isStudentExperience } from '$lib/utils/store/app';
+  import { isOrgStudent, isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
@@ -664,7 +664,6 @@
     });
   }
 
-  $inspect('$isStudentExperience', $isStudentExperience);
   $inspect('isExerciseAccessible', isExerciseAccessible);
   $inspect('isExerciseAccessible', isExerciseAccessible);
   $inspect('mySubmissions', mySubmissions);
@@ -826,7 +825,7 @@
   </Page.Action>
 </Page.Header>
 
-{#if !$isStudentExperience}
+{#if !$isCourseLearnerView}
   <PublicConversionBanner
     {exerciseId}
     onJumpToQuestion={() => {
@@ -841,7 +840,7 @@
 <Page.Body>
   {#snippet child()}
     <div class="overflow-x-hidden pb-20">
-      {#if $isStudentExperience}
+      {#if $isCourseLearnerView}
         {#if isExerciseAccessible}
           <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
         {:else}

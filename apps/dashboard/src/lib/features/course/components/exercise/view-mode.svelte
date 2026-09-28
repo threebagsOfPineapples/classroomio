@@ -726,7 +726,7 @@
   });
 
   $effect(() => {
-    if (!$questionnaire.isExam || !$questionnaireMetaData.examExpiresAt || $questionnaireMetaData.isFinished) return;
+    if (!$questionnaire.isExam) return;
 
     const timer = window.setInterval(() => {
       clockNow = Date.now();
@@ -751,6 +751,7 @@
     !!$questionnaire.allowMultipleAttempts &&
       (!$questionnaire.isExam ||
         (!!$questionnaire.allowMakeup &&
+          (!$questionnaire.closesAt || clockNow < Date.parse($questionnaire.closesAt)) &&
           ($questionnaireMetaData.examAttemptNumber ?? submissionList.length) < ($questionnaire.maxAttempts ?? 1)))
   );
 
@@ -1156,6 +1157,7 @@
       questionnaireMetaData={$questionnaireMetaData}
       grades={$questionnaireMetaData.grades}
       disableGrading={true}
+      showCorrectAnswers={!$questionnaire.isExam || !!$questionnaire.answersVisible}
     />
 
     <RoleBasedSecurity allowedRoles={[3]}>

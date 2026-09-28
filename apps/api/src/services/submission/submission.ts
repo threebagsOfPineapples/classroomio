@@ -445,10 +445,7 @@ export async function listSubmissionsForGrading(courseId: string) {
         ? new Date(submission.createdAt!).getTime() <= new Date(submission.exercise.dueBy).getTime()
         : true;
 
-      const submittedAt = new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'full',
-        timeStyle: 'medium'
-      }).format(new Date(submission.createdAt!));
+      const submittedAt = new Date(submission.createdAt!).toISOString();
 
       const questionKeyById: { [id: number]: string } = {};
       const questionTypeById: { [id: number]: number } = {};
