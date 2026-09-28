@@ -5876,6 +5876,12 @@
       "pending_assignments": "Tarefas aguardando avaliação",
       "pending_written": "Respostas escritas aguardando avaliação",
       "instructor_only": "Requer acesso de instrutor do curso"
+    },
+    "interface": {
+      "platform_name": "Formação Zhizhen",
+      "admin_portal": "Administração",
+      "learner_portal": "Centro de aprendizagem",
+      "workbench": "Painel de trabalho"
     }
   }
 }

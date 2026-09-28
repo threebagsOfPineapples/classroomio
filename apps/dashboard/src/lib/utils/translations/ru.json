@@ -5876,6 +5876,12 @@
       "pending_assignments": "Задания на проверке",
       "pending_written": "Письменные ответы на проверке",
       "instructor_only": "Требуется доступ преподавателя курса"
+    },
+    "interface": {
+      "platform_name": "Обучение Zhizhen",
+      "admin_portal": "Управление",
+      "learner_portal": "Учебный центр",
+      "workbench": "Рабочая панель"
     }
   }
 }

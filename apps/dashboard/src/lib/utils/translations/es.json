@@ -5876,6 +5876,12 @@
       "pending_assignments": "Tareas pendientes de calificación",
       "pending_written": "Respuestas escritas pendientes de calificación",
       "instructor_only": "Se requiere acceso como instructor del curso"
+    },
+    "interface": {
+      "platform_name": "Formación Zhizhen",
+      "admin_portal": "Administración",
+      "learner_portal": "Centro de aprendizaje",
+      "workbench": "Panel de trabajo"
     }
   }
 }

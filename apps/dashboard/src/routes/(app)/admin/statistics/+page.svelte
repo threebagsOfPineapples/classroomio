@@ -15,7 +15,6 @@
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { Progress } from '@cio/ui/base/progress';
-  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
   import type { ChartConfig } from '@cio/ui/base/chart/types';
 
@@ -107,7 +106,7 @@
   <title>{$t('enterprise.assessment.subtitle')}</title>
 </svelte:head>
 
-<Page.Root role="main" class="mx-auto max-w-6xl px-6">
+<Page.Root class="mx-auto max-w-6xl px-6">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{$t('enterprise.assessment.subtitle')}</Page.Title>
@@ -266,5 +265,3 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
-
-<ScrollToTop label={$t('common.scroll_to_top')} />

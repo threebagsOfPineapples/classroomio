@@ -41,7 +41,7 @@
   <AddOrgModal />
 {/if}
 
-<Sidebar.Provider>
+<Sidebar.Provider class="training-shell training-shell--admin">
   {#if isSettingsRoute}
     <SettingsSidebar />
   {:else}
@@ -57,7 +57,7 @@
       <AppHeader />
     {/if}
 
-    <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4">
+    <div class="training-page-container">
       {#if data.orgName === '*'}
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
           <Skeleton class="aspect-video rounded-xl" />

@@ -5,7 +5,6 @@
   import { trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
-  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
 
   const assessmentApi = new AssessmentApi();
@@ -31,7 +30,7 @@
   <title>{$t('enterprise.assessment.matrix')}</title>
 </svelte:head>
 
-<Page.Root role="main" class="mx-auto max-w-7xl px-6">
+<Page.Root class="mx-auto max-w-7xl px-6">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{$t('enterprise.assessment.matrix')}</Page.Title>
@@ -102,5 +101,3 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
-
-<ScrollToTop label={$t('common.scroll_to_top')} />

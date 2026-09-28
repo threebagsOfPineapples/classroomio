@@ -242,6 +242,7 @@
 
 <Sidebar.Provider
   bind:ref={sidebarProviderElement}
+  class="training-shell training-shell--course"
   data-sveltekit-preload-data="off"
   style={`--sidebar-width: ${sidebarWidth}px; --side-panel-width: ${sidePanel.width}px;`}
 >

@@ -1,20 +1,17 @@
 <script lang="ts">
   import * as Sidebar from '@cio/ui/base/sidebar';
-  import LmsHeader from '$features/ui/navigation/lms-header.svelte';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
+  import EnterpriseSidebar from '$features/ui/navigation/enterprise-sidebar.svelte';
+  import AppHeader from '$features/ui/navigation/app-header.svelte';
   import { t } from '$lib/utils/functions/translations';
 
-  interface Props {
-    children?: import('svelte').Snippet;
-  }
-
-  let { children }: Props = $props();
+  let { children } = $props();
 </script>
 
-<Sidebar.Provider class="training-shell training-shell--learner">
+<Sidebar.Provider class="training-shell training-shell--admin" style="--sidebar-width: 14.5rem;">
+  <EnterpriseSidebar />
   <Sidebar.Inset>
-    <LmsHeader />
-
+    <AppHeader enterprise />
     <div class="training-page-container">
       {@render children?.()}
     </div>

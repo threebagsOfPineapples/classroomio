@@ -14,6 +14,9 @@
   import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
   import AppSetup from './app-setup.svelte';
   import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
+  import { t } from '$lib/utils/functions/translations';
+
+  let { enterprise = false }: { enterprise?: boolean } = $props();
 
   const siteName = $derived($currentOrg.siteName);
   const notificationCount = $derived(notificationsApi.unreadCount);
@@ -45,14 +48,22 @@
       <Separator orientation="vertical" />
     </div>
 
-    <AppBreadcrumbs />
+    {#if enterprise}
+      <span class="text-sm font-medium">{$t('enterprise.interface.admin_portal')}</span>
+    {:else}
+      <AppBreadcrumbs />
+    {/if}
 
     <span class="grow"></span>
 
-    <AppSetup />
-    <VisitOrgSiteBtn variant="outline" labelKey="dashboard.open_academy" />
+    {#if enterprise}
+      <Button href="/lms" variant="outline" size="sm">{$t('enterprise.interface.learner_portal')}</Button>
+    {:else}
+      <AppSetup />
+      <VisitOrgSiteBtn variant="outline" labelKey="dashboard.open_academy" />
+    {/if}
 
-    <Search />
+    <div class="hidden sm:block"><Search /></div>
 
     <div class="relative">
       <Popover.Root
@@ -62,12 +73,18 @@
       >
         <Popover.Trigger>
           {#snippet child({ props })}
-            <Button {...props} variant="secondary" size="icon" testId="app-notifications-trigger">
+            <Button
+              {...props}
+              variant="secondary"
+              size="icon"
+              testId="app-notifications-trigger"
+              aria-label={$t('settings.tabs.notifications_tab')}
+            >
               <BellIcon class="custom rounded-full" />
             </Button>
           {/snippet}
         </Popover.Trigger>
-        <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[460px]">
+        <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[min(460px,calc(100vw-2rem))]">
           <NotificationsPanel />
         </Popover.Content>
       </Popover.Root>

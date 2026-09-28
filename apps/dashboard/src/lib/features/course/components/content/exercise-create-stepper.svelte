@@ -5,6 +5,7 @@
   import { Label } from '@cio/ui/base/label';
   import { RadioOptionCardGroup } from '@cio/ui/custom/radio-option-card';
   import { t } from '$lib/utils/functions/translations';
+  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { exerciseTemplateApi } from '$features/course/api/exercise-template.svelte';
   import { snackbar } from '$features/ui/snackbar/store';
   import { Confetti, ComingSoon } from '$features/ui';
@@ -54,13 +55,15 @@
   ];
 
   const radioOptions = $derived(
-    options.map((o) => ({
-      id: o.id,
-      title: o.title,
-      description: o.description,
-      value: String(o.type),
-      disabled: o.isDisabled
-    }))
+    options
+      .filter((option) => IS_AI_ENABLED || option.type !== EXERCISE_CREATE_TYPE.AI)
+      .map((o) => ({
+        id: o.id,
+        title: o.title,
+        description: o.description,
+        value: String(o.type),
+        disabled: o.isDisabled
+      }))
   );
 
   const tags = Object.values(EXERCISE_TEMPLATE_TAGS);

@@ -3,6 +3,7 @@
 @import 'tailwindcss';
 
 @import '@cio/ui/output.css';
+@import './training.css';
 
 @source '../../packages/ui/src/custom/animation/**/*.svelte';
 

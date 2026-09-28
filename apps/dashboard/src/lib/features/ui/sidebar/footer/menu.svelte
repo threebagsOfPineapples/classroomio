@@ -25,6 +25,7 @@
   const DOCS_URL = 'https://classroomio.com/docs';
 
   const sidebar = useSidebar();
+  let { compact = false }: { compact?: boolean } = $props();
 
   function getRoleLabel(roleId: number): string {
     if (roleId === ROLE.ADMIN) return $t('course.navItem.people.roles.admin');
@@ -87,6 +88,7 @@
           <Sidebar.MenuButton
             size="lg"
             data-testid="app-user-menu-trigger"
+            aria-label={$profile.fullname}
             class="ui:data-[state=open]:bg-sidebar-accent ui:data-[state=open]:text-sidebar-accent-foreground"
             {...props}
           >
@@ -99,7 +101,7 @@
       <!-- DROPDOWN CONTENT -->
       <DropdownMenu.Content
         class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
-        side={sidebar.isMobile ? 'bottom' : 'right'}
+        side={compact || sidebar.isMobile ? 'bottom' : 'right'}
         align="end"
         sideOffset={4}
       >

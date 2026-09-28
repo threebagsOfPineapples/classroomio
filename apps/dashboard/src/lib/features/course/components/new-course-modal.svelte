@@ -12,6 +12,7 @@
   import * as Field from '@cio/ui/base/field';
   import { RadioOptionCardGroup } from '@cio/ui/custom/radio-option-card';
   import { t } from '$lib/utils/functions/translations';
+  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import type { TCourseType } from '@cio/db/types';
   import { courseApi } from '../api';
 
@@ -133,7 +134,7 @@
           className="mb-4"
           isRequired={true}
           errorMessage={courseApi.errors.description}
-          isAIEnabled={true}
+          isAIEnabled={IS_AI_ENABLED}
           initAIPrompt="Write a 30 word description for a course titled: {$createCourseModal.title}"
         />
 

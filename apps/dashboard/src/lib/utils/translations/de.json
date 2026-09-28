@@ -5876,6 +5876,12 @@
       "pending_assignments": "Aufgaben zur Bewertung",
       "pending_written": "Schriftliche Antworten zur Bewertung",
       "instructor_only": "Zugriff als Kursdozent erforderlich"
+    },
+    "interface": {
+      "platform_name": "Zhizhen Schulung",
+      "admin_portal": "Verwaltung",
+      "learner_portal": "Lernzentrum",
+      "workbench": "Arbeitsübersicht"
     }
   }
 }

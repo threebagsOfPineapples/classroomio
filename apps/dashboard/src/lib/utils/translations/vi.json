@@ -5876,6 +5876,12 @@
       "pending_assignments": "Bài tập chờ chấm điểm",
       "pending_written": "Câu trả lời tự luận chờ chấm điểm",
       "instructor_only": "Cần quyền giảng viên khóa học"
+    },
+    "interface": {
+      "platform_name": "Đào tạo Zhizhen",
+      "admin_portal": "Quản trị",
+      "learner_portal": "Trung tâm học tập",
+      "workbench": "Bảng công việc"
     }
   }
 }

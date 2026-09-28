@@ -5,6 +5,7 @@
   import TrashIcon from '@lucide/svelte/icons/trash';
 
   import { t } from '$lib/utils/functions/translations';
+  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { uploadImage } from '$lib/utils/services/upload';
 
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -60,7 +61,7 @@
     placeholder=""
     bind:value={review.description}
     errorMessage={errors.description}
-    isAIEnabled={true}
+    isAIEnabled={IS_AI_ENABLED}
     initAIPrompt="Generate a 20 word review from a student saying good things about me teaching"
     aiAlignPopover="end"
   />

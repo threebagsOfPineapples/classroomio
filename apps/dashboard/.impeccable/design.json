@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-28T03:40:09Z",
+  "title": "Design System: 至臻企业培训平台",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "企业深橙"
+      },
+      "sidebar-accent-foreground": {
+        "role": "primary",
+        "displayName": "橙色深文字"
+      },
+      "training-accent": {
+        "role": "primary",
+        "displayName": "橙色浅底"
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "主操作白字"
+      },
+      "training-ground": {
+        "role": "neutral",
+        "displayName": "页面浅灰"
+      },
+      "training-paper": {
+        "role": "neutral",
+        "displayName": "内容白色"
+      },
+      "training-line": {
+        "role": "neutral",
+        "displayName": "细分隔灰"
+      },
+      "training-muted": {
+        "role": "neutral",
+        "displayName": "辅助文字灰"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "正文深色"
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "次操作中性灰"
+      },
+      "secondary-foreground": {
+        "role": "neutral",
+        "displayName": "次操作文字"
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "输入边框灰"
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "页面标题",
+        "purpose": "培训页面主标题。"
+      },
+      "body": {
+        "displayName": "辅助正文",
+        "purpose": "培训页面副标题，其他正文保留共享组件字号。"
+      },
+      "label": {
+        "displayName": "导航标签",
+        "purpose": "管理侧栏和学员顶部导航。"
+      },
+      "metric": {
+        "displayName": "统计数字",
+        "purpose": "工作台统计，采用等宽数字排列。"
+      }
+    },
+    "breakpoints": [
+      {
+        "name": "training-mobile-max",
+        "value": "767px"
+      },
+      {
+        "name": "shared-input-desktop-min",
+        "value": "768px"
+      }
+    ],
+    "shadows": [
+      {
+        "name": "shadow-2xs",
+        "value": "0 1px rgb(0 0 0 / 0.05)",
+        "purpose": "共享按钮的既有轻阴影，源自当前安装的 Tailwind 主题。"
+      },
+      {
+        "name": "shadow-xs",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "共享输入框的既有轻阴影，源自当前安装的 Tailwind 主题。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "default-transition-duration",
+        "value": "150ms",
+        "purpose": "当前共享库 Tailwind 主题中的默认状态过渡时长。"
+      },
+      {
+        "name": "default-transition-timing-function",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "当前共享库 Tailwind 主题中的默认状态过渡曲线。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "主要操作",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "共享 Button 的默认链接变体，使用已确认的企业主色。",
+      "html": "<a class=\"ds-primary\" href=\"#primary\">查看课程</a>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;background:var(--primary,#b45309);color:var(--primary-foreground,#fff);border-radius:calc(var(--radius,0.625rem) - 2px);padding:8px 16px;height:36px;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-2xs,0 1px rgb(0 0 0 / 0.05))}.ds-primary:hover{background:color-mix(in oklab,var(--primary,#b45309) 90%,transparent)}.ds-primary:focus-visible{outline:2px solid var(--primary,#b45309);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#b45309) 50%,transparent)}"
+    },
+    {
+      "name": "次要操作",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "共享 Button 的 secondary 链接变体，保留中性表面。",
+      "html": "<a class=\"ds-secondary\" href=\"#secondary\">查看详情</a>",
+      "css": ".ds-secondary{display:inline-flex;align-items:center;justify-content:center;background:var(--secondary,oklch(0.967 0.001 286.375));color:var(--secondary-foreground,oklch(0.21 0.006 285.885));border-radius:calc(var(--radius,0.625rem) - 2px);padding:8px 16px;height:36px;font-size:14px;font-weight:500;text-decoration:none;transition:all 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-2xs,0 1px rgb(0 0 0 / 0.05))}.ds-secondary:hover{background:color-mix(in oklab,var(--secondary,oklch(0.967 0.001 286.375)) 80%,transparent)}.ds-secondary:focus-visible{outline:2px solid var(--primary,#b45309);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#b45309) 50%,transparent)}"
+    },
+    {
+      "name": "文本输入",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "共享 Input 的普通文本输入，保留已有焦点、错误和禁用状态。",
+      "html": "<input class=\"ds-input\" type=\"text\" aria-label=\"课程名称\" placeholder=\"课程名称\" />",
+      "css": ".ds-input{height:36px;min-width:0;border:1px solid var(--input,oklch(0.922 0 0));background:var(--background,oklch(1 0 0));color:var(--foreground,oklch(0.145 0 0));border-radius:calc(var(--radius,0.625rem) - 2px);padding:4px 12px;font-size:16px;transition:color 150ms cubic-bezier(0.4,0,0.2,1),box-shadow 150ms cubic-bezier(0.4,0,0.2,1);box-shadow:var(--ui-shadow-xs,0 1px 2px 0 rgb(0 0 0 / 0.05))}.ds-input::placeholder{color:var(--muted-foreground,oklch(0.556 0 0))}.ds-input:focus-visible{border-color:var(--ring,#b45309);outline:2px solid var(--primary,#b45309);outline-offset:3px;box-shadow:0 0 0 3px color-mix(in oklab,var(--ring,#b45309) 50%,transparent)}.ds-input[aria-invalid=true]{border-color:var(--destructive,oklch(0.577 0.245 27.325))}.ds-input:disabled{cursor:not-allowed;opacity:.5}@media(min-width:768px){.ds-input{font-size:14px}}"
+    },
+    {
+      "name": "培训面板",
+      "kind": "card",
+      "refersTo": "training-panel",
+      "description": "training-panel 的现有表面与内距，用于统计和培训任务。",
+      "html": "<section class=\"ds-panel\"><strong>培训任务</strong><p>查看已分配的培训计划</p></section>",
+      "css": ".ds-panel{padding:24px;background:var(--training-paper,#ffffff);border:1px solid var(--training-line,#e8ebef);border-radius:10px;color:var(--foreground,oklch(0.145 0 0));font-family:\"Microsoft YaHei\",\"PingFang SC\",sans-serif}.ds-panel p{color:var(--training-muted,#626b78)}@media(max-width:767px){.ds-panel{padding:16px}}"
+    },
+    {
+      "name": "管理导航选中项",
+      "kind": "nav",
+      "refersTo": "admin-navigation-active",
+      "description": "管理侧栏现有选中状态，浅橙底、深橙文字和加粗标签。",
+      "html": "<nav aria-label=\"管理导航\"><a class=\"ds-admin-nav\" href=\"#admin\" aria-current=\"page\">培训工作台</a></nav>",
+      "css": ".ds-admin-nav{display:flex;align-items:center;min-height:40px;padding:8px;font-size:14px;font-weight:600;border-radius:calc(var(--radius,0.625rem) - 2px);background:var(--sidebar-accent,#fff4e6);color:var(--sidebar-accent-foreground,#92400e);text-decoration:none}.ds-admin-nav:hover{background:var(--sidebar-accent,#fff4e6)}.ds-admin-nav:focus-visible{outline:2px solid var(--primary,#b45309);outline-offset:3px}"
+    },
+    {
+      "name": "学员顶部导航",
+      "kind": "nav",
+      "refersTo": "learner-navigation-active",
+      "description": "学员导航现有橙色文字和底部线，可水平滚动。",
+      "html": "<nav class=\"ds-learner-nav\" aria-label=\"学员导航\"><a href=\"#courses\" aria-current=\"page\">课程中心</a><a href=\"#training\">我的培训</a></nav>",
+      "css": ".ds-learner-nav{display:flex;gap:32px;overflow-x:auto;scrollbar-width:none}.ds-learner-nav a{flex-shrink:0;padding:14px 0;border-bottom:2px solid transparent;font-size:14px;color:var(--foreground,oklch(0.145 0 0));text-decoration:none;white-space:nowrap}.ds-learner-nav a:hover,.ds-learner-nav a[aria-current=page]{color:var(--primary,#b45309)}.ds-learner-nav a[aria-current=page]{border-bottom-color:var(--primary,#b45309);font-weight:600}.ds-learner-nav a:focus-visible{outline:2px solid var(--primary,#b45309);outline-offset:3px}@media(max-width:767px){.ds-learner-nav{gap:24px}}"
+    },
+    {
+      "name": "中性状态标签",
+      "kind": "chip",
+      "description": "共享 Badge 的 outline 变体，保留文字标签。",
+      "html": "<span class=\"ds-badge\">待完成</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;justify-content:center;width:fit-content;gap:4px;padding:2px 8px;border:1px solid var(--border,oklch(0.922 0 0));border-radius:9999px;color:var(--foreground,oklch(0.145 0 0));font-size:12px;font-weight:500;white-space:nowrap;transition:color 150ms cubic-bezier(0.4,0,0.2,1),box-shadow 150ms cubic-bezier(0.4,0,0.2,1)}.ds-badge:focus-visible{outline:2px solid var(--primary,#b45309);outline-offset:3px}"
+    },
+    {
+      "name": "学习进度",
+      "kind": "custom",
+      "refersTo": "progress",
+      "description": "共享 Progress 默认变体；示例值只演示视觉，不代表业务数据。",
+      "html": "<div class=\"ds-progress\" role=\"progressbar\" aria-label=\"示例学习进度\" aria-valuenow=\"60\" aria-valuemin=\"0\" aria-valuemax=\"100\"><div class=\"ds-progress-indicator\"></div></div>",
+      "css": ".ds-progress{position:relative;width:100%;height:8px;overflow:hidden;border-radius:calc(var(--radius,0.625rem) - 2px);background:color-mix(in oklab,var(--primary,#b45309) 20%,transparent)}.ds-progress-indicator{height:100%;width:100%;background:var(--primary,#b45309);transform:translateX(-40%);transition:all 150ms cubic-bezier(0.4,0,0.2,1)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "清晰的企业培训工作台",
+    "overview": "这份文档记录当前已实现的培训界面。管理端沿用用户确认的 PlayEdu 参考：左侧管理导航、白色顶部栏和信息明确的表格。学员端使用顶部导航，以课程、培训任务和进度为主。企业名称为河南至臻数字生活科技有限公司，品牌图标沿用 `/enterprise-training-icon.png`。\n\n公司图标的橙色是已确认的主色。白色内容面板与浅灰页面底色承载主要信息，橙色标识操作、选中位置和学习进度。中文优先，AI 功能默认隐藏。布局和交互继续使用现有 `@cio/ui` 组件。",
+    "keyCharacteristics": [
+      "企业橙色、白色内容面板与浅灰背景。",
+      "管理端侧栏与表格，学员端顶部导航与课程进度。",
+      "中文信息层级、清晰焦点和可辨识的当前导航位置。",
+      "实际样式来源为 `src/training.css`；共享组件来源为 `../../packages/ui/src`。"
+    ],
+    "rules": [
+      {
+        "name": "The Brand Color Rule",
+        "body": "公司橙色用于培训界面的主操作与导航状态；共享组件通过现有语义色变量接收品牌色。",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** 保留公司图标和已确认的企业橙色。",
+      "**Do** 沿用管理端侧栏与表格、学员端顶部导航与课程进度的已实现结构。",
+      "**Do** 优先使用中文翻译、现有共享组件和现有语义色变量。",
+      "**Do** 保留当前导航标记、键盘焦点和文字状态标签。",
+      "**Do** 用“—”表达未知业务数据。"
+    ],
+    "donts": [
+      "**Don't** 将这份扫描文档当作新的组件、配色或页面改版提案。",
+      "**Don't** 新增未经确认的品牌颜色、字体或装饰组件。",
+      "**Don't** 默认显示已要求隐藏的 AI 入口。",
+      "**Don't** 用历史截图或本地展示数据证明生产上线或全量业务验收。"
+    ]
+  }
+}

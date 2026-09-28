@@ -1086,6 +1086,9 @@
       },
       "settings": {
         "heading": "课程设置",
+        "self_paced": "自主学习",
+        "live_class": "直播课程",
+        "compliance": "合规培训",
         "slug": {
           "description": "公开链接的最后一段，只能使用字母、数字和连字符。",
           "label": "链接标识"
@@ -1467,6 +1470,12 @@
       "status_in_progress": "进行中",
       "status_completed": "已完成",
       "status_cancelled": "已取消"
+    },
+    "interface": {
+      "platform_name": "至臻企业培训",
+      "admin_portal": "管理后台",
+      "learner_portal": "学习中心",
+      "workbench": "工作台"
     }
   },
   "schedule": {

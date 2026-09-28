@@ -5876,6 +5876,12 @@
       "pending_assignments": "Zadania oczekujące na ocenę",
       "pending_written": "Odpowiedzi pisemne oczekujące na ocenę",
       "instructor_only": "Wymagany dostęp instruktora kursu"
+    },
+    "interface": {
+      "platform_name": "Szkolenia Zhizhen",
+      "admin_portal": "Administracja",
+      "learner_portal": "Centrum nauki",
+      "workbench": "Panel pracy"
     }
   }
 }

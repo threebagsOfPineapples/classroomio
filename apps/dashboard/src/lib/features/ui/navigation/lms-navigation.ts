@@ -119,15 +119,15 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/lms/settings(/.*)?$',
     items: [
       {
-        titleKey: 'Profile',
+        titleKey: 'settings.tabs.profile_tab',
         path: '/settings'
       },
       {
-        titleKey: 'Notifications',
+        titleKey: 'settings.tabs.notifications_tab',
         path: '/settings/notifications'
       },
       {
-        titleKey: 'Integrations',
+        titleKey: 'settings.tabs.integrations_tab',
         path: '/settings/integrations'
       }
     ],
@@ -179,7 +179,7 @@ export function getLmsNavigationItems(
     // Handle nested items (like settings sub-items)
     if (config.items) {
       item.items = config.items.map((subConfig) => ({
-        title: t(`settings.tabs.${subConfig.titleKey.toLowerCase()}_tab`) || subConfig.titleKey,
+        title: t(subConfig.titleKey),
         url: `/lms${subConfig.path}`,
         path: subConfig.path
       }));

@@ -1,14 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Separator } from '@cio/ui/base/separator';
-  import * as Sidebar from '@cio/ui/base/sidebar';
+  import { page } from '$app/state';
   import BellIcon from '@lucide/svelte/icons/bell';
   import { Button } from '@cio/ui/base/button';
   import * as Popover from '@cio/ui/base/popover';
   import Search from '../search.svelte';
-  import LmsBreadcrumbs from './lms-breadcrumbs.svelte';
-  import VisitOrgSiteBtn from '../visit-org-site-btn.svelte';
-  import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
+  import { getLmsNavigationItems } from './lms-navigation';
+  import { SidebarFooterMenu } from '../sidebar/footer';
+  import { t } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { notificationsApi } from '$features/notifications/api/notifications.svelte';
@@ -20,6 +19,7 @@
 
   let { hideSearch = false }: Props = $props();
   const notificationCount = $derived(notificationsApi.unreadCount);
+  const navigation = $derived(getLmsNavigationItems($currentOrg, $t, page.url.pathname).filter((item) => !item.items));
 
   $effect(() => {
     if (!$currentOrg.id || !$profile.id) return;
@@ -32,24 +32,19 @@
   });
 </script>
 
-<header
-  class="ui:border-border ui:bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
->
-  <div class="flex w-full items-center gap-2 px-4">
-    <Sidebar.Trigger />
-
-    <div class="h-4 w-2">
-      <Separator orientation="vertical" />
-    </div>
-
-    <LmsBreadcrumbs />
-
+<header class="learner-header">
+  <div class="learner-toolbar">
+    <a href="/lms" class="enterprise-brand">
+      <img src="/enterprise-training-icon.png" alt="" width="40" height="40" />
+      <span>
+        <strong>{$t('enterprise.interface.platform_name')}</strong>
+        <small>{$t('enterprise.company_name')}</small>
+      </span>
+    </a>
     <span class="grow"></span>
 
     {#if !hideSearch}
-      <VisitOrgSiteBtn variant="outline" labelKey="lms.view_landing_page" pathname="/" icon={ExternalLinkIcon} />
-
-      <Search scope="lms" />
+      <div class="hidden lg:block"><Search scope="lms" /></div>
 
       <div class="relative">
         <Popover.Root
@@ -59,12 +54,18 @@
         >
           <Popover.Trigger>
             {#snippet child({ props })}
-              <Button {...props} variant="secondary" size="icon" testId="lms-notifications-trigger">
+              <Button
+                {...props}
+                variant="secondary"
+                size="icon"
+                testId="lms-notifications-trigger"
+                aria-label={$t('settings.tabs.notifications_tab')}
+              >
                 <BellIcon class="custom rounded-full" />
               </Button>
             {/snippet}
           </Popover.Trigger>
-          <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[460px]">
+          <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[min(460px,calc(100vw-2rem))]">
             <NotificationsPanel />
           </Popover.Content>
         </Popover.Root>
@@ -78,5 +79,13 @@
         {/if}
       </div>
     {/if}
+    <div class="learner-user-menu"><SidebarFooterMenu compact /></div>
   </div>
+  <nav class="learner-navigation" aria-label={$t('enterprise.interface.learner_portal')}>
+    {#each navigation as item (item.url)}
+      <a href={item.url} class:active={item.isActive} aria-current={item.isActive ? 'page' : undefined}>
+        {item.title}
+      </a>
+    {/each}
+  </nav>
 </header>

@@ -242,7 +242,7 @@
   <title>{$t('enterprise.plans.title')}</title>
 </svelte:head>
 
-<Page.Root role="main" class="mx-auto max-w-6xl px-6">
+<Page.Root class="mx-auto max-w-6xl px-6">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{$t('enterprise.plans.title')}</Page.Title>

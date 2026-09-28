@@ -8,6 +8,7 @@
   import type { Content, TiptapEditor } from '@cio/ui/custom/editor';
   import type { TLocale } from '@cio/db/types';
   import AIButton from '$features/course/components/lesson/ai-button.svelte';
+  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import QuoteSelection from '$features/course/components/lesson/note/quote-selection.svelte';
   import type { Writable } from 'svelte/store';
   import { saveDraft } from '$features/course/utils/lesson-draft';
@@ -56,11 +57,11 @@
 </script>
 
 {#if mode === MODES.edit}
-  <!-- AI Button -->
-  <div class="flex justify-end gap-1">
-    <AIButton {isLoading} {callAI} />
-  </div>
-  <!-- End AI Button -->
+  {#if IS_AI_ENABLED}
+    <div class="flex justify-end gap-1">
+      <AIButton {isLoading} {callAI} />
+    </div>
+  {/if}
 
   <div class="mt-5 h-[60vh]">
     <TextEditor

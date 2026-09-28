@@ -5876,6 +5876,12 @@
       "pending_assignments": "मूल्यांकन की प्रतीक्षा में असाइनमेंट",
       "pending_written": "मूल्यांकन की प्रतीक्षा में लिखित उत्तर",
       "instructor_only": "पाठ्यक्रम प्रशिक्षक की पहुँच आवश्यक"
+    },
+    "interface": {
+      "platform_name": "झिझेन प्रशिक्षण",
+      "admin_portal": "प्रशासन",
+      "learner_portal": "शिक्षण केंद्र",
+      "workbench": "कार्य पटल"
     }
   }
 }

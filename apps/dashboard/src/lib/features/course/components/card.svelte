@@ -2,7 +2,8 @@
   import { Badge } from '@cio/ui/base/badge';
   import type { Component, Snippet } from 'svelte';
   import { resolve } from '$app/paths';
-  import { CourseCard, DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
+  import { CourseCard } from '@cio/ui';
+  import BookOpenIcon from '@lucide/svelte/icons/book-open';
   import UserIcon from '@lucide/svelte/icons/user';
   import CircleDotIcon from '@lucide/svelte/icons/circle-dot';
   import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
@@ -66,7 +67,7 @@
   } = $derived({
     id: course.id,
     slug: course.slug,
-    bannerImage: course.logo || DEFAULT_COURSE_BANNER_IMAGE,
+    bannerImage: course.logo,
     title: course.title,
     type: course.type,
     description: course.description,
@@ -115,7 +116,7 @@
       icon: Component;
       iconStyle?: string;
     }
-  > = {
+  > = $derived({
     ['LIVE_CLASS']: {
       style: '',
       label: $t('course.navItem.settings.live_class'),
@@ -139,7 +140,7 @@
       label: $t('specialization.course_tag'),
       icon: TrendingUpIcon
     }
-  };
+  });
 
   let cost = $derived(calcCourseCost(course));
 
@@ -241,7 +242,14 @@
   class="group relative"
 >
   {#snippet media()}
-    <Image src={bannerImage} alt="Course banner image" className="w-full h-full rounded-sm object-cover" />
+    {#if bannerImage}
+      <Image src={bannerImage} alt={title} className="w-full h-full rounded-sm object-cover" />
+    {:else}
+      <div class="course-cover" aria-hidden="true">
+        <BookOpenIcon class="size-8" />
+        <span>{title.trim().slice(0, 2)}</span>
+      </div>
+    {/if}
   {/snippet}
 
   {#snippet overlay()}

@@ -5859,6 +5859,12 @@
       "status_in_progress": "In progress",
       "status_completed": "Completed",
       "status_cancelled": "Cancelled"
+    },
+    "interface": {
+      "platform_name": "Zhizhen Training",
+      "admin_portal": "Administration",
+      "learner_portal": "Learning center",
+      "workbench": "Workbench"
     }
   }
 }

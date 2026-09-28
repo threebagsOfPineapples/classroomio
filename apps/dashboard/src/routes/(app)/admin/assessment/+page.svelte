@@ -10,7 +10,6 @@
   import { InputField } from '@cio/ui/custom/input-field';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
-  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import { Progress } from '@cio/ui/base/progress';
   import * as Select from '@cio/ui/base/select';
   import * as Field from '@cio/ui/base/field';
@@ -146,7 +145,7 @@
   <title>{$t('enterprise.assessment.title')}</title>
 </svelte:head>
 
-<Page.Root role="main" class="mx-auto max-w-6xl px-6">
+<Page.Root class="mx-auto max-w-6xl px-6">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Title>{$t('enterprise.assessment.title')}</Page.Title>
@@ -417,5 +416,3 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
-
-<ScrollToTop label={$t('common.scroll_to_top')} />

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { page } from '$app/state';
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
@@ -20,6 +21,18 @@
   import * as Page from '@cio/ui/base/page';
 
   let search = $state('');
+  let showDepartmentForm = $state(false);
+  const requestedView = $derived(page.url.searchParams.get('view'));
+  const activeView = $derived(
+    requestedView === 'departments' || requestedView === 'employees' ? requestedView : 'workbench'
+  );
+  const headingKey = $derived(
+    activeView === 'departments'
+      ? 'enterprise.departments'
+      : activeView === 'employees'
+        ? 'enterprise.employees'
+        : 'enterprise.interface.workbench'
+  );
   const assessmentApi = new AssessmentApi();
   let editingDepartmentId = $state<string | null>(null);
   let departmentForm = $state({ name: '', code: '', parentId: '', leaderMemberId: '', sort: 0, status: 'ACTIVE' });
@@ -79,6 +92,7 @@
   });
 
   function editDepartment(department?: EnterpriseDepartment) {
+    showDepartmentForm = true;
     editingDepartmentId = department?.id ?? null;
     departmentForm.name = department?.name ?? '';
     departmentForm.code = department?.code ?? '';
@@ -102,7 +116,10 @@
     };
     const path = editingDepartmentId ? `/departments/${editingDepartmentId}` : '/departments';
     const method = editingDepartmentId ? 'PUT' : 'POST';
-    if (await enterpriseApi.save($currentOrg.id, path, method, body)) editDepartment();
+    if (await enterpriseApi.save($currentOrg.id, path, method, body)) {
+      editDepartment();
+      showDepartmentForm = false;
+    }
   }
 
   async function selectEmployee(employee: EnterpriseEmployee) {
@@ -153,7 +170,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('enterprise.title')}</title>
+  <title>{$t(headingKey)} · {$t('enterprise.company_name')}</title>
 </svelte:head>
 
 {#snippet gradingItems(items: EnterpriseGradingQueue)}
@@ -177,13 +194,12 @@
   </ol>
 {/snippet}
 
-<Page.Root role="main" class="mx-auto max-w-6xl px-6">
+<Page.Root class="w-full">
   <Page.Header>
     <Page.HeaderContent>
       <div class="flex items-center gap-4">
-        <img src="/enterprise-training-icon.png" alt="" class="h-14 w-14 rounded-xl" />
         <div>
-          <Page.Title>{$t('enterprise.title')}</Page.Title>
+          <Page.Title>{$t(headingKey)}</Page.Title>
           <Page.Subtitle>{$t('enterprise.subtitle')}</Page.Subtitle>
         </div>
       </div>
@@ -207,12 +223,12 @@
       {#if loading}<p>{$t('enterprise.loading')}</p>{/if}
 
       {#if overview}
-        {#if overview.canManage || overview.roles.includes('DEPARTMENT_MANAGER')}
-          <section aria-label={$t('enterprise.assessment.title')} class="space-y-4 rounded-lg border p-5">
+        {#if activeView === 'workbench' && (overview.canManage || overview.roles.includes('DEPARTMENT_MANAGER'))}
+          <section aria-label={$t('enterprise.assessment.title')} class="training-panel space-y-6">
             {#if assessmentApi.error}<p role="alert">{assessmentApi.error}</p>{/if}
             {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
             {#if statistics}
-              <div class="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              <div class="training-metrics grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 <p>{$t('enterprise.assessment.learners')}: <strong>{statistics.learners}</strong></p>
                 <p>
                   {$t('enterprise.assessment.completion_rate')}:
@@ -298,245 +314,254 @@
             {/if}
           </section>
         {/if}
-        <section class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold">{$t('enterprise.departments')}</h2>
-            {#if overview.canManage}
-              <Button variant="outline" onclick={() => editDepartment()}>{$t('enterprise.add_department')}</Button>
-            {/if}
-          </div>
-          <div class="overflow-x-auto rounded-lg border">
-            <table class="w-full text-left text-sm">
-              <thead class="ui:bg-muted/50 border-b">
-                <tr>
-                  <th class="p-3">{$t('enterprise.name')}</th>
-                  <th class="p-3">{$t('enterprise.code')}</th>
-                  <th class="p-3">{$t('enterprise.parent')}</th>
-                  <th class="p-3">{$t('enterprise.leader')}</th>
-                  <th class="p-3">{$t('enterprise.status')}</th>
-                  <th class="p-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each overview.departments as department (department.id)}
-                  <tr class="border-b">
-                    <td class="p-3">{department.name}</td>
-                    <td class="p-3">{department.code}</td>
-                    <td class="p-3"
-                      >{overview.departments.find((item) => item.id === department.parentId)?.name ?? '—'}</td
-                    >
-                    <td class="p-3"
-                      >{employees.find((item) => item.member.id === department.leaderMemberId)?.fullname ?? '—'}</td
-                    >
-                    <td class="p-3">{$t(`enterprise.${department.status.toLowerCase()}`)}</td>
-                    <td class="p-3">
-                      {#if overview.canManage}<Button variant="link" onclick={() => editDepartment(department)}
-                          >{$t('enterprise.edit')}</Button
-                        >{/if}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-          {#if overview.canManage}
-            <form onsubmit={saveDepartment} class="rounded-lg border p-4">
-              <Field.Group>
-                <Field.Set>
-                  <Field.Legend>{$t('enterprise.departments')}</Field.Legend>
-                  <Field.Group class="grid gap-3 md:grid-cols-3">
-                    <InputField
-                      label={$t('enterprise.name')}
-                      isRequired
-                      maxLength={160}
-                      bind:value={departmentForm.name}
-                    />
-                    <InputField
-                      label={$t('enterprise.code')}
-                      isRequired
-                      maxLength={64}
-                      bind:value={departmentForm.code}
-                    />
-                    <Field.Field>
-                      <Field.Label>{$t('enterprise.parent')}</Field.Label>
-                      <Select.Root type="single" bind:value={departmentForm.parentId}>
-                        <Select.Trigger class="w-full"
-                          >{overview.departments.find((item) => item.id === departmentForm.parentId)?.name ??
-                            '—'}</Select.Trigger
-                        >
-                        <Select.Content>
-                          <Select.Item value="">—</Select.Item>
-                          {#each overview.departments.filter((item) => item.id !== editingDepartmentId && item.status === 'ACTIVE') as department (department.id)}
-                            <Select.Item value={department.id}>{department.name}</Select.Item>
-                          {/each}
-                        </Select.Content>
-                      </Select.Root>
-                    </Field.Field>
-                    <Field.Field>
-                      <Field.Label>{$t('enterprise.leader')}</Field.Label>
-                      <Select.Root type="single" bind:value={departmentForm.leaderMemberId}>
-                        <Select.Trigger class="w-full"
-                          >{employees.find((item) => item.member.id.toString() === departmentForm.leaderMemberId)
-                            ?.fullname ?? '—'}</Select.Trigger
-                        >
-                        <Select.Content>
-                          <Select.Item value="">—</Select.Item>
-                          {#each employees.filter((item) => item.member.status === 'ACTIVE') as employee (employee.member.id)}
-                            <Select.Item value={employee.member.id.toString()}
-                              >{employee.fullname ?? employee.email ?? employee.member.email}</Select.Item
-                            >
-                          {/each}
-                        </Select.Content>
-                      </Select.Root>
-                    </Field.Field>
-                    <Field.Field>
-                      <Field.Label>{$t('enterprise.status')}</Field.Label>
-                      <Select.Root type="single" bind:value={departmentForm.status}>
-                        <Select.Trigger class="w-full"
-                          >{$t(`enterprise.${departmentForm.status.toLowerCase()}`)}</Select.Trigger
-                        >
-                        <Select.Content>
-                          <Select.Item value="ACTIVE">{$t('enterprise.active')}</Select.Item>
-                          <Select.Item value="INACTIVE">{$t('enterprise.inactive')}</Select.Item>
-                        </Select.Content>
-                      </Select.Root>
-                    </Field.Field>
-                    <div class="flex items-end">
-                      <Button type="submit" disabled={busy}>{$t('enterprise.save')}</Button>
-                    </div>
-                  </Field.Group>
-                </Field.Set>
-              </Field.Group>
-            </form>
-          {/if}
-        </section>
-
-        <section class="space-y-4">
-          <div class="flex items-center justify-between gap-4">
-            <h2 class="text-xl font-semibold">{$t('enterprise.employees')}</h2>
-            <InputField label={$t('enterprise.search')} bind:value={search} />
-          </div>
-          <div class="grid gap-5 lg:grid-cols-2">
-            <div class="max-h-[34rem] overflow-auto rounded-lg border">
-              {#each filteredEmployees as employee (employee.member.id)}
-                <Button
-                  variant="ghost"
-                  class="flex h-auto w-full justify-between rounded-none border-b p-3 text-left"
-                  onclick={() => selectEmployee(employee)}
-                >
-                  <span>{employee.fullname ?? employee.email ?? employee.member.email ?? '—'}</span>
-                  <span class="ui:text-muted-foreground">{employee.member.employeeNo ?? '—'}</span>
-                </Button>
-              {/each}
+        {#if activeView === 'departments'}
+          <section class="training-panel space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold">{$t('enterprise.departments')}</h2>
+              {#if overview.canManage}
+                <Button variant="outline" onclick={() => editDepartment()}>{$t('enterprise.add_department')}</Button>
+              {/if}
             </div>
-            {#if selectedEmployee}
-              <div class="space-y-4 rounded-lg border p-4">
-                <h3 class="text-lg font-medium">{selectedEmployee.fullname ?? selectedEmployee.email}</h3>
-                <form onsubmit={saveEmployee}>
-                  <Field.Group>
-                    <Field.Set>
-                      <Field.Legend>{$t('enterprise.employees')}</Field.Legend>
-                      <Field.Group class="grid gap-3 sm:grid-cols-2">
-                        <InputField
-                          label={$t('enterprise.employee_no')}
-                          isDisabled={!overview.canManage}
-                          bind:value={employeeForm.employeeNo}
-                        />
-                        <InputField
-                          label={$t('enterprise.position')}
-                          isDisabled={!overview.canManage}
-                          bind:value={employeeForm.position}
-                        />
-                        <Field.Field>
-                          <Field.Label>{$t('enterprise.department')}</Field.Label>
-                          <Select.Root
-                            type="single"
-                            disabled={!overview.canManage}
-                            bind:value={employeeForm.departmentId}
+            <div class="overflow-x-auto rounded-lg border">
+              <table class="w-full text-left text-sm">
+                <thead class="ui:bg-muted/50 border-b">
+                  <tr>
+                    <th class="p-3">{$t('enterprise.name')}</th>
+                    <th class="p-3">{$t('enterprise.code')}</th>
+                    <th class="p-3">{$t('enterprise.parent')}</th>
+                    <th class="p-3">{$t('enterprise.leader')}</th>
+                    <th class="p-3">{$t('enterprise.status')}</th>
+                    <th class="p-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each overview.departments as department (department.id)}
+                    <tr class="border-b">
+                      <td class="p-3">{department.name}</td>
+                      <td class="p-3">{department.code}</td>
+                      <td class="p-3"
+                        >{overview.departments.find((item) => item.id === department.parentId)?.name ?? '—'}</td
+                      >
+                      <td class="p-3"
+                        >{employees.find((item) => item.member.id === department.leaderMemberId)?.fullname ?? '—'}</td
+                      >
+                      <td class="p-3">{$t(`enterprise.${department.status.toLowerCase()}`)}</td>
+                      <td class="p-3">
+                        {#if overview.canManage}<Button variant="link" onclick={() => editDepartment(department)}
+                            >{$t('enterprise.edit')}</Button
+                          >{/if}
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+            {#if overview.canManage && showDepartmentForm}
+              <form onsubmit={saveDepartment} class="rounded-lg border p-4">
+                <Field.Group>
+                  <Field.Set>
+                    <Field.Legend>{$t('enterprise.departments')}</Field.Legend>
+                    <Field.Group class="grid gap-3 md:grid-cols-3">
+                      <InputField
+                        label={$t('enterprise.name')}
+                        isRequired
+                        maxLength={160}
+                        bind:value={departmentForm.name}
+                      />
+                      <InputField
+                        label={$t('enterprise.code')}
+                        isRequired
+                        maxLength={64}
+                        bind:value={departmentForm.code}
+                      />
+                      <Field.Field>
+                        <Field.Label>{$t('enterprise.parent')}</Field.Label>
+                        <Select.Root type="single" bind:value={departmentForm.parentId}>
+                          <Select.Trigger class="w-full"
+                            >{overview.departments.find((item) => item.id === departmentForm.parentId)?.name ??
+                              '—'}</Select.Trigger
                           >
-                            <Select.Trigger class="w-full"
-                              >{overview.departments.find((item) => item.id === employeeForm.departmentId)?.name ??
-                                '—'}</Select.Trigger
-                            >
-                            <Select.Content>
-                              <Select.Item value="">—</Select.Item>
-                              {#each overview.departments.filter((item) => item.status === 'ACTIVE') as department (department.id)}
-                                <Select.Item value={department.id}>{department.name}</Select.Item>
-                              {/each}
-                            </Select.Content>
-                          </Select.Root>
-                        </Field.Field>
-                        <Field.Field>
-                          <Field.Label>{$t('enterprise.manager')}</Field.Label>
-                          <Select.Root
-                            type="single"
-                            disabled={!overview.canManage}
-                            bind:value={employeeForm.managerMemberId}
+                          <Select.Content>
+                            <Select.Item value="">—</Select.Item>
+                            {#each overview.departments.filter((item) => item.id !== editingDepartmentId && item.status === 'ACTIVE') as department (department.id)}
+                              <Select.Item value={department.id}>{department.name}</Select.Item>
+                            {/each}
+                          </Select.Content>
+                        </Select.Root>
+                      </Field.Field>
+                      <Field.Field>
+                        <Field.Label>{$t('enterprise.leader')}</Field.Label>
+                        <Select.Root type="single" bind:value={departmentForm.leaderMemberId}>
+                          <Select.Trigger class="w-full"
+                            >{employees.find((item) => item.member.id.toString() === departmentForm.leaderMemberId)
+                              ?.fullname ?? '—'}</Select.Trigger
                           >
-                            <Select.Trigger class="w-full"
-                              >{employees.find((item) => item.member.id.toString() === employeeForm.managerMemberId)
-                                ?.fullname ?? '—'}</Select.Trigger
-                            >
-                            <Select.Content>
-                              <Select.Item value="">—</Select.Item>
-                              {#each employees.filter((item) => item.member.id !== selectedEmployee.member.id && item.member.status === 'ACTIVE') as employee (employee.member.id)}
-                                <Select.Item value={employee.member.id.toString()}
-                                  >{employee.fullname ?? employee.email ?? employee.member.email}</Select.Item
-                                >
-                              {/each}
-                            </Select.Content>
-                          </Select.Root>
-                        </Field.Field>
-                        <Field.Field>
-                          <Field.Label>{$t('enterprise.employment_status')}</Field.Label>
-                          <Select.Root
-                            type="single"
-                            disabled={!overview.canManage}
-                            bind:value={employeeForm.employmentStatus}
+                          <Select.Content>
+                            <Select.Item value="">—</Select.Item>
+                            {#each employees.filter((item) => item.member.status === 'ACTIVE') as employee (employee.member.id)}
+                              <Select.Item value={employee.member.id.toString()}
+                                >{employee.fullname ?? employee.email ?? employee.member.email}</Select.Item
+                              >
+                            {/each}
+                          </Select.Content>
+                        </Select.Root>
+                      </Field.Field>
+                      <Field.Field>
+                        <Field.Label>{$t('enterprise.status')}</Field.Label>
+                        <Select.Root type="single" bind:value={departmentForm.status}>
+                          <Select.Trigger class="w-full"
+                            >{$t(`enterprise.${departmentForm.status.toLowerCase()}`)}</Select.Trigger
                           >
-                            <Select.Trigger class="w-full"
-                              >{employeeForm.employmentStatus
-                                ? $t(`enterprise.${employeeForm.employmentStatus.toLowerCase()}`)
-                                : '—'}</Select.Trigger
-                            >
-                            <Select.Content>
-                              <Select.Item value="">—</Select.Item>
-                              <Select.Item value="ACTIVE">{$t('enterprise.active')}</Select.Item>
-                              <Select.Item value="ON_LEAVE">{$t('enterprise.on_leave')}</Select.Item>
-                              <Select.Item value="TERMINATED">{$t('enterprise.terminated')}</Select.Item>
-                            </Select.Content>
-                          </Select.Root>
-                        </Field.Field>
-                        <InputField
-                          label={$t('enterprise.join_date')}
-                          type="date"
-                          isDisabled={!overview.canManage}
-                          bind:value={employeeForm.joinDate}
-                        />
-                      </Field.Group>
-                    </Field.Set>
-                    {#if overview.canManage}<Button type="submit" disabled={busy}>{$t('enterprise.save')}</Button>{/if}
-                  </Field.Group>
-                </form>
-                {#if overview.isSuperAdmin}
-                  <div class="space-y-3 border-t pt-4">
-                    <h4 class="font-medium">{$t('enterprise.roles')}</h4>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                      {#each roleChoices as role (role)}
-                        <CheckboxField
-                          label={$t(`enterprise.role_${role.toLowerCase()}`)}
-                          checked={selectedRoles.includes(role)}
-                          onclick={() => toggleRole(role, !selectedRoles.includes(role))}
-                        />
-                      {/each}
-                    </div>
-                    <Button variant="outline" disabled={busy} onclick={saveRoles}>{$t('enterprise.save_roles')}</Button>
-                  </div>
-                {/if}
-              </div>
+                          <Select.Content>
+                            <Select.Item value="ACTIVE">{$t('enterprise.active')}</Select.Item>
+                            <Select.Item value="INACTIVE">{$t('enterprise.inactive')}</Select.Item>
+                          </Select.Content>
+                        </Select.Root>
+                      </Field.Field>
+                      <div class="flex items-end">
+                        <Button type="submit" disabled={busy}>{$t('enterprise.save')}</Button>
+                        <Button variant="outline" disabled={busy} onclick={() => (showDepartmentForm = false)}
+                          >{$t('app.cancel')}</Button
+                        >
+                      </div>
+                    </Field.Group>
+                  </Field.Set>
+                </Field.Group>
+              </form>
             {/if}
-          </div>
-        </section>
+          </section>
+        {/if}
+        {#if activeView === 'employees'}
+          <section class="training-panel space-y-4">
+            <div class="flex items-center justify-between gap-4">
+              <h2 class="text-xl font-semibold">{$t('enterprise.employees')}</h2>
+              <InputField label={$t('enterprise.search')} bind:value={search} />
+            </div>
+            <div class="grid gap-5 lg:grid-cols-2">
+              <div class="max-h-[34rem] overflow-auto rounded-lg border">
+                {#each filteredEmployees as employee (employee.member.id)}
+                  <Button
+                    variant="ghost"
+                    class="flex h-auto w-full justify-between rounded-none border-b p-3 text-left"
+                    onclick={() => selectEmployee(employee)}
+                  >
+                    <span>{employee.fullname ?? employee.email ?? employee.member.email ?? '—'}</span>
+                    <span class="ui:text-muted-foreground">{employee.member.employeeNo ?? '—'}</span>
+                  </Button>
+                {/each}
+              </div>
+              {#if selectedEmployee}
+                <div class="space-y-4 rounded-lg border p-4">
+                  <h3 class="text-lg font-medium">{selectedEmployee.fullname ?? selectedEmployee.email}</h3>
+                  <form onsubmit={saveEmployee}>
+                    <Field.Group>
+                      <Field.Set>
+                        <Field.Legend>{$t('enterprise.employees')}</Field.Legend>
+                        <Field.Group class="grid gap-3 sm:grid-cols-2">
+                          <InputField
+                            label={$t('enterprise.employee_no')}
+                            isDisabled={!overview.canManage}
+                            bind:value={employeeForm.employeeNo}
+                          />
+                          <InputField
+                            label={$t('enterprise.position')}
+                            isDisabled={!overview.canManage}
+                            bind:value={employeeForm.position}
+                          />
+                          <Field.Field>
+                            <Field.Label>{$t('enterprise.department')}</Field.Label>
+                            <Select.Root
+                              type="single"
+                              disabled={!overview.canManage}
+                              bind:value={employeeForm.departmentId}
+                            >
+                              <Select.Trigger class="w-full"
+                                >{overview.departments.find((item) => item.id === employeeForm.departmentId)?.name ??
+                                  '—'}</Select.Trigger
+                              >
+                              <Select.Content>
+                                <Select.Item value="">—</Select.Item>
+                                {#each overview.departments.filter((item) => item.status === 'ACTIVE') as department (department.id)}
+                                  <Select.Item value={department.id}>{department.name}</Select.Item>
+                                {/each}
+                              </Select.Content>
+                            </Select.Root>
+                          </Field.Field>
+                          <Field.Field>
+                            <Field.Label>{$t('enterprise.manager')}</Field.Label>
+                            <Select.Root
+                              type="single"
+                              disabled={!overview.canManage}
+                              bind:value={employeeForm.managerMemberId}
+                            >
+                              <Select.Trigger class="w-full"
+                                >{employees.find((item) => item.member.id.toString() === employeeForm.managerMemberId)
+                                  ?.fullname ?? '—'}</Select.Trigger
+                              >
+                              <Select.Content>
+                                <Select.Item value="">—</Select.Item>
+                                {#each employees.filter((item) => item.member.id !== selectedEmployee.member.id && item.member.status === 'ACTIVE') as employee (employee.member.id)}
+                                  <Select.Item value={employee.member.id.toString()}
+                                    >{employee.fullname ?? employee.email ?? employee.member.email}</Select.Item
+                                  >
+                                {/each}
+                              </Select.Content>
+                            </Select.Root>
+                          </Field.Field>
+                          <Field.Field>
+                            <Field.Label>{$t('enterprise.employment_status')}</Field.Label>
+                            <Select.Root
+                              type="single"
+                              disabled={!overview.canManage}
+                              bind:value={employeeForm.employmentStatus}
+                            >
+                              <Select.Trigger class="w-full"
+                                >{employeeForm.employmentStatus
+                                  ? $t(`enterprise.${employeeForm.employmentStatus.toLowerCase()}`)
+                                  : '—'}</Select.Trigger
+                              >
+                              <Select.Content>
+                                <Select.Item value="">—</Select.Item>
+                                <Select.Item value="ACTIVE">{$t('enterprise.active')}</Select.Item>
+                                <Select.Item value="ON_LEAVE">{$t('enterprise.on_leave')}</Select.Item>
+                                <Select.Item value="TERMINATED">{$t('enterprise.terminated')}</Select.Item>
+                              </Select.Content>
+                            </Select.Root>
+                          </Field.Field>
+                          <InputField
+                            label={$t('enterprise.join_date')}
+                            type="date"
+                            isDisabled={!overview.canManage}
+                            bind:value={employeeForm.joinDate}
+                          />
+                        </Field.Group>
+                      </Field.Set>
+                      {#if overview.canManage}<Button type="submit" disabled={busy}>{$t('enterprise.save')}</Button
+                        >{/if}
+                    </Field.Group>
+                  </form>
+                  {#if overview.isSuperAdmin}
+                    <div class="space-y-3 border-t pt-4">
+                      <h4 class="font-medium">{$t('enterprise.roles')}</h4>
+                      <div class="grid gap-2 sm:grid-cols-2">
+                        {#each roleChoices as role (role)}
+                          <CheckboxField
+                            label={$t(`enterprise.role_${role.toLowerCase()}`)}
+                            checked={selectedRoles.includes(role)}
+                            onclick={() => toggleRole(role, !selectedRoles.includes(role))}
+                          />
+                        {/each}
+                      </div>
+                      <Button variant="outline" disabled={busy} onclick={saveRoles}
+                        >{$t('enterprise.save_roles')}</Button
+                      >
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+            </div>
+          </section>
+        {/if}
       {/if}
     {/snippet}
   </Page.Body>

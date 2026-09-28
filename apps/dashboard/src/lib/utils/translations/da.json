@@ -5876,6 +5876,12 @@
       "pending_assignments": "Opgaver til bedømmelse",
       "pending_written": "Skriftlige svar til bedømmelse",
       "instructor_only": "Kræver adgang som kursusunderviser"
+    },
+    "interface": {
+      "platform_name": "Zhizhen Uddannelse",
+      "admin_portal": "Administration",
+      "learner_portal": "Læringscenter",
+      "workbench": "Arbejdsoversigt"
     }
   }
 }
