@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Đang tải khóa học…",
       "description": "Vui lòng chờ trong khi tải dữ liệu khóa học."
+    },
+    "question_bank": {
+      "title": "Ngân hàng câu hỏi",
+      "open": "Thêm từ ngân hàng",
+      "search": "Tìm câu hỏi",
+      "empty": "Không có câu hỏi phù hợp",
+      "description": "Chỉ hiển thị khóa học trong tổ chức mà bạn có quyền chỉnh sửa. Lưu bài tập sau khi thêm; thay đổi câu hỏi gốc sau này không ảnh hưởng đến bản sao.",
+      "import": "Thêm câu hỏi đã chọn",
+      "failed": "Không đọc được câu hỏi gốc. Làm mới ngân hàng và thử lại.",
+      "loading": "Đang tải…"
     }
   },
   "courses": {

@@ -10,7 +10,8 @@ import {
   ZExerciseVideoRecordingPlaybackParam,
   ZExerciseVideoRecordingUploadComplete,
   ZExerciseVideoRecordingUploadInit,
-  ZExamDraftSave
+  ZExamDraftSave,
+  ZQuestionBankQuery
 } from '@cio/utils/validation/exercise';
 import { ZTemplateById, ZTemplateByTag } from '@cio/utils/validation/mocks';
 import {
@@ -42,12 +43,35 @@ import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-member-or-automation-key';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/services/submission';
-import { getLearnerExam, saveExamDraftService, startExamAttemptService } from '@api/services/exercise/exam-policy';
+import {
+  assertExamCourse,
+  getLearnerExam,
+  saveExamDraftService,
+  startExamAttemptService
+} from '@api/services/exercise/exam-policy';
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants';
 import { zValidator } from '@hono/zod-validator';
+import { getCourseQuestionBank } from '@cio/db/queries/exercise';
 
 export const exerciseRouter = new Hono()
+  .get(
+    '/question-bank',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('query', ZQuestionBankQuery),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const user = c.get('user')!;
+        const { search, page } = c.req.valid('query');
+        const questions = await getCourseQuestionBank(courseId, user.id, search, page);
+        return c.json({ success: true, data: questions }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to load question bank');
+      }
+    }
+  )
   // Exercise CRUD routes
   .get(
     '/',
@@ -122,6 +146,8 @@ export const exerciseRouter = new Hono()
         const { exerciseId } = c.req.valid('param');
         const user = c.get('user');
         const automationKey = c.get('automationKey');
+
+        await assertExamCourse(c.req.param('courseId')!, exerciseId);
 
         if (automationKey?.type === 'mcp') {
           await assertMcpAutomationUsageAllowed(automationKey, 'get_course_exercise');

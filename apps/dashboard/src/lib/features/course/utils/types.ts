@@ -182,6 +182,9 @@ export type LessonLanguage = GetLessonLanguageSuccess['data'];
 
 // Exercise types
 export type GetExerciseRequest = (typeof classroomio.course)[':courseId']['exercise'][':exerciseId']['$get'];
+export type GetQuestionBankRequest = (typeof classroomio.course)[':courseId']['exercise']['question-bank']['$get'];
+export type QuestionBankSuccess = Extract<InferResponseType<GetQuestionBankRequest>, { success: true }>;
+export type QuestionBankEntries = QuestionBankSuccess['data'];
 export type GetExerciseResponse = InferResponseType<GetExerciseRequest> | null;
 export type GetExerciseSuccess = Extract<InferResponseType<GetExerciseRequest>, { success: true }>;
 

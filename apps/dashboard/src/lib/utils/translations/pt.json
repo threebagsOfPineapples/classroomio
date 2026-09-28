@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Carregando curso…",
       "description": "Aguarde enquanto carregamos os dados do curso."
+    },
+    "question_bank": {
+      "title": "Banco de perguntas",
+      "open": "Adicionar do banco",
+      "search": "Pesquisar perguntas",
+      "empty": "Nenhuma pergunta reutilizável",
+      "description": "Inclui apenas cursos desta organização que você pode editar. Salve o exercício após adicionar perguntas; alterações posteriores na origem não afetam as cópias.",
+      "import": "Adicionar perguntas selecionadas",
+      "failed": "Não foi possível ler a origem. Atualize o banco e tente novamente.",
+      "loading": "Carregando…"
     }
   },
   "courses": {

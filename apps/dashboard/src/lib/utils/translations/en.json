@@ -4088,6 +4088,16 @@
     "loading": {
       "title": "Loading course…",
       "description": "Please wait while we load your course data."
+    },
+    "question_bank": {
+      "title": "Question bank",
+      "open": "Add from question bank",
+      "search": "Search questions",
+      "empty": "No reusable questions found",
+      "description": "Only courses you can edit in this organization are included. Save the exercise after adding questions; copies are independent of later source edits.",
+      "import": "Add selected questions",
+      "failed": "The source could not be read. Refresh the question bank and try again.",
+      "loading": "Loading…"
     }
   },
   "community": {

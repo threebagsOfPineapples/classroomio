@@ -26,7 +26,8 @@
           "page": "页面"
         }
       }
-    }
+    },
+    "cancel": "取消"
   },
   "lms": {
     "view_landing_page": "企业首页"
@@ -970,7 +971,13 @@
               }
             },
             "previous": "上一题",
-            "next": "下一题"
+            "next": "下一题",
+            "description": {
+              "title": "标题",
+              "heading": "说明",
+              "describe": "填写考试或作业说明",
+              "no": "暂无说明"
+            }
           },
           "new_exercise_modal": {
             "errors": {
@@ -1270,6 +1277,16 @@
     "loading": {
       "title": "正在加载课程…",
       "description": "请稍候，正在读取课程内容。"
+    },
+    "question_bank": {
+      "title": "题库",
+      "open": "从题库添加",
+      "search": "搜索题目",
+      "empty": "暂无可复用题目",
+      "description": "仅显示本企业内你有编辑权限的课程题目。添加到编辑草稿后请保存；副本不会随原题修改。",
+      "import": "添加选中题目",
+      "failed": "无法读取原题，请刷新题库后重试。",
+      "loading": "加载中…"
     }
   },
   "lms_navigation": {

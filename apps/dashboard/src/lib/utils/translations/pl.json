@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Ładowanie kursu…",
       "description": "Poczekaj, aż załadujemy dane kursu."
+    },
+    "question_bank": {
+      "title": "Bank pytań",
+      "open": "Dodaj z banku pytań",
+      "search": "Szukaj pytań",
+      "empty": "Nie znaleziono pytań",
+      "description": "Uwzględniono tylko kursy tej organizacji, które możesz edytować. Zapisz ćwiczenie po dodaniu pytań; późniejsze zmiany źródła nie zmieniają kopii.",
+      "import": "Dodaj wybrane pytania",
+      "failed": "Nie można odczytać źródła. Odśwież bank pytań i spróbuj ponownie.",
+      "loading": "Ładowanie…"
     }
   },
   "courses": {

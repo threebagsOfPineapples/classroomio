@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Indlæser kursus…",
       "description": "Vent, mens vi indlæser dine kursusdata."
+    },
+    "question_bank": {
+      "title": "Spørgsmålsbank",
+      "open": "Tilføj fra spørgsmålsbanken",
+      "search": "Søg spørgsmål",
+      "empty": "Ingen spørgsmål fundet",
+      "description": "Kun kurser i denne organisation, som du kan redigere, vises. Gem øvelsen efter tilføjelse; senere ændringer af originalen påvirker ikke kopien.",
+      "import": "Tilføj valgte spørgsmål",
+      "failed": "Kilden kunne ikke læses. Opdater spørgsmålsbanken og prøv igen.",
+      "loading": "Indlæser…"
     }
   },
   "courses": {

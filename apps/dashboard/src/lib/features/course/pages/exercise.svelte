@@ -40,6 +40,7 @@
   import { exerciseApi } from '$features/course/api';
   import { courseApi } from '$features/course/api';
   import EditMode from '$features/course/components/exercise/edit-mode.svelte';
+  import QuestionBank from '$features/course/components/exercise/question-bank.svelte';
   import ExerciseSettingsTab from '$features/course/components/exercise/exercise-settings-tab.svelte';
   import ViewMode from '$features/course/components/exercise/view-mode.svelte';
   import Submissions from '$features/course/components/exercise/submissions/submissions.svelte';
@@ -866,6 +867,9 @@
           </UnderlineTabs.List>
           <UnderlineTabs.Content value="questions" class="mx-auto w-full md:max-w-3xl">
             <UpdateDescription {preview} />
+            {#if !preview && !isPublicCourse}
+              <div class="mb-4 flex justify-end"><QuestionBank courseId={courseApi.course.id} /></div>
+            {/if}
             {#if !preview}
               <EditMode
                 {exerciseId}

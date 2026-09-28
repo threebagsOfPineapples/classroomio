@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Chargement du cours…",
       "description": "Veuillez patienter pendant le chargement du cours."
+    },
+    "question_bank": {
+      "title": "Banque de questions",
+      "open": "Ajouter depuis la banque",
+      "search": "Rechercher des questions",
+      "empty": "Aucune question réutilisable",
+      "description": "Seuls les cours de cette organisation que vous pouvez modifier sont inclus. Enregistrez après ajout ; les modifications ultérieures de la source ne changent pas les copies.",
+      "import": "Ajouter les questions choisies",
+      "failed": "Impossible de lire la source. Actualisez la banque et réessayez.",
+      "loading": "Chargement…"
     }
   },
   "courses": {

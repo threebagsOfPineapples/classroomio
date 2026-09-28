@@ -10,6 +10,11 @@ import { QUESTION_TYPE } from '../constants';
 import { ZSlug } from '../shared/slug';
 import { ZExerciseSection } from './exercise-section';
 
+export const ZQuestionBankQuery = z.object({
+  search: z.string().trim().max(100).default(''),
+  page: z.coerce.number().int().min(1).max(10000).default(1)
+});
+
 const EXERCISE_QUESTION_TYPE_ID_LITERALS = [
   z.literal(QUESTION_TYPE.RADIO),
   z.literal(QUESTION_TYPE.CHECKBOX),

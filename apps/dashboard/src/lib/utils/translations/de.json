@@ -2984,6 +2984,16 @@
     "loading": {
       "title": "Kurs wird geladen…",
       "description": "Bitte warten Sie, während die Kursdaten geladen werden."
+    },
+    "question_bank": {
+      "title": "Fragenbank",
+      "open": "Aus Fragenbank hinzufügen",
+      "search": "Fragen suchen",
+      "empty": "Keine wiederverwendbaren Fragen gefunden",
+      "description": "Nur Kurse dieser Organisation mit Bearbeitungszugriff werden angezeigt. Speichern Sie die Übung nach dem Hinzufügen; spätere Änderungen am Original ändern die Kopie nicht.",
+      "import": "Ausgewählte Fragen hinzufügen",
+      "failed": "Die Quelle konnte nicht gelesen werden. Aktualisieren Sie die Fragenbank und versuchen Sie es erneut.",
+      "loading": "Wird geladen…"
     }
   },
   "courses": {
