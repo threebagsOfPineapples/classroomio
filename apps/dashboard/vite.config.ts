@@ -45,7 +45,7 @@ export default ({ mode }) => {
       }
     },
     build: {
-      sourcemap: true,
+      sourcemap: process.env.DASHBOARD_SOURCEMAP !== 'false',
       target: 'es2020'
     },
     ssr: {

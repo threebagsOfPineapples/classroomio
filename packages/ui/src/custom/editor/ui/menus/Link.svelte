@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import type { ShouldShowProps } from '../../types';
   import BubbleMenu from '../../components/BubbleMenu.svelte';
   import type { Editor } from '@tiptap/core';
@@ -56,12 +58,12 @@
       {href}
     </span>
   </Button>
-  <Button variant="ghost" title="Copy Link" size="icon" class="ui:z-50" onmousedown={copyLink}>
+  <Button variant="ghost" title={translate('Copy Link')} size="icon" class="ui:z-50" onmousedown={copyLink}>
     <Copy />
   </Button>
   <Button
     variant="ghost"
-    title="Remove Link"
+    title={translate('Remove Link')}
     size="icon"
     onclick={() => editor.chain().focus().extendMarkRange('link').unsetLink().run()}
   >

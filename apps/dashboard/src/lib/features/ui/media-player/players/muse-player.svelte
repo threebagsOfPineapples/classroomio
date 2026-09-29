@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import type { MediaPlayerOptions } from '../types';
 
   interface Props {
@@ -22,7 +23,7 @@
       style="width:100%;height:100%;position:absolute;left:0;top:0"
       frameborder="0"
       allowfullscreen
-      title="Muse AI Video Embed"
+      title={$t('interface_copy.muse_ai_video_embed')}
     ></iframe>
   </div>
 {/if}

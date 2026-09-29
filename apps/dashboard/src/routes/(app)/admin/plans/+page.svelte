@@ -13,6 +13,7 @@
   import * as Select from '@cio/ui/base/select';
   import * as Field from '@cio/ui/base/field';
   import * as Page from '@cio/ui/base/page';
+  import * as Dialog from '@cio/ui/base/dialog';
 
   const planTypes: TrainingPlanDraft['planType'][] = [
     'ANNUAL',
@@ -45,6 +46,46 @@
   let planSearch = $state('');
   let message = $state('');
   let savedFingerprint = $state('');
+  let confirmPublish = $state(false);
+  let reminderOpen = $state(false);
+  let reminderPlanId = $state('');
+  let reminderNotice = $state('');
+
+  async function sendReminder() {
+    const result = await trainingPlansApi.remind($currentOrg.id, reminderPlanId);
+    if (result && selected?.plan.id === reminderPlanId) {
+      reminderNotice = $t('enterprise.reminder.sent', { count: result.count });
+      reminderOpen = false;
+    }
+  }
+
+  let extensionOpen = $state(false);
+  let extensionDate = $state('');
+  let extensionPlanId = $state('');
+  let extensionPreviousEnd = $state('');
+
+  function openExtension() {
+    if (!selected) return;
+
+    extensionPlanId = selected.plan.id;
+    extensionPreviousEnd = selected.plan.endAt;
+    extensionDate = new Date(selected.plan.endAt).toLocaleDateString('sv-SE');
+    extensionOpen = true;
+  }
+
+  async function saveExtension() {
+    if (!extensionDate) return;
+
+    const deadline = new Date(`${extensionDate}T23:59:59`);
+    if (!Number.isFinite(deadline.getTime())) return;
+
+    const updated = await trainingPlansApi.extend($currentOrg.id, extensionPlanId, {
+      previousEndAt: extensionPreviousEnd,
+      endAt: deadline.toISOString()
+    });
+    if (updated) extensionOpen = false;
+  }
+
   let lastOrganizationId: string | null = null;
   const selected = $derived(trainingPlansApi.selected);
   const canEdit = $derived(!selected || selected.plan.status === 'DRAFT');
@@ -111,8 +152,8 @@
   }
 
   function resetForm() {
-    trainingPlansApi.selected = null;
-    trainingPlansApi.preview = null;
+    confirmPublish = false;
+    trainingPlansApi.clearSelection();
     form = {
       name: '',
       code: '',
@@ -135,11 +176,12 @@
   }
 
   async function selectPlan(planId: string) {
+    reminderNotice = '';
     const organizationId = $currentOrg.id;
     if (!organizationId) return;
 
-    await trainingPlansApi.select(organizationId, planId);
-    const detail: TrainingPlanDetail | null = trainingPlansApi.selected;
+    resetForm();
+    const detail: TrainingPlanDetail | null = await trainingPlansApi.select(organizationId, planId);
     if (!detail) return;
 
     form = {
@@ -226,7 +268,23 @@
     if (!$currentOrg.id || !selected || !trainingPlansApi.preview || hasUnsavedChanges) return;
 
     const published = await trainingPlansApi.publish($currentOrg.id, selected.plan.id);
-    if (published) message = $t('enterprise.plans.published');
+    if (published) {
+      confirmPublish = false;
+      message = $t('enterprise.plans.published');
+    }
+  }
+
+  function copyPlan() {
+    if (!selected || hasUnsavedChanges) return;
+
+    trainingPlansApi.clearSelection();
+    form.name = '';
+    form.code = '';
+    form.startDate = today;
+    form.endDate = today;
+    form.year = String(new Date().getFullYear());
+    supplementMemberIds = [];
+    message = $t('enterprise.operations.copy_help');
   }
 
   async function supplementPlan() {
@@ -280,6 +338,18 @@
           </nav>
 
           <div class="space-y-6">
+            <section class="space-y-3 rounded-lg border p-4">
+              <h2 class="font-semibold">{$t('enterprise.operations.publish_steps')}</h2>
+              <p class="ui:text-muted-foreground text-sm">{$t('enterprise.operations.publish_help')}</p>
+              {#if selected && !hasUnsavedChanges}
+                <Button variant="secondary" href={`/admin/assessment?planId=${selected.plan.id}`}>
+                  {$t('enterprise.operations.configure_assessment')}
+                </Button>
+                <Button variant="outline" onclick={copyPlan} disabled={trainingPlansApi.busy}>
+                  {$t('enterprise.operations.copy_plan')}
+                </Button>
+              {/if}
+            </section>
             {#if selected && !canEdit}
               <section class="rounded-lg border p-5">
                 <h2 class="text-lg font-semibold">{selected.plan.name}</h2>
@@ -288,6 +358,36 @@
                 </p>
                 <p class="mt-3 text-sm">{$t('enterprise.plans.assigned')}: {selected.enrollmentCount}</p>
                 {#if selected.plan.status === 'PUBLISHED'}
+                  <Button class="mt-3" variant="secondary" onclick={openExtension} disabled={trainingPlansApi.busy}
+                    >{$t('enterprise.plan_extension.action')}</Button
+                  >
+                  <Button
+                    class="mt-3"
+                    variant="secondary"
+                    disabled={trainingPlansApi.busy}
+                    onclick={() => {
+                      reminderPlanId = selected.plan.id;
+                      reminderNotice = '';
+                      reminderOpen = true;
+                    }}>{$t('enterprise.reminder.action')}</Button
+                  >
+                  {#if reminderNotice}<p role="status" class="mt-2 text-sm">{reminderNotice}</p>{/if}
+                  {#if selected.reminders?.length}
+                    <details class="mt-3 text-sm">
+                      <summary>{$t('enterprise.reminder.records')}</summary>
+                      <ul class="mt-2 space-y-1">
+                        {#each selected.reminders as reminder (reminder.memberId)}
+                          <li>
+                            {enterpriseApi.employees.find((employee) => employee.member.id === reminder.memberId)
+                              ?.fullname ?? reminder.memberId} · {new Date(reminder.remindedAt!).toLocaleString()} · {$t(
+                              'enterprise.reminder.count',
+                              { count: reminder.reminderCount }
+                            )}
+                          </li>
+                        {/each}
+                      </ul>
+                    </details>
+                  {/if}
                   <Field.Group class="mt-5">
                     <Field.Set>
                       <Field.Legend>{$t('enterprise.plans.supplement')}</Field.Legend>
@@ -318,9 +418,15 @@
                 <Field.Set>
                   <Field.Legend>{$t('enterprise.plans.details')}</Field.Legend>
                   <Field.Group class="grid gap-3 sm:grid-cols-2">
-                    <InputField label={$t('enterprise.name')} isRequired bind:value={form.name} />
-                    <InputField label={$t('enterprise.code')} isRequired bind:value={form.code} />
-                    <InputField label={$t('enterprise.plans.year')} type="number" isRequired bind:value={form.year} />
+                    <InputField name="plan-name" label={$t('enterprise.name')} isRequired bind:value={form.name} />
+                    <InputField name="plan-code" label={$t('enterprise.code')} isRequired bind:value={form.code} />
+                    <InputField
+                      name="plan-year"
+                      label={$t('enterprise.plans.year')}
+                      type="number"
+                      isRequired
+                      bind:value={form.year}
+                    />
                     <Field.Field>
                       <Field.Label>{$t('enterprise.plans.type')}</Field.Label>
                       <Select.Root type="single" bind:value={form.planType}>
@@ -338,17 +444,24 @@
                     </Field.Field>
                     <InputField
                       label={$t('enterprise.plans.start_date')}
+                      name="plan-start-date"
                       type="date"
                       isRequired
                       bind:value={form.startDate}
                     />
                     <InputField
                       label={$t('enterprise.plans.end_date')}
+                      name="plan-end-date"
                       type="date"
                       isRequired
                       bind:value={form.endDate}
                     />
-                    <InputField label={$t('enterprise.plans.pass_score')} type="number" bind:value={form.passScore} />
+                    <InputField
+                      name="plan-pass-score"
+                      label={$t('enterprise.plans.pass_score')}
+                      type="number"
+                      bind:value={form.passScore}
+                    />
                     <Field.Field>
                       <Field.Label>{$t('enterprise.plans.owner')}</Field.Label>
                       <Select.Root type="single" bind:value={form.ownerMemberId}>
@@ -388,7 +501,11 @@
                       </Select.Root>
                     </Field.Field>
                   </Field.Group>
-                  <TextareaField label={$t('enterprise.plans.description')} bind:value={form.description} />
+                  <TextareaField
+                    name="plan-description"
+                    label={$t('enterprise.plans.description')}
+                    bind:value={form.description}
+                  />
                 </Field.Set>
 
                 <Field.Separator />
@@ -438,7 +555,7 @@
                     {/each}
                     <p class="text-sm font-medium">{$t('enterprise.position')}</p>
                     <div class="flex gap-2">
-                      <InputField label={$t('enterprise.position')} bind:value={positionInput} />
+                      <InputField name="plan-position" label={$t('enterprise.position')} bind:value={positionInput} />
                       <Button variant="secondary" onclick={addPosition}>{$t('enterprise.plans.add')}</Button>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -484,10 +601,39 @@
                   <span class="text-sm">{$t('enterprise.plans.eligible')}: {trainingPlansApi.preview.count}</span>
                   <Button
                     disabled={trainingPlansApi.busy || trainingPlansApi.preview.count === 0 || hasUnsavedChanges}
-                    onclick={publishPlan}>{$t('enterprise.plans.publish')}</Button
+                    onclick={() => (confirmPublish = true)}>{$t('enterprise.plans.publish')}</Button
                   >
                 {/if}
               </div>
+              {#if trainingPlansApi.preview && !hasUnsavedChanges}
+                <section class="space-y-3 rounded-lg border p-4">
+                  <h2 class="font-semibold">{$t('enterprise.operations.recipient_list')}</h2>
+                  <div class="max-h-64 overflow-auto">
+                    <table class="w-full text-left text-sm">
+                      <thead
+                        ><tr
+                          ><th class="p-2">{$t('enterprise.employees')}</th><th class="p-2"
+                            >{$t('enterprise.department')}</th
+                          ></tr
+                        ></thead
+                      >
+                      <tbody>
+                        {#each trainingPlansApi.preview.memberIds as memberId (memberId)}
+                          {@const employee = enterpriseApi.employees.find((item) => item.member.id === memberId)}
+                          <tr class="border-t"
+                            ><td class="p-2">{employee?.fullname ?? employee?.email ?? String(memberId)}</td><td
+                              class="p-2"
+                              >{enterpriseApi.overview.departments.find(
+                                (department) => department.id === employee?.member.departmentId
+                              )?.name ?? '—'}</td
+                            ></tr
+                          >
+                        {/each}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              {/if}
             {/if}
           </div>
         </div>
@@ -495,3 +641,61 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
+
+<Dialog.Root bind:open={confirmPublish}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>{$t('enterprise.operations.confirm_publish')}</Dialog.Title>
+      <Dialog.Description>{$t('enterprise.operations.confirm_publish_help')}</Dialog.Description>
+    </Dialog.Header>
+    <p>{selected?.plan.name} · {$t('enterprise.plans.eligible')}: {trainingPlansApi.preview?.count ?? '—'}</p>
+    {#if trainingPlansApi.error}<p role="alert">{trainingPlansApi.error}</p>{/if}
+    <Dialog.Footer>
+      <Button size="sm" variant="outline" disabled={trainingPlansApi.busy} onclick={() => (confirmPublish = false)}
+        >{$t('app.cancel')}</Button
+      >
+      <Button
+        size="sm"
+        disabled={trainingPlansApi.busy || hasUnsavedChanges || !trainingPlansApi.preview?.count}
+        onclick={publishPlan}>{$t('enterprise.plans.publish')}</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={extensionOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>{$t('enterprise.plan_extension.action')}</Dialog.Title>
+      <Dialog.Description>{$t('enterprise.plan_extension.help')}</Dialog.Description>
+    </Dialog.Header>
+    <InputField type="date" label={$t('enterprise.plans.end_date')} bind:value={extensionDate} />
+    {#if trainingPlansApi.error}<p role="alert" class="text-red-700">{trainingPlansApi.error}</p>{/if}
+    <Dialog.Footer>
+      <Button size="sm" variant="outline" disabled={trainingPlansApi.busy} onclick={() => (extensionOpen = false)}
+        >{$t('app.cancel')}</Button
+      >
+      <Button size="sm" disabled={trainingPlansApi.busy || !extensionDate} onclick={saveExtension}
+        >{$t('app.save')}</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={reminderOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>{$t('enterprise.reminder.action')}</Dialog.Title>
+      <Dialog.Description>{$t('enterprise.reminder.help')}</Dialog.Description>
+    </Dialog.Header>
+    {#if trainingPlansApi.error}<p role="alert" class="text-red-700">{trainingPlansApi.error}</p>{/if}
+    <Dialog.Footer>
+      <Button size="sm" variant="outline" disabled={trainingPlansApi.busy} onclick={() => (reminderOpen = false)}
+        >{$t('app.cancel')}</Button
+      >
+      <Button size="sm" disabled={trainingPlansApi.busy} onclick={sendReminder}
+        >{$t('enterprise.reminder.action')}</Button
+      >
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

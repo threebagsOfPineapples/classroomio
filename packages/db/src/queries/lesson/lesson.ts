@@ -15,9 +15,9 @@ import { and, db, desc, eq, inArray, lt, ne, sql } from '@db/drizzle';
 import type { DbOrTxClient } from '@db/drizzle';
 
 // Lesson Queries
-export async function getLessonsByCourseId(courseId: string) {
+export async function getLessonsByCourseId(courseId: string, client: DbOrTxClient = db) {
   try {
-    return db.select().from(schema.lesson).where(eq(schema.lesson.courseId, courseId));
+    return client.select().from(schema.lesson).where(eq(schema.lesson.courseId, courseId));
   } catch (error) {
     console.error('getLessonsByCourseId error:', error);
     throw new Error(
@@ -406,10 +406,10 @@ export async function upsertLessonCompletion(data: TNewLessonCompletion): Promis
 }
 
 // Lesson Language Queries
-export async function getLessonLanguagesByLessonIds(lessonIds: string[]) {
+export async function getLessonLanguagesByLessonIds(lessonIds: string[], client: DbOrTxClient = db) {
   if (lessonIds.length === 0) return [];
   try {
-    return db.select().from(schema.lessonLanguage).where(inArray(schema.lessonLanguage.lessonId, lessonIds));
+    return client.select().from(schema.lessonLanguage).where(inArray(schema.lessonLanguage.lessonId, lessonIds));
   } catch (error) {
     console.error('getLessonLanguagesByLessonIds error:', error);
     throw new Error(

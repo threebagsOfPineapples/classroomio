@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/utils/functions/translations';
   import { onMount } from 'svelte';
   import { Spinner } from '@cio/ui/base/spinner';
   import PlayContainer from './container.svelte';
@@ -36,11 +37,11 @@
   {#snippet body()}
     <div class="w-full rounded-md bg-white px-5 py-7 dark:bg-neutral-800">
       <div class="mb-3">
-        <p>1. Visit</p>
+        <p>{$t('interface_copy.1_visit')}</p>
         <h3>play.classroomio.com</h3>
       </div>
       <div class="">
-        <p>2. Enter Pin</p>
+        <p>{$t('interface_copy.2_enter_pin')}</p>
         {#if isGettingPin}
           <Spinner class="size-10! text-blue-700!" />
         {:else}
@@ -52,8 +53,8 @@
 
   {#snippet footer()}
     <div class="flex items-center justify-center">
-      <p class="mr-3">Let's go</p>
-      <Button variant="outline" onclick={goToPlayersStep}>View Players</Button>
+      <p class="mr-3">{$t('interface_copy.let_s_go')}</p>
+      <Button variant="outline" onclick={goToPlayersStep}>{$t('interface_copy.view_players')}</Button>
     </div>
   {/snippet}
 </PlayContainer>

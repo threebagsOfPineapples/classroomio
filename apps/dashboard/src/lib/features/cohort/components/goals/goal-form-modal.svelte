@@ -202,7 +202,7 @@
       <div class="flex flex-col gap-1.5">
         <Label>{$t('cohorts.goals.modal.courses_label')} *</Label>
         {#if availableCourses.length === 0}
-          <p class="ui:text-muted-foreground text-sm">No courses in this cohort yet.</p>
+          <p class="ui:text-muted-foreground text-sm">{$t('interface_copy.no_courses_in_this_cohort_yet')}</p>
         {:else}
           <div class="flex flex-col gap-2 rounded-md border p-3">
             {#each availableCourses as item (item.courseId)}

@@ -20,7 +20,7 @@
 <Button
   data-sidebar="trigger"
   data-slot="sidebar-trigger"
-  variant="ghost"
+  variant="secondary"
   size="icon"
   class={cn('ui:size-7', className)}
   type="button"
@@ -31,5 +31,5 @@
   {...restProps}
 >
   <PanelLeftIcon />
-  <span class="sr-only">Toggle Sidebar</span>
+  <span class="ui:sr-only">{restProps['aria-label'] ?? 'Toggle Sidebar'}</span>
 </Button>

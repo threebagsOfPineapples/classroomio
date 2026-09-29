@@ -61,9 +61,9 @@
         class="custom absolute left-[5%] -translate-x-full translate-y-full text-white
             opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:opacity-100"
       />
-      <img src="/logo-192.png" alt="logo" class="h-[24px] opacity-100 group-hover:opacity-0" />
+      <img src="/logo-192.png" alt={$t('interface_copy.logo')} class="h-[24px] opacity-100 group-hover:opacity-0" />
       {#if !showOnlyLogo}
-        {$t('course.navItem.landing_page.powered_by')} ClassroomIO
+        {$t('course.navItem.landing_page.powered_by')} {$t('public_course.powered_by.brand')}
       {/if}
     </span>
   </a>

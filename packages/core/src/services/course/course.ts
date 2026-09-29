@@ -1,7 +1,7 @@
+import { assertCourseCompletionReady } from './completion-readiness';
 import { AppError, ErrorCodes } from '@cio/utils/errors';
 import { sanitizeHtml, sanitizeOptionalHtml, sanitizeUnknownStrings } from '../../utils/sanitize-html';
 import {
-  createCourseNewsfeed,
   createCourse as createCourseQuery,
   createCourseSections,
   deleteCourse as deleteCourseQuery,
@@ -36,11 +36,7 @@ import { ContentType, ROLE } from '@cio/utils/constants';
 import { isPublishedComplianceMissingDeadline, resolveCourseCertificateDeadline } from '@cio/utils/functions';
 import type { TCourse } from '@cio/db/types';
 import type { DbOrTxClient } from '@cio/db/drizzle';
-import {
-  validatePaidCourseState,
-  NonAutoGradableQuestionOffender,
-  type TCourseCreate
-} from '@cio/utils/validation/course';
+import { NonAutoGradableQuestionOffender, type TCourseCreate } from '@cio/utils/validation/course';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -283,7 +279,7 @@ export async function getCourse(courseId?: string, slug?: string, profileId?: st
 }
 
 /**
- * Creates a new course with group, group member, and default newsfeed
+ * Creates a new course with group and group member.
  * @param profileId Profile ID of the creator
  * @param data Course creation data
  * @returns Created course with group and member information
@@ -293,6 +289,10 @@ export async function createCourse(
   data: TCourseCreate
 ): Promise<{ course: TCourse; groupId: string; memberId: string }> {
   try {
+    if (data.type === 'PUBLIC') {
+      throw new AppError('企业培训不支持新建公开课程', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
     const description = sanitizeHtml(data.description);
 
     const result = await db.transaction(async (tx) => {
@@ -315,6 +315,7 @@ export async function createCourse(
           description,
           type: data.type,
           groupId: newGroup.id,
+          metadata: { allowSelfEnrollment: false },
           compliance: data.compliance ? sanitizeUnknownStrings(data.compliance) : undefined
         },
         tx
@@ -336,17 +337,6 @@ export async function createCourse(
       if (!newMember) {
         throw new AppError('Failed to add group member', ErrorCodes.INTERNAL_ERROR, 500);
       }
-
-      await createCourseNewsfeed(
-        {
-          content: sanitizeHtml(`<h2>Welcome to this course 🎉&nbsp;</h2>
-<p>Thank you for joining this course and I hope you get the best out of it.</p>`),
-          courseId: newCourse.id,
-          isPinned: true,
-          authorId: newMember.id
-        },
-        tx
-      );
 
       return {
         course: newCourse,
@@ -385,12 +375,8 @@ export async function updateCourse(
   try {
     const [existingCourse] = await getCourseById(courseId, dbClient);
 
-    const effectiveCost = data.cost !== undefined ? data.cost : (existingCourse?.cost ?? 0);
-    const effectivePaymentLink =
-      data.metadata?.paymentLink !== undefined ? data.metadata.paymentLink : existingCourse?.metadata?.paymentLink;
-
-    if (Number(effectiveCost) > 0 && !effectivePaymentLink?.trim()) {
-      throw new AppError('Paid courses require a payment link', ErrorCodes.VALIDATION_ERROR, 400);
+    if (data.type === 'PUBLIC' && existingCourse?.type !== 'PUBLIC') {
+      throw new AppError('企业培训不支持转换为公开课程', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
     const existingMetadata = existingCourse?.metadata;
@@ -416,15 +402,6 @@ export async function updateCourse(
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
     }
 
-    if (data.cost !== undefined || data.metadata !== undefined) {
-      const nextCost = data.cost === undefined ? (currentCourse.cost ?? 0) : (data.cost ?? 0);
-      const nextMetadata = sanitizedData.metadata ?? currentCourse.metadata;
-      const paidCourseIssue = validatePaidCourseState(nextCost, nextMetadata)[0];
-      if (paidCourseIssue) {
-        throw new AppError(paidCourseIssue.message, ErrorCodes.VALIDATION_ERROR, 400);
-      }
-    }
-
     let conversionOffenders: NonAutoGradableQuestionOffender[] | null = null;
 
     if (data.type !== undefined) {
@@ -443,6 +420,10 @@ export async function updateCourse(
 
     const nextType = sanitizedData.type ?? currentCourse.type;
     const nextIsPublished = sanitizedData.isPublished ?? currentCourse.isPublished;
+    if (nextIsPublished && !currentCourse.isPublished) {
+      await assertCourseCompletionReady(courseId, dbClient);
+    }
+
     const nextDeadline = resolveCourseCertificateDeadline(currentCourse.certificate?.deadline, data.certificate);
 
     if (

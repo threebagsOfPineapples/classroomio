@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { getAllContexts, onDestroy, onMount, untrack } from 'svelte';
+  import { getEditorTranslation, setEditorTranslation } from '../translation';
   import type { EdraEditorProps } from '../types';
   import initEditor from '../editor';
   import { focusEditor } from '../utils';
@@ -36,6 +37,9 @@
   import '../onedark.css';
   import { Placeholder } from '@tiptap/extensions';
 
+  const editorContext = getAllContexts();
+  const translate = getEditorTranslation();
+
   const lowlight = createLowlight(all);
 
   /**
@@ -65,20 +69,20 @@
           lowlight
         }).extend({
           addNodeView() {
-            return SvelteNodeViewRenderer(CodeBlock);
+            return SvelteNodeViewRenderer(CodeBlock, { context: editorContext });
           }
         }),
-        ImagePlaceholder(ImagePlaceholderComp).configure({
+        ImagePlaceholder(ImagePlaceholderComp, editorContext).configure({
           onOpenModal: () => (isImageModalOpen = true)
         }),
-        ImageExtended(ImageExtendedComp),
-        VideoPlaceholder(VideoPlaceHolderComp),
-        VideoExtended(VideoExtendedComp),
-        AudioPlaceholder(AudioPlaceHolderComp),
-        AudioExtended(AudioExtendedComp),
-        IFramePlaceholder(IFramePlaceHolderComp),
-        IFrameExtended(IFrameExtendedComp),
-        slashcommand(SlashCommandList)
+        ImageExtended(ImageExtendedComp, editorContext),
+        VideoPlaceholder(VideoPlaceHolderComp, editorContext),
+        VideoExtended(VideoExtendedComp, editorContext),
+        AudioPlaceholder(AudioPlaceHolderComp, editorContext),
+        AudioExtended(AudioExtendedComp, editorContext),
+        IFramePlaceholder(IFramePlaceHolderComp, editorContext),
+        IFrameExtended(IFrameExtendedComp, editorContext),
+        slashcommand(SlashCommandList, editorContext)
       ],
       {
         onUpdate,
@@ -92,6 +96,7 @@
       },
       placeholder
     );
+    setEditorTranslation(editor, translate);
   });
 
   onDestroy(() => {

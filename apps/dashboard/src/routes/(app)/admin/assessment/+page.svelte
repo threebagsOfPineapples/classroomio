@@ -1,6 +1,8 @@
 <script lang="ts">
+  import BatchMakeup from '$lib/features/enterprise/components/batch-makeup.svelte';
+  import { page } from '$app/state';
   import { currentOrg } from '$lib/utils/store/org';
-  import { t } from '$lib/utils/functions/translations';
+  import { t, locale } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
   import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
@@ -43,7 +45,16 @@
     organizationId = nextOrganizationId;
     selectedPlanId = '';
     selectedEnrollmentId = '';
-    void trainingPlansApi.load(nextOrganizationId);
+    void trainingPlansApi.load(nextOrganizationId).then(() => {
+      const planId = page.url.searchParams.get('planId');
+      if (
+        organizationId === nextOrganizationId &&
+        planId &&
+        trainingPlansApi.plans.some((plan) => plan.id === planId)
+      ) {
+        void selectPlan(planId);
+      }
+    });
     void enterpriseApi.load(nextOrganizationId);
   });
 
@@ -74,8 +85,8 @@
     draft = { name: '', description: '', passScore: 80, items: [] };
     inputScores = {};
     message = '';
-    await assessmentApi.loadManager(organizationId, planId, fromDate || undefined, toDate || undefined);
-    populateDraft();
+    const loaded = await assessmentApi.loadManager(organizationId, planId, fromDate || undefined, toDate || undefined);
+    if (loaded) populateDraft();
   }
 
   function addItem() {
@@ -151,6 +162,13 @@
       <Page.Title>{$t('enterprise.assessment.title')}</Page.Title>
       <Page.Subtitle>{$t('enterprise.assessment.subtitle')}</Page.Subtitle>
     </Page.HeaderContent>
+    {#if selectedPlanId}
+      <Page.Action
+        ><Button variant="secondary" href={`/admin/plans?planId=${selectedPlanId}`}
+          >{$t('enterprise.operations.return_plan')}</Button
+        ></Page.Action
+      >
+    {/if}
   </Page.Header>
   <Page.Body>
     {#snippet child()}
@@ -173,6 +191,29 @@
         <div class="space-y-8">
           {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
           {#if selectedPlanId}
+            <section class="space-y-3 rounded-lg border p-5">
+              <h2 class="font-semibold">{$t('enterprise.operations.plan_exercises')}</h2>
+              <p class="ui:text-muted-foreground text-sm">{$t('enterprise.operations.plan_exercises_help')}</p>
+              {#if enterpriseApi.overview?.canManage && !assessmentApi.loading}{#key selectedPlanId}<BatchMakeup
+                    {organizationId}
+                    planId={selectedPlanId}
+                    exams={assessmentApi.exercises}
+                    employees={assessmentApi.archive}
+                    directory={enterpriseApi.employees}
+                  />{/key}{/if}
+              {#each assessmentApi.exercises as exercise (exercise.id)}
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+                  <span
+                    >{exercise.title} · {$t(
+                      exercise.isExam ? 'enterprise.assessment.type_exam' : 'enterprise.assessment.type_assignment'
+                    )}</span
+                  >
+                  <Button variant="secondary" size="sm" href={`/courses/${exercise.courseId}/exercises/${exercise.id}`}
+                    >{$t('enterprise.operations.open_exercise')}</Button
+                  >
+                </div>
+              {/each}
+            </section>
             <section class="space-y-4 rounded-lg border p-5">
               <h2 class="text-lg font-semibold">{$t('enterprise.assessment.scheme')}</h2>
               {#if assessmentApi.scheme?.status === 'PUBLISHED'}
@@ -265,11 +306,19 @@
                 <div class="flex flex-wrap gap-3">
                   <Button disabled={assessmentApi.busy} onclick={saveScheme}>{$t('enterprise.save')}</Button>
                   {#if assessmentApi.scheme}
-                    <Button variant="secondary" disabled={assessmentApi.busy} onclick={publishScheme}>
+                    <Button
+                      variant="secondary"
+                      disabled={assessmentApi.busy ||
+                        trainingPlansApi.plans.find((plan) => plan.id === selectedPlanId)?.status === 'DRAFT'}
+                      onclick={publishScheme}
+                    >
                       {$t('enterprise.assessment.publish')}
                     </Button>
                   {/if}
                 </div>
+                {#if trainingPlansApi.plans.find((plan) => plan.id === selectedPlanId)?.status === 'DRAFT'}
+                  <p class="ui:text-muted-foreground text-sm">{$t('enterprise.operations.publish_plan_first')}</p>
+                {/if}
               {/if}
             </section>
 
@@ -406,7 +455,11 @@
                   >{$t('enterprise.assessment.adjustment')}</Button
                 >
                 {#each assessmentApi.detail.score?.adjustments ?? [] as entry (entry.id)}
-                  <p class="text-sm">{entry.amount} · {entry.reason} · {new Date(entry.adjustedAt).toLocaleString()}</p>
+                  <p class="text-sm">
+                    {entry.amount} · {entry.reason} · {new Date(entry.adjustedAt).toLocaleString(
+                      $locale === 'zh' ? 'zh-CN' : $locale
+                    )}
+                  </p>
                 {/each}
               </section>
             {/if}

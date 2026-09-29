@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../../translation';
+  const translate = getEditorTranslation();
   import { Button } from '$src/base/button';
   import * as DropdownMenu from '$src/base/dropdown-menu';
   import { Editor } from '@tiptap/core';
@@ -26,7 +28,7 @@
 
   const currentLabel = $derived.by(() => {
     const l = FONT_SIZE.find((f) => f.value === currentSize);
-    if (l) return l.label.split(' ')[0];
+    if (l) return l.label;
     return 'Medium';
   });
 </script>
@@ -35,7 +37,7 @@
   <DropdownMenu.Trigger>
     <EdraToolTip tooltip="Font Size">
       <Button variant="ghost" class={cn('ui:gap-0.5 !px-2', className)}>
-        <span>{currentLabel}</span>
+        <span>{translate(currentLabel)}</span>
         <ChevronDown class="ui:text-muted-foreground !size-2" />
       </Button>
     </EdraToolTip>
@@ -46,7 +48,7 @@
         onclick={() => {
           editor.chain().focus().setFontSize(fontSize.value).run();
         }}
-        style={`font-size: ${fontSize.value}`}>{fontSize.label}</DropdownMenu.Item
+        style={`font-size: ${fontSize.value}`}>{translate(fontSize.label)}</DropdownMenu.Item
       >
     {/each}
   </DropdownMenu.Content>

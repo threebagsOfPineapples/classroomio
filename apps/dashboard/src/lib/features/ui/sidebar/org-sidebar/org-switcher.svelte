@@ -2,7 +2,6 @@
   import * as Avatar from '@cio/ui/base/avatar';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import * as Breadcrumb from '@cio/ui/base/breadcrumb';
-  import PlusIcon from '@lucide/svelte/icons/plus';
   import { Skeleton } from '@cio/ui/base/skeleton';
   import { useSidebar } from '@cio/ui/base/sidebar';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
@@ -12,16 +11,9 @@
   import type { AccountOrg } from '$features/app/types';
 
   import { setTheme } from '$lib/utils/functions/theme';
-  import {
-    currentOrg,
-    currentOrgPath,
-    currentOrgPlan,
-    managedOrgs,
-    mergeAccountOrgFromServer
-  } from '$lib/utils/store/org';
+  import { currentOrg, currentOrgPath, managedOrgs, mergeAccountOrgFromServer } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
 
-  import ComingSoon from '$features/ui/coming-soon.svelte';
   import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
   const sidebar = useSidebar();
@@ -38,7 +30,6 @@
   }
 
   const accountRootId = $derived(rootIdFor($currentOrg));
-  const currentPlanName = $derived($currentOrgPlan?.planName || 'Free');
 
   const switchableOrgs = $derived($managedOrgs);
   const accountWorkspaces = $derived(switchableOrgs.filter((org) => rootIdFor(org) === accountRootId));
@@ -56,7 +47,6 @@
 </script>
 
 {#if isSelfHosted}
-  <!-- Self-hosted: show org name only, no switching -->
   {#if variant === 'breadcrumb'}
     <Breadcrumb.Link href={$currentOrgPath} class="flex items-center gap-2">
       {#if $currentOrg.name}
@@ -80,7 +70,6 @@
             </Avatar.Root>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-normal">{$currentOrg.name}</span>
-              <span class="truncate text-xs">{currentPlanName}</span>
             </div>
           {:else}
             <Skeleton class="h-full w-full" />
@@ -90,7 +79,6 @@
     </Sidebar.Menu>
   {/if}
 {:else if variant === 'breadcrumb'}
-  <!-- Breadcrumb context version -->
   <DropdownMenu.Root>
     <DropdownMenu.Trigger>
       {#snippet child({ props })}
@@ -145,21 +133,9 @@
           </DropdownMenu.Item>
         {/each}
       {/if}
-
-      <DropdownMenu.Separator />
-
-      <DropdownMenu.Item class="cursor-not-allowed gap-2 p-2 opacity-50">
-        <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
-          <PlusIcon class="size-4" />
-        </div>
-        <div class="ui:text-muted-foreground font-normal">Add Organization</div>
-
-        <ComingSoon />
-      </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 {:else}
-  <!-- Sidebar context version -->
   <Sidebar.Menu>
     <Sidebar.MenuItem>
       <DropdownMenu.Root>
@@ -180,9 +156,6 @@
                 <div class="grid flex-1 text-left text-sm leading-tight">
                   <span class="truncate font-normal">
                     {$currentOrg.name}
-                  </span>
-                  <span class="truncate text-xs">
-                    {currentPlanName}
                   </span>
                 </div>
                 <ChevronsUpDownIcon class="ml-auto" />
@@ -231,17 +204,6 @@
               </DropdownMenu.Item>
             {/each}
           {/if}
-
-          <DropdownMenu.Separator />
-
-          <DropdownMenu.Item class="cursor-not-allowed gap-2 p-2 opacity-50">
-            <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
-              <PlusIcon class="size-4" />
-            </div>
-            <div class="ui:text-muted-foreground font-normal">Add Organization</div>
-
-            <ComingSoon />
-          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </Sidebar.MenuItem>

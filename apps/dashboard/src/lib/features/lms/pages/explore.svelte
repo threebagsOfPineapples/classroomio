@@ -203,5 +203,7 @@
 {/if}
 
 {#if selectedCourse}
-  <CoursePreviewModal course={selectedCourse} bind:open={previewOpen} />
+  {#key selectedCourse.id}
+    <CoursePreviewModal course={selectedCourse} bind:open={previewOpen} />
+  {/key}
 {/if}

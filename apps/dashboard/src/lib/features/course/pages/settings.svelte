@@ -7,21 +7,18 @@
   import { Switch } from '@cio/ui/base/switch';
   import * as RadioGroup from '@cio/ui/base/radio-group';
   import * as Select from '@cio/ui/base/select';
-  import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
   import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
   import XIcon from '@lucide/svelte/icons/x';
 
   import ReorderMaterialTabs from '$features/course/components/reorder-material-tabs.svelte';
   import CertificateDeadlineRequiredDialog from '$features/course/components/certificate-deadline-required-dialog.svelte';
-  import { CourseTagPicker, PublicConversionSettingsCard } from '$features/course/components';
-  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
+  import { CourseTagPicker } from '$features/course/components';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
   import { InputField } from '@cio/ui/custom/input-field';
   import { Input } from '@cio/ui/base/input';
   import * as Field from '@cio/ui/base/field';
   import {
-    UpgradeBanner,
     UnsavedChanges,
     UploadWidget,
     TextEditor,
@@ -33,7 +30,7 @@
 
   import { settings } from '$features/course/utils/settings-store';
   import { getOrderedNavigableContent } from '$features/course/utils/content';
-  import { getNavItemRoute } from '$features/course/utils/functions';
+  import { getInternalCourseUrl, copyInternalCourseUrl } from '$features/course/utils/course-preview';
   import Copy from '@lucide/svelte/icons/copy';
   import * as Alert from '@cio/ui/base/alert';
   import LockOpenIcon from '@lucide/svelte/icons/lock-open';
@@ -42,7 +39,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { isObject } from '$lib/utils/functions/isObject';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { generateSlug, isPublishedComplianceMissingDeadline, isSelfEnrollmentAllowed } from '@cio/utils/functions';
+  import { isPublishedComplianceMissingDeadline } from '@cio/utils/functions';
   import { DEFAULT_COMPLIANCE_SETTINGS } from '../utils/compliance-utils';
   import { ContentType } from '@cio/utils/constants/content';
   import { DeleteModal } from '$features/ui';
@@ -50,9 +47,8 @@
   import { collectLockedContentItems } from '$features/course/utils/content-lock-utils';
   import { tagApi } from '$features/tag/api';
   import { uploadImage } from '$lib/utils/services/upload';
-  import { copyToClipboard } from '$lib/utils/functions/formatYoutubeVideo';
   import { handleOpenWidget } from '$features/ui/course-landing-page/store';
-  import { currentOrgDomain, currentOrgPath, isFreePlan } from '$lib/utils/store/org';
+  import { currentOrgPath, isFreePlan } from '$lib/utils/store/org';
   import { page } from '$app/stores';
   import { ROUTE_NAME, ROUTE_SECTIONS } from '$lib/routing/routes';
 
@@ -63,7 +59,6 @@
   let { hasUnsavedChanges = $bindable(false) }: Props = $props();
 
   let isLoading = $state(false);
-  let isGeneratingLink = $state(false);
   let isDeleting = $state(false);
   let openCertificateDeadlineDialog = $state(false);
   let completionDeadlineTrigger = $state(0);
@@ -128,10 +123,6 @@
   function widgetControl() {
     $handleOpenWidget.open = !$handleOpenWidget.open;
   }
-
-  const downloadCourse = async () => {
-    alert($t('course.navItem.settings.coming_soon'));
-  };
 
   const deleteBannerImage = () => {
     $settings.logo = '';
@@ -199,7 +190,6 @@
     // Otherwise, publish normally
     $settings.isPublished = true;
     $settings.status = 'ACTIVE';
-    $settings.allowSelfEnrollment = true;
     hasUnsavedChanges = true;
   }
 
@@ -216,11 +206,6 @@
 
     if (!$settings.courseDescription) {
       errors.description = $t('snackbar.course_settings.error.description');
-      return;
-    }
-
-    if (Number(courseApi.course?.cost) > 0 && !(courseApi.course?.metadata?.paymentLink ?? '').trim()) {
-      snackbar.error('course.navItem.landing_page.editor.pricing_form.payment_required');
       return;
     }
 
@@ -243,10 +228,6 @@
       ) {
         openCertificateDeadlineDialog = true;
         return;
-      }
-
-      if ($settings.isPublished && !courseApi.course.slug) {
-        courseApi.course.slug = generateSlug($settings.courseTitle, { appendTimestamp: true });
       }
 
       const metadataPayload = {
@@ -278,7 +259,6 @@
         slug: courseApi.course.slug ?? undefined,
         compliance:
           $settings.type === 'COMPLIANCE' ? (courseApi.course.compliance ?? DEFAULT_COMPLIANCE_SETTINGS) : undefined,
-        callout: $settings.type === 'PUBLIC' ? sanitizeCalloutForSave($settings.callout) : null,
         certificate: {
           ...(courseApi.course.certificate ?? {}),
           deadline: $settings.certificate.deadline,
@@ -316,37 +296,13 @@
     }
   }
 
-  const generateNewCourseLink = async () => {
-    if (!courseApi.course || isGeneratingLink) return;
-
-    isGeneratingLink = true;
-    try {
-      const newSlug = generateSlug(courseApi.course.title, { appendTimestamp: true });
-      const response = await courseApi.update(courseApi.course.id, { slug: newSlug }, { showSuccessToast: false });
-
-      if (courseApi.success && response) {
-        courseApi.course.slug = response.slug ?? newSlug;
-        snackbar.success('snackbar.course_settings.success.link_generated');
-      }
-    } catch (error) {
-      console.error(error);
-      snackbar.error();
-    } finally {
-      isGeneratingLink = false;
-    }
-  };
-
   async function setDefault(course: Course) {
     if (!course || !Object.keys(course).length) return;
-
-    const isConversionFlowActive = publicConversionFlow.isActive && publicConversionFlow.courseId === course.id;
 
     untrack(() => {
       settings.set({
         courseTitle: course.title,
-        type: isConversionFlowActive
-          ? ('PUBLIC' as TCourseType)
-          : (course.type as TCourseType) || ('SELF_PACED' as TCourseType),
+        type: (course.type as TCourseType) || 'SELF_PACED',
         courseDescription: course.description,
         logo: course.logo || '',
         tabs: course.metadata?.lessonTabsOrder || $settings.tabs,
@@ -363,7 +319,7 @@
         credit: course.credit ?? null,
         targetAudience: course.targetAudience ?? '',
         required: course.required ?? null,
-        allowSelfEnrollment: isSelfEnrollmentAllowed(course.metadata),
+        allowSelfEnrollment: course.metadata?.allowSelfEnrollment ?? false,
         isContentGroupingEnabled: course.metadata?.isContentGroupingEnabled ?? true,
         progressionMode: course.metadata?.progressionMode ?? 'free',
         commentsEnabled: course.metadata?.commentsEnabled ?? true,
@@ -387,27 +343,12 @@
   export function handleDiscard() {
     if (!courseApi.course) return;
 
-    publicConversionFlow.cancel();
     setDefault(courseApi.course);
     selectedTagIds = [...initialTagIds];
     avatar = undefined;
     errors = { title: undefined, description: undefined };
     delete courseApi.errors.type;
     hasUnsavedChanges = false;
-  }
-
-  function sanitizeCalloutForSave(value: typeof $settings.callout) {
-    if (!value) return null;
-
-    const title = value.title.trim();
-    const description = value.description.trim();
-    const buttonLabel = value.buttonLabel.trim();
-    const buttonUrl = value.buttonUrl.trim();
-    const animation = value.animation ?? 'waves';
-
-    if (!title && !description && !buttonLabel && !buttonUrl) return null;
-
-    return { title, description, buttonLabel, buttonUrl, animation };
   }
 
   function normalizeCallout(value: unknown): typeof $settings.callout {
@@ -450,17 +391,7 @@
     const course = courseApi.course;
     if (course?.id && initializedCourseId !== course.id) {
       initializedCourseId = course.id;
-      publicConversionFlow.restoreForCourse(course.id);
       setDefault(course);
-    }
-  });
-
-  $effect(() => {
-    if ($settings.type === 'PUBLIC' && $settings.callout === null) {
-      settings.update((prev) => ({
-        ...prev,
-        callout: { title: '', description: '', buttonLabel: '', buttonUrl: '', animation: 'waves' }
-      }));
     }
   });
 
@@ -508,21 +439,7 @@
 
   const hasAnyTagsCreated = $derived(tagApi.tagGroups.some((group) => group.tags.length > 0));
 
-  let courseLink = $derived(courseApi.course?.slug ? `${$currentOrgDomain}/course/${courseApi.course.slug}` : '#');
-  const landingPageHref = $derived(
-    courseApi.course?.id ? resolve(getNavItemRoute(courseApi.course.id, 'landingpage'), {}) : '#'
-  );
-
-  const PEOPLE_LINK_MARKER = '@@people@@';
-
-  const peoplePageHref = $derived(courseApi.course?.id ? resolve(`/courses/${courseApi.course.id}/people`, {}) : '#');
-
-  const selfEnrollmentAccessParts = $derived.by(() => {
-    const accessText = $t('course.navItem.settings.access', { people: PEOPLE_LINK_MARKER });
-    const [before = '', after = ''] = accessText.split(PEOPLE_LINK_MARKER);
-
-    return { before, after };
-  });
+  const courseLink = $derived(courseApi.course?.id ? getInternalCourseUrl(courseApi.course.id) : '');
 
   const certExercises = $derived(
     getOrderedNavigableContent(courseApi.course).filter((item) => item.type === ContentType.Exercise)
@@ -657,48 +574,31 @@
       </div>
 
       <Field.Field id="share" class="scroll-mt-24">
-        <Field.Label class="justify-between">
-          <a href="#share" class="hover:underline">{$t('course.navItem.settings.link')}</a>
-          {#if courseApi.course?.slug}
-            <div class="flex items-center gap-1">
-              <IconButton
-                onclick={generateNewCourseLink}
-                loading={isGeneratingLink}
-                tooltip={$t('course.navItem.settings.generate_link')}
-              >
-                <RotateCcwIcon size={16} />
-              </IconButton>
-              <IconButton
-                href={courseLink}
-                target="_blank"
-                disabled={isGeneratingLink || !courseApi.course?.slug}
-                tooltip={$t('course.navItem.settings.open_link')}
-              >
-                <ArrowUpRightIcon size={16} />
-              </IconButton>
-            </div>
-          {/if}
-        </Field.Label>
-
-        {#if courseApi.course?.slug}
-          <div class="flex items-center justify-between rounded-md border p-1">
-            <p class="min-w-0 truncate text-sm">{courseLink}</p>
+        <Field.Label>{$t('enterprise.course.internal_link')}</Field.Label>
+        <Field.Description>{$t('enterprise.course.internal_link_description')}</Field.Description>
+        <div class="flex items-center justify-between gap-2 rounded-md border p-2">
+          <p class="min-w-0 truncate text-sm">{courseLink}</p>
+          <div class="flex shrink-0 items-center gap-1">
             <IconButton
-              onclick={() => {
-                copyToClipboard(courseLink);
-              }}
-              disabled={isGeneratingLink}
+              variant="secondary"
+              href={courseLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              tooltip={$t('course.navItem.settings.open_link')}
+              disabled={!courseLink}
+            >
+              <ArrowUpRightIcon size={16} />
+            </IconButton>
+            <IconButton
+              variant="secondary"
+              onclick={() => courseApi.course?.id && copyInternalCourseUrl(courseApi.course.id)}
+              disabled={!courseLink}
               tooltip={$t('course.navItem.settings.copy_link')}
             >
               <Copy size={16} />
             </IconButton>
           </div>
-        {:else}
-          <Field.Description>{$t('course.navItem.settings.setup_landing_for_link')}</Field.Description>
-          <Button variant="secondary" href={landingPageHref} class="w-fit">
-            {$t('course.navItem.settings.setup_landing_page')}
-          </Button>
-        {/if}
+        </div>
       </Field.Field>
 
       <Field.Field id="tags" class="scroll-mt-24">
@@ -889,35 +789,23 @@
 
   <AttentionHighlight id="course-type" scrollBlock="center" class="scroll-mt-24">
     <SettingsCard hash="course-type" title={$t('course.navItem.settings.type')}>
-      {#snippet description()}
-        {$t('course.navItem.settings.course_type_desc')}
-        <a
-          href="https://classroomio.com/help/create-and-deliver/course-types"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="ui:text-primary underline"
-        >
-          {$t('course.navItem.settings.course_type_learn_more')}
-        </a>
-      {/snippet}
       <Field.Group>
         <Field.Field>
           <Select.Root
             type="single"
             value={$settings.type}
             onValueChange={(value) => {
-              if (!value) return;
+              if (value !== 'SELF_PACED' && value !== 'LIVE_CLASS' && value !== 'COMPLIANCE') return;
+
               $settings.type = value as TCourseType;
-              if (value !== 'PUBLIC') {
-                delete courseApi.errors.type;
-                courseApi.publicConversionOffenders = [];
-                publicConversionFlow.cancel();
-              }
+              delete courseApi.errors.type;
               hasUnsavedChanges = true;
             }}
           >
             <Select.Trigger class="w-full">
-              {$t(`course.navItem.settings.${$settings.type.toLowerCase()}`)}
+              {$settings.type === 'PUBLIC'
+                ? $t('enterprise.course.legacy_public')
+                : $t(`course.navItem.settings.${$settings.type.toLowerCase()}`)}
             </Select.Trigger>
             <Select.Content>
               <Select.Group>
@@ -930,32 +818,17 @@
                 <Select.Item value="COMPLIANCE" label={$t('course.navItem.settings.compliance')}>
                   {$t('course.navItem.settings.compliance')}
                 </Select.Item>
-                <Select.Item value="PUBLIC" label={$t('course.navItem.settings.public')}>
-                  {$t('course.navItem.settings.public')}
-                </Select.Item>
+                {#if courseApi.course?.type === 'PUBLIC'}
+                  <Select.Item value="PUBLIC" label={$t('enterprise.course.legacy_public')} disabled>
+                    {$t('enterprise.course.legacy_public')}
+                  </Select.Item>
+                {/if}
               </Select.Group>
             </Select.Content>
           </Select.Root>
         </Field.Field>
 
-        {#if publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id && publicConversionFlow.offenders.length > 0}
-          {#if courseApi.course}
-            <PublicConversionSettingsCard
-              class="mt-4"
-              course={courseApi.course}
-              offenders={publicConversionFlow.offenders}
-              disabled={hasUnsavedChanges}
-              onCancel={() => {
-                if (courseApi.course) {
-                  $settings.type = (courseApi.course.type as TCourseType) || 'SELF_PACED';
-                  delete courseApi.errors.type;
-                  publicConversionFlow.cancel();
-                  hasUnsavedChanges = false;
-                }
-              }}
-            />
-          {/if}
-        {:else if courseApi.errors.type}
+        {#if courseApi.errors.type}
           <p class="ui:text-destructive/90 mt-2 text-sm">{courseApi.errors.type}</p>
         {/if}
 
@@ -1147,134 +1020,8 @@
     </Field.Group>
   </SettingsCard>
 
-  {#if $settings.type === 'PUBLIC' && $settings.callout}
-    <SettingsCard
-      id="callout"
-      title={$t('course.navItem.settings.callout.legend')}
-      description={$t('course.navItem.settings.callout.description')}
-    >
-      <Field.Group>
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.title_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.title}
-            onInputChange={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.title_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.description_label')}</Field.Label>
-          <TextareaField
-            bind:value={$settings.callout.description}
-            oninput={() => (hasUnsavedChanges = true)}
-            rows={3}
-            placeholder={$t('course.navItem.settings.callout.description_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.button_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.buttonLabel}
-            onInputChange={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.button_label_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.button_url_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.buttonUrl}
-            onInputChange={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.button_url_placeholder')}
-            type="url"
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.animation_label')}</Field.Label>
-          <Field.Description>
-            {$t('course.navItem.settings.callout.animation_description')}
-          </Field.Description>
-          <RadioGroup.Root
-            value={$settings.callout.animation ?? 'waves'}
-            onValueChange={(value) => {
-              if (!$settings.callout) return;
-              const next = value === 'dotted' || value === 'none' ? value : 'waves';
-              settings.update((prev) =>
-                prev.callout ? { ...prev, callout: { ...prev.callout, animation: next } } : prev
-              );
-              hasUnsavedChanges = true;
-            }}
-            class="mt-1 flex flex-col gap-2"
-          >
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="waves" id="callout-animation-waves" />
-              <Label for="callout-animation-waves">
-                {$t('course.navItem.settings.callout.animation_waves')}
-              </Label>
-            </Field.Field>
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="dotted" id="callout-animation-dotted" />
-              <Label for="callout-animation-dotted">
-                {$t('course.navItem.settings.callout.animation_dotted')}
-              </Label>
-            </Field.Field>
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="none" id="callout-animation-none" />
-              <Label for="callout-animation-none">
-                {$t('course.navItem.settings.callout.animation_none')}
-              </Label>
-            </Field.Field>
-          </RadioGroup.Root>
-        </Field.Field>
-
-        <Field.Field>
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => {
-              settings.update((prev) => ({ ...prev, callout: null }));
-              hasUnsavedChanges = true;
-            }}
-          >
-            {$t('course.navItem.settings.callout.clear')}
-          </Button>
-        </Field.Field>
-      </Field.Group>
-    </SettingsCard>
-  {/if}
-
   <SettingsCard id="access" title={$t('course.navItem.settings.access_card_title')}>
     <Field.Group>
-      <Field.Set id="self-enrollment" class="scroll-mt-24">
-        <Field.Field orientation="horizontal">
-          <Field.Content>
-            <Field.Label for="allow-self-enrollment">
-              <a href="#self-enrollment" class="hover:underline">{$t('course.navItem.settings.allow')}</a>
-            </Field.Label>
-            <Field.Description>
-              {selfEnrollmentAccessParts.before}<a
-                href={peoplePageHref}
-                data-testid="course-settings-people-link"
-                class="ui:text-primary">{$t('course.navItem.settings.access_people')}</a
-              >{selfEnrollmentAccessParts.after}
-            </Field.Description>
-          </Field.Content>
-          <Switch
-            id="allow-self-enrollment"
-            checked={$settings.allowSelfEnrollment}
-            onCheckedChange={(checked) => {
-              $settings.allowSelfEnrollment = checked;
-              hasUnsavedChanges = true;
-            }}
-          />
-        </Field.Field>
-      </Field.Set>
-
-      <SettingsSeparator />
-
       <Field.Field id="markdown-export" class="scroll-mt-24" orientation="horizontal">
         <Field.Content>
           <Field.Label for="allow-markdown-export">
@@ -1334,9 +1081,7 @@
 
       <SettingsSeparator />
 
-      {#if $isFreePlan}
-        <UpgradeBanner>{$t('upgrade.download_lessons')}</UpgradeBanner>
-      {:else}
+      {#if !$isFreePlan}
         <Field.Field class="scroll-mt-24" orientation="horizontal">
           <Field.Content>
             <Field.Label for="lesson-download">
@@ -1352,24 +1097,6 @@
               hasUnsavedChanges = true;
             }}
           />
-        </Field.Field>
-      {/if}
-
-      <SettingsSeparator />
-
-      {#if $isFreePlan}
-        <UpgradeBanner>{$t('upgrade.download_course')}</UpgradeBanner>
-      {:else}
-        <Field.Field id="course-download" class="scroll-mt-24" orientation="horizontal">
-          <Field.Content>
-            <Field.Label>
-              <a href="#course-download" class="hover:underline">{$t('course.navItem.settings.course_download')}</a>
-            </Field.Label>
-            <Field.Description>{$t('course.navItem.settings.course_avail')}</Field.Description>
-          </Field.Content>
-          <Button variant="outline" onclick={downloadCourse} disabled={isLoading} loading={isLoading}>
-            {$t('course.navItem.settings.download')}
-          </Button>
         </Field.Field>
       {/if}
     </Field.Group>

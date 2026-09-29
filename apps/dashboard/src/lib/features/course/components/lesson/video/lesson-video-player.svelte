@@ -12,7 +12,7 @@
   import { lessonApi } from '$features/course/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { AssetTranscriptPayload } from '$features/media/utils/types';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, canRecordCourseLearning } from '$lib/utils/store/app';
   import { resolveWatchEnforcedAssetIds, type LessonVideo } from './video-card-utils';
   import { lessonVideoBus } from './lesson-video-bus.svelte';
   import { TRANSCRIPT_PANEL_ID } from './transcript-panel-definition';
@@ -353,7 +353,7 @@
 
   const seekPolicy = $derived.by(() => {
     const lesson = lessonApi.lesson;
-    if (!$isCourseLearnerView || !lesson || lesson.completionPolicy !== 'video_watch' || !isWatchEnforcedForVideo) {
+    if (!$canRecordCourseLearning || !lesson || lesson.completionPolicy !== 'video_watch' || !isWatchEnforcedForVideo) {
       return undefined;
     }
 
@@ -367,7 +367,7 @@
       initialFurthestSeconds: assetWatchProgress?.furthestSeconds ?? 0,
       pauseOnHidden: true,
       onProgress: (payload: { positionSeconds: number; playedDeltaSeconds: number; durationSeconds: number }) => {
-        if (!uploadAssetId) return;
+        if (!$canRecordCourseLearning || !uploadAssetId) return;
 
         void lessonApi.reportWatchProgress(courseId, lessonId, {
           ...payload,
@@ -381,7 +381,7 @@
   });
 
   async function restoreWatchProgress(): Promise<void> {
-    if (!$isCourseLearnerView || !uploadAssetId) return;
+    if (!$canRecordCourseLearning || !uploadAssetId) return;
 
     const cachedAsset = assetWatchProgress;
     if (cachedAsset?.lastPositionSeconds && cachedAsset.lastPositionSeconds > 0) {

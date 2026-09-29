@@ -344,14 +344,6 @@
                 <Alert.Description>
                   <p>
                     {$t('course.navItem.lessons.settings.progression.watch_videos_empty')}
-                    <a
-                      href="https://classroomio.com/help/create-and-deliver/course-progression"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="ui:text-primary underline"
-                    >
-                      {$t('course.navItem.lessons.settings.progression.watch_videos_learn_more')}
-                    </a>
                   </p>
                 </Alert.Description>
               </Alert.Root>

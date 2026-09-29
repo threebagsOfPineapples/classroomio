@@ -44,7 +44,7 @@ export class QuizApi extends BaseApiWithErrors {
         }
       },
       onError: () => {
-        snackbar.error('Failed to list quizzes');
+        snackbar.error('interface_feedback.failed_to_list_quizzes');
       }
     });
   }
@@ -67,7 +67,7 @@ export class QuizApi extends BaseApiWithErrors {
         }
       },
       onError: () => {
-        snackbar.error('Failed to fetch quiz');
+        snackbar.error('interface_feedback.failed_to_fetch_quiz');
       }
     });
   }
@@ -91,7 +91,7 @@ export class QuizApi extends BaseApiWithErrors {
         }
       },
       onError: () => {
-        snackbar.error('Failed to create quiz');
+        snackbar.error('interface_feedback.failed_to_create_quiz');
       }
     });
 
@@ -124,7 +124,7 @@ export class QuizApi extends BaseApiWithErrors {
         }
       },
       onError: () => {
-        snackbar.error('Failed to update quiz');
+        snackbar.error('interface_feedback.failed_to_update_quiz');
       }
     });
   }
@@ -148,7 +148,7 @@ export class QuizApi extends BaseApiWithErrors {
         this.errors = {};
       },
       onError: () => {
-        snackbar.error('Failed to delete quiz');
+        snackbar.error('interface_feedback.failed_to_delete_quiz');
       }
     });
   }

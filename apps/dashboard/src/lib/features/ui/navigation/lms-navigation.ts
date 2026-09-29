@@ -1,7 +1,5 @@
 import {
   CertificateIcon,
-  CommunityIcon,
-  CourseIcon,
   ExerciseIcon,
   ExploreIcon,
   GoalIcon,
@@ -12,8 +10,6 @@ import {
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
-import { isOrgOnFreePlan } from '@cio/utils/plans';
-import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
 export interface NavItem {
   title: string;
@@ -55,28 +51,10 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/lms/?$'
   },
   {
-    titleKey: 'lms_navigation.my_learning',
-    path: '/mylearning',
-    icon: CourseIcon,
-    matchPattern: '^/lms/mylearning(/.*)?$'
-  },
-  {
     titleKey: 'enterprise.my_training.title',
     path: '/training',
     icon: GoalIcon,
-    matchPattern: '^/lms/training(/.*)?$'
-  },
-  {
-    titleKey: 'lms_navigation.certificates',
-    path: '/certificates',
-    icon: CertificateIcon,
-    matchPattern: '^/lms/certificates(/.*)?$',
-    show: (currentOrg) =>
-      !isOrgOnFreePlan({
-        plans: currentOrg?.plans,
-        isSelfHosted: PUBLIC_IS_SELFHOSTED === 'true',
-        orgId: currentOrg?.id
-      })
+    matchPattern: '^/lms/training(?!/archive)(/.*)?$'
   },
   {
     titleKey: 'lms_navigation.explore',
@@ -85,31 +63,16 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/lms/explore(/.*)?$'
   },
   {
-    titleKey: 'lms_navigation.cohorts',
-    path: '/cohorts',
-    icon: GoalIcon,
-    matchPattern: '^/lms/cohorts(/.*)?$'
-  },
-  {
     titleKey: 'lms_navigation.exercise',
     path: '/exercises',
     icon: ExerciseIcon,
-    matchPattern: '^/lms/exercises(/.*)?$',
-    show: (currentOrg) => currentOrg?.customization?.dashboard?.exercise === true
+    matchPattern: '^/lms/exercises(/.*)?$'
   },
   {
-    titleKey: 'lms_navigation.community',
-    path: '/community',
-    icon: CommunityIcon,
-    matchPattern: '^/lms/community(/.*)?$',
-    show: (currentOrg) => currentOrg?.customization?.dashboard?.community === true,
-    supportsDynamicSegment: true,
-    nestedRoutes: [
-      {
-        path: 'ask',
-        titleKey: 'Ask Question'
-      }
-    ]
+    titleKey: 'enterprise.assessment.archive',
+    path: '/training/archive',
+    icon: CertificateIcon,
+    matchPattern: '^/lms/(training/archive|certificates)(/.*)?$'
   },
   {
     titleKey: 'lms_navigation.settings',

@@ -233,7 +233,7 @@
       if (requestId !== historyRequestId) return;
 
       console.error(error);
-      snackbar.error('Failed to fetch history');
+      snackbar.error('interface_feedback.failed_to_fetch_history');
     } finally {
       if (requestId === historyRequestId) {
         isHistoryLoading = false;
@@ -258,7 +258,7 @@
       dispatch('restore');
     } catch (error) {
       console.error(error);
-      snackbar.error('Failed to restore');
+      snackbar.error('interface_feedback.failed_to_restore');
     } finally {
       contentRestoreLoading = false;
     }

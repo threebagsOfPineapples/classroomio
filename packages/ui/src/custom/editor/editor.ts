@@ -1,6 +1,7 @@
 import { Editor, type Extensions, type EditorOptions, type Content } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { getHandlePaste } from './utils';
+import { getEditorTranslation } from './translation';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import Typography from '@tiptap/extension-typography';
@@ -82,7 +83,8 @@ export default (
       MathMatics.configure({
         blockOptions: {
           onClick: (node, pos) => {
-            const newCalculation = prompt('Enter new calculation:', node.attrs.latex);
+            const translate = getEditorTranslation(editor);
+            const newCalculation = prompt(translate('Enter new calculation:'), node.attrs.latex);
             if (newCalculation) {
               editor.chain().setNodeSelection(pos).updateBlockMath({ latex: newCalculation }).focus().run();
             }
@@ -90,7 +92,8 @@ export default (
         },
         inlineOptions: {
           onClick: (node, pos) => {
-            const newCalculation = prompt('Enter new calculation:', node.attrs.latex);
+            const translate = getEditorTranslation(editor);
+            const newCalculation = prompt(translate('Enter new calculation:'), node.attrs.latex);
             if (newCalculation) {
               editor.chain().setNodeSelection(pos).updateInlineMath({ latex: newCalculation }).focus().run();
             }

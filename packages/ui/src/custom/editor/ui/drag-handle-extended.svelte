@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../translation';
+  const translate = getEditorTranslation();
   import type { Editor } from '@tiptap/core';
   import { onMount } from 'svelte';
   import GripVertical from '@lucide/svelte/icons/grip-vertical';
@@ -110,7 +112,7 @@
   </Button>
   <DropdownMenu.Root bind:open>
     <DropdownMenu.Trigger class="sr-only">
-      <span>Drag Handle</span>
+      <span>{translate('Drag Handle')}</span>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Group>
@@ -120,7 +122,7 @@
         <DropdownMenu.Sub>
           <DropdownMenu.SubTrigger openDelay={300}>
             <Repeat2 />
-            Turn Into
+            {translate('Turn Into')}
           </DropdownMenu.SubTrigger>
           <DropdownMenu.SubContent class="ui:max-h-96 ui:overflow-auto ui:duration-300">
             {#each turnIntoCommand as command (command)}
@@ -131,7 +133,7 @@
                 }}
               >
                 <Icon />
-                <span>{command.tooltip}</span>
+                <span>{translate(command.tooltip ?? '')}</span>
                 <DropdownMenu.Shortcut class="ui:bg-background ui:rounded ui:border ui:p-0.5"
                   >{command.shortCut}</DropdownMenu.Shortcut
                 >
@@ -143,25 +145,25 @@
       <DropdownMenu.Separator />
       <DropdownMenu.Item onclick={handleAddNodeNext}>
         <Plus />
-        Add Node
+        {translate('Add Node')}
       </DropdownMenu.Item>
       <DropdownMenu.Item onclick={handleRemoveFormatting}>
         <RemoveFormatting />
-        Remove Formatting
+        {translate('Remove Formatting')}
       </DropdownMenu.Item>
       <DropdownMenu.Separator />
       <DropdownMenu.Item onclick={handleDuplicate}>
         <Duplicate />
-        Duplicate Node
+        {translate('Duplicate Node')}
       </DropdownMenu.Item>
       <DropdownMenu.Item onclick={handleCopyToClipboard}>
         <Clipboard />
-        Copy to clipboard
+        {translate('Copy to clipboard')}
       </DropdownMenu.Item>
       <DropdownMenu.Separator />
       <DropdownMenu.Item onclick={handleDelete}>
         <Delete class="ui:text-destructive" />
-        Delete Node
+        {translate('Delete Node')}
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>

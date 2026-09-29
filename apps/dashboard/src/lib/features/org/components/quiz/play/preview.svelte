@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
   import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
@@ -67,7 +68,7 @@
             {#if currentQuestion}
               <QuizQuestion {currentQuestion} isPreview={true} />
             {:else}
-              <h2>No question added</h2>
+              <h2>{$t('interface_copy.no_question_added')}</h2>
             {/if}
           </div>
         {/snippet}
@@ -75,7 +76,7 @@
         {#snippet footer()}
           <div class="flex flex-col justify-center">
             {#if currentQuestion}
-              <Button variant="ghost" onclick={exitPreview} class="w-fit">Exit Preview</Button>
+              <Button variant="ghost" onclick={exitPreview} class="w-fit">{$t('interface_copy.exit_preview')}</Button>
 
               <div class="flex items-center justify-center">
                 <IconButton onclick={handlePrev}>

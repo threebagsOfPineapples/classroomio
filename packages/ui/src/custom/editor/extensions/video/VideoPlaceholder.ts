@@ -23,7 +23,7 @@ declare module '@tiptap/core' {
   }
 }
 
-export const VideoPlaceholder = (content: Component<NodeViewProps>) =>
+export const VideoPlaceholder = (content: Component<NodeViewProps>, context?: Map<unknown, unknown>) =>
   Node.create<VideoPlaceholderOptions>({
     name: 'video-placeholder',
     addOptions() {
@@ -48,7 +48,7 @@ export const VideoPlaceholder = (content: Component<NodeViewProps>) =>
     isolating: true,
 
     addNodeView() {
-      return SvelteNodeViewRenderer(content);
+      return SvelteNodeViewRenderer(content, { context });
     },
     addCommands() {
       return {

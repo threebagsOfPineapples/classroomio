@@ -1,5 +1,6 @@
+import { redirect } from '@sveltejs/kit';
+import { resolve } from '$app/paths';
+
 export const load = ({ params }) => {
-  return {
-    courseId: params.id || ''
-  };
+  redirect(307, resolve(`/courses/${params.id}/lessons`, {}));
 };

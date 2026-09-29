@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import CircleContent from './circle-content.svelte';
 
   interface Props {
@@ -8,4 +9,4 @@
   let { answers = 0 }: Props = $props();
 </script>
 
-<CircleContent value={answers} label="Answer(s)" />
+<CircleContent value={answers} label={$t('components.quiz.answer')} />

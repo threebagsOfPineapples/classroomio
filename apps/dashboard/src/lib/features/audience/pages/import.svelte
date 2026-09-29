@@ -14,7 +14,6 @@
     AUDIENCE_IMPORT_ACCEPT,
     AUDIENCE_IMPORT_MAX_FILE_BYTES,
     AUDIENCE_IMPORT_MAX_ROWS,
-    AUDIENCE_IMPORT_TEMPLATE,
     type ParsedImportRow,
     parseAudienceImportCsv
   } from '@cio/utils/validation/organization';
@@ -202,7 +201,11 @@
       </FileDropZone.Trigger>
     </FileDropZone.Root>
 
-    <Button variant="link" class="h-auto p-0" onclick={() => downloadImportTemplate(AUDIENCE_IMPORT_TEMPLATE)}>
+    <Button
+      variant="link"
+      class="h-auto p-0"
+      onclick={() => downloadImportTemplate($t('audience.import.template_content'))}
+    >
       {$t('audience.import.download_template')}
     </Button>
 

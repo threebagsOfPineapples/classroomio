@@ -5,7 +5,6 @@
   import { CircleCheckBig } from '@lucide/svelte';
   import { profileApi } from '$features/auth/api/profile.svelte';
   import { t } from '$lib/utils/functions/translations';
-  import LanguagePicker from '../components/language-picker.svelte';
   import { Input } from '@cio/ui/base/input';
   import { Button } from '@cio/ui/base/button';
   import { UploadImage, UnsavedChanges } from '$features/ui';
@@ -187,14 +186,6 @@
             <p class="text-sm">{$t('settings.profile.personal_information.email_change_verification_note')}</p>
           </div>
         {/if}
-      </Field.Field>
-      <Field.Field>
-        <LanguagePicker
-          change={() => (hasUnsavedChanges = true)}
-          bind:hasLangChanged
-          bind:value={locale}
-          className=""
-        />
       </Field.Field>
     </Field.Group>
   </Field.Set>

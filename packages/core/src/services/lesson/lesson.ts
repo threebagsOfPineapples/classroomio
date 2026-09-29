@@ -410,38 +410,7 @@ export async function getLessonCompletionService(lessonId: string, profileId: st
  * @returns Completion record
  */
 export async function upsertLessonCompletionService(lessonId: string, profileId: string, isComplete: boolean) {
-  try {
-    const lesson = await getLessonById(lessonId);
-    if (!lesson) {
-      throw new AppError('Lesson not found', ErrorCodes.LESSON_NOT_FOUND, 404);
-    }
-
-    if (lesson.completionPolicy === 'video_watch' && isComplete) {
-      throw new AppError(
-        'This lesson completes automatically when the video watch requirement is met',
-        ErrorCodes.VALIDATION_ERROR,
-        400
-      );
-    }
-
-    const completionData: TNewLessonCompletion = {
-      lessonId,
-      profileId,
-      isComplete
-    };
-
-    return await upsertLessonCompletion(completionData);
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to update lesson completion',
-      ErrorCodes.INTERNAL_ERROR,
-      500
-    );
-  }
+  throw new AppError('学习完成状态由系统根据学习记录判定，不能手动修改', ErrorCodes.VALIDATION_ERROR, 403);
 }
 
 const WATCH_PROGRESS_WALL_CLOCK_TOLERANCE = 1.5;

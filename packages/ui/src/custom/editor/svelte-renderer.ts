@@ -3,6 +3,7 @@ import type { Editor, NodeViewProps } from '@tiptap/core';
 
 interface RendererOptions<P extends Record<string, unknown>> {
   editor: Editor;
+  context?: Map<unknown, unknown>;
   props: P;
 }
 
@@ -13,17 +14,19 @@ class SvelteRenderer<R = unknown, P extends Record<string, any> = object> {
   id: string;
   component: App;
   editor: Editor;
+  context?: Map<unknown, unknown>;
   props: P;
   element: HTMLElement;
   ref: R | null = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mnt: Record<any, any> | null = null;
 
-  constructor(component: App, { props, editor }: RendererOptions<P>) {
+  constructor(component: App, { props, editor, context }: RendererOptions<P>) {
     this.id = Math.floor(Math.random() * 0xffffffff).toString();
     this.component = component;
     this.props = props;
     this.editor = editor;
+    this.context = context;
 
     this.element = document.createElement('div');
     this.element.classList.add('svelte-renderer');
@@ -43,6 +46,7 @@ class SvelteRenderer<R = unknown, P extends Record<string, any> = object> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.mnt = mount(this.component as any, {
       target: this.element,
+      context: this.context,
       props: {
         props: this.props
       }

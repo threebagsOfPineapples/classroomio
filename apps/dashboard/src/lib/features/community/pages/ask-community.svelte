@@ -52,7 +52,11 @@
   </div>
 </div>
 <div class="px-2">
-  <TextEditor placeholder="Give an answer" content={fields.body} onChange={(content) => (fields.body = content)} />
+  <TextEditor
+    placeholder={$t('community.ask.give')}
+    content={fields.body}
+    onChange={(content) => (fields.body = content)}
+  />
 
   {#if communityApi.errors.body}
     <p class="mt-2 text-sm text-red-500">{communityApi.errors.body}</p>

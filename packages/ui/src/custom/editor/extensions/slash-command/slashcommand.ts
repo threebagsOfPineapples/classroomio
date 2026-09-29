@@ -23,7 +23,7 @@ const popup: PopupState = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default (menuList: Component<any, any, ''>): Extension =>
+export default (menuList: Component<any, any, ''>, context?: Map<unknown, unknown>): Extension =>
   Extension.create({
     name: extensionName,
 
@@ -113,6 +113,7 @@ export default (menuList: Component<any, any, ''>): Extension =>
               onStart: (props: SuggestionProps) => {
                 component = new SvelteRenderer(menuList, {
                   props,
+                  context,
                   editor: props.editor
                 });
 

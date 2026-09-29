@@ -14,7 +14,7 @@
   }: { courses: UserEnrolledCourses; loading?: boolean; error?: string | null; onRetry: () => void } = $props();
   let filter = $state('pending');
   let search = $state('');
-  const filters = ['pending', 'in_progress', 'not_started', 'completed', 'all'];
+  const filters = ['all', 'required', 'optional', 'pending', 'completed'];
   const visibleCourses = $derived(filterLearningCourses(courses, filter, search));
 
   function showAllCourses() {
@@ -28,7 +28,11 @@
     <div class="training-filters" aria-label={$t('enterprise.ui_v2.course_filter')}>
       {#each filters as value}
         <Button size="sm" variant="ghost" aria-pressed={filter === value} onclick={() => (filter = value)}>
-          {$t(`enterprise.ui_v2.${value}`)}
+          {$t(
+            value === 'required' || value === 'optional'
+              ? `enterprise.learner_home.${value}`
+              : `enterprise.ui_v2.${value}`
+          )}
           <span class="text-xs">{loading || error ? '—' : filterLearningCourses(courses, value).length}</span>
         </Button>
       {/each}

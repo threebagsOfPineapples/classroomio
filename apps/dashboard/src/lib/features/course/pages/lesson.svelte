@@ -16,7 +16,12 @@
 
   import MODES from '$lib/utils/constants/mode';
   import { profile } from '$lib/utils/store/user';
-  import { isCourseLearnerView, isStudentExperience } from '$lib/utils/store/app';
+  import {
+    isCourseLearnerView,
+    isStudentExperience,
+    isCoursePreview,
+    canRecordCourseLearning
+  } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
@@ -43,7 +48,6 @@
 
   import {
     ContentNavigationActions,
-    LanguageSelector,
     LessonPageEditHeader,
     Comments,
     Note,
@@ -64,6 +68,7 @@
   import { getOrderedNavigableContent } from '$features/course/utils/content';
   import StudentContentLockedNotice from '$features/course/components/student-content-locked-notice.svelte';
   import LiveSessionCard from '$features/course/components/lesson/live-session-card.svelte';
+  import ReadingProgress from '$features/course/components/lesson/reading-progress.svelte';
 
   interface Props {
     courseId: string;
@@ -72,7 +77,9 @@
 
   let { courseId, lessonId }: Props = $props();
 
-  const mode = $derived($page.url.searchParams.get('mode') === 'edit' ? MODES.edit : MODES.view);
+  const mode = $derived(
+    !$isCourseLearnerView && $page.url.searchParams.get('mode') === 'edit' ? MODES.edit : MODES.view
+  );
   const showMobileBottomNav = $derived(
     isCourseMobileBottomNavVisible({
       isCourseLearnerView: $isCourseLearnerView,
@@ -102,13 +109,18 @@
       (item) => item.type === ContentType.Lesson && item.id === lessonId
     )
   );
-  const lessonTitle = $derived(currentLessonContentItem?.title || lessonApi.lesson?.title || 'Lesson');
+  const lessonTitle = $derived(
+    currentLessonContentItem?.title || lessonApi.lesson?.title || $t('course.navItem.lessons.heading')
+  );
   const showLessonComments = $derived(
-    Boolean($currentOrg.customization?.apps?.comments) &&
+    !$isCoursePreview &&
+      Boolean($currentOrg.customization?.apps?.comments) &&
       (courseApi.course?.metadata?.commentsEnabled ?? true) &&
       (lessonApi.lesson?.commentsEnabled ?? true)
   );
-  const contentLockReason = $derived(getStudentContentLockReason(courseApi.course, lessonId, ContentType.Lesson));
+  const contentLockReason = $derived(
+    $isCoursePreview ? null : getStudentContentLockReason(courseApi.course, lessonId, ContentType.Lesson)
+  );
   const isStudentLessonStateReady = $derived.by(() => {
     if (!$isCourseLearnerView) {
       return true;
@@ -181,12 +193,6 @@
       // Refetch lesson data after version restore
       lessonApi.isLoading = true;
       await lessonApi.get(courseId, lessonId);
-
-      if (lessonApi.success && lessonApi.lesson) {
-        if ($profile.locale) {
-          lessonApi.currentLocale = $profile.locale;
-        }
-      }
 
       lessonApi.isLoading = false;
     }
@@ -293,7 +299,7 @@
   }
 
   async function saveLesson(versionIntent: TLessonVersionIntentRequest = 'auto') {
-    if (!lessonApi.lesson) return false;
+    if ($isCourseLearnerView || !lessonApi.lesson) return false;
 
     const [isLessonUpdated] = await Promise.all([
       lessonApi.update(courseApi.course?.id || '', lessonId, {
@@ -377,7 +383,7 @@
   // Check for an unsaved localStorage draft when the lesson first loads.
   let draftCheckedForLesson = '';
   $effect(() => {
-    if (!browser) return;
+    if (!browser || $isCourseLearnerView) return;
     if (!lessonApi.lesson || !lessonId) return;
     if (draftCheckedForLesson === lessonId) return;
     draftCheckedForLesson = lessonId;
@@ -416,7 +422,7 @@
   // Only save once when leaving edit mode (e.g. Save button or browser back).
   let didHandleExitEdit = false;
   $effect(() => {
-    if (!lessonId) return;
+    if (!lessonId || $isCourseLearnerView) return;
 
     const currentParam = $page.url.searchParams.get('mode');
     const prev = prevModeParam;
@@ -513,8 +519,6 @@
 
         <RefreshPageData class="hidden lg:inline-flex" onRefresh={() => lessonApi.get(courseId, lessonId)} />
       </RoleBasedSecurity>
-
-      <LanguageSelector />
     </div>
   </Page.Action>
 </Page.Header>
@@ -522,7 +526,7 @@
 <Page.Body>
   {#snippet child()}
     <div class={`overflow-x-hidden pb-6 ${mode === MODES.edit ? 'lg:w-full xl:w-11/12' : 'mx-auto w-full max-w-3xl'}`}>
-      {#if isLiveSessionLesson && mode === MODES.view && !($isCourseLearnerView && contentLockReason)}
+      {#if !$isCoursePreview && isLiveSessionLesson && mode === MODES.view && !($isCourseLearnerView && contentLockReason)}
         <div class="mb-4">
           <LiveSessionCard
             title={lessonTitle}
@@ -543,6 +547,9 @@
         {:else if lessonApi.lesson && !isMaterialsEmpty}
           {#key lessonId}
             <div class="mb-20 flex w-full flex-col" in:fade={{ delay: 500 }} out:fade>
+              {#if $canRecordCourseLearning && lessonApi.lesson.completionPolicy !== 'video_watch'}
+                <ReadingProgress {courseId} {lessonId} />
+              {/if}
               {#if !hasLessonVideos}
                 <LessonMaterialActions showSummarize {lessonId} alignWithNote />
               {/if}

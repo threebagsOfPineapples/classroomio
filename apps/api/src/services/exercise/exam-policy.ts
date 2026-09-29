@@ -1,7 +1,9 @@
+import { getActiveMakeupPolicy } from '@cio/utils/functions/exam-makeup';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import type { getExercise } from '@cio/core/services/exercise/exercise';
 import {
   getExamCourseId,
+  getExamMakeup,
   getExerciseWithRelationsOptimized,
   saveExamDraft,
   startExamAttempt
@@ -133,4 +135,9 @@ function getExamTakeSettings(settings: Record<string, unknown> = {}) {
     'imageUrl'
   ];
   return Object.fromEntries(Object.entries(settings).filter(([key]) => allowedKeys.includes(key)));
+}
+
+export async function getActiveExamMakeupPolicy(exerciseId: string, groupMemberId: string) {
+  const makeup = await getExamMakeup(exerciseId, groupMemberId);
+  return getActiveMakeupPolicy(makeup);
 }

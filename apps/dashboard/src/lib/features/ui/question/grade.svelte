@@ -13,11 +13,11 @@
 
   $effect(() => {
     if (grade && grade > gradeMax) {
-      snackbar.error('grade cant be more than max value');
+      snackbar.error('interface_feedback.grade_cant_be_more_than_max_value');
       grade = gradeMax;
     }
     if (grade && grade < 0) {
-      snackbar.error('grade cant be less than 0');
+      snackbar.error('interface_feedback.grade_cant_be_less_than_0');
       grade = 0;
     }
   });

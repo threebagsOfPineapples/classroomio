@@ -15,7 +15,7 @@
   import { getStudentContentLockTitleKey } from '$features/course/utils/content-lock-utils';
   import { ContentType } from '@cio/utils/constants/content';
   import { t } from '$lib/utils/functions/translations';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { CourseContentItem } from '$features/course/utils/types';
 
@@ -32,7 +32,7 @@
   const nextItem = $derived(getNextIncompleteNavigableContent(courseApi.course, path));
 
   function getNavigableLockReason(target: CourseContentItem | null) {
-    if (!target) {
+    if ($isCoursePreview || !target) {
       return null;
     }
 

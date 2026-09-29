@@ -12,5 +12,5 @@
 
 <Badge variant="secondary" class="inline-flex shrink-0 items-center gap-1 rounded-md! text-xs capitalize {className}">
   <GlobeIcon class="size-3.5 shrink-0" />
-  {$t('courses.course_card.public_badge')}
+  {$t('enterprise.course.legacy_public')}
 </Badge>

@@ -2,17 +2,16 @@
   import { goto } from '$app/navigation';
   import * as Dialog from '@cio/ui/base/dialog';
   import { Button } from '@cio/ui/base/button';
-  import { DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
   import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import HTMLRender from '$features/ui/html-render.svelte';
   import BookOpenIcon from '@lucide/svelte/icons/book-open';
+  import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
+  import UsersIcon from '@lucide/svelte/icons/users';
   import XIcon from '@lucide/svelte/icons/x';
   import { t } from '$lib/utils/functions/translations';
-  import { calcCourseCost, isCourseFree } from '$lib/utils/functions/course';
   import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
-  import getCurrencyFormatter from '$lib/utils/functions/getCurrencyFormatter';
+  import { CourseApi } from '$features/course/api/course.svelte';
   import type { RecommendedCourses } from '$features/course/types';
-  import pluralize from 'pluralize';
 
   interface Props {
     course: RecommendedCourses[number];
@@ -24,25 +23,37 @@
   type CourseMetadata = {
     allowSelfEnrollment?: boolean;
     allowNewStudent?: boolean;
-    discount?: number;
-    showDiscount?: boolean;
     requirements?: string;
   };
 
   const metadata = $derived(course.metadata as CourseMetadata | null);
-  const calculatedCost = $derived(calcCourseCost(course));
-  const isFree = $derived(isCourseFree(calculatedCost));
   const selfEnrollmentAllowed = $derived(isSelfEnrollmentAllowed(metadata));
   const requirements = $derived(metadata?.requirements?.trim() || null);
-  const formatter = $derived(getCurrencyFormatter(course.currency ?? 'USD'));
+  const enrollmentApi = new CourseApi();
+  let joining = $state(false);
+  let enrollmentFailed = $state(false);
+  const CoverIcon = $derived(
+    course.type === 'COMPLIANCE' ? ShieldCheckIcon : course.type === 'LIVE_CLASS' ? UsersIcon : BookOpenIcon
+  );
 
-  function handleJoinCourse() {
-    if (!course.slug) return;
+  async function handleJoinCourse() {
+    if (joining || !selfEnrollmentAllowed) return;
 
-    if (isFree) {
-      goto(`/course/${course.slug}/enroll`);
-    } else {
-      goto(`/course/${course.slug}`);
+    joining = true;
+    enrollmentFailed = false;
+
+    try {
+      const result = await enrollmentApi.enroll(course.id);
+      if (!result?.success) {
+        enrollmentFailed = true;
+        return;
+      }
+
+      await goto(`/courses/${course.id}/lessons?next=true`);
+    } catch {
+      enrollmentFailed = true;
+    } finally {
+      joining = false;
     }
   }
 </script>
@@ -50,34 +61,38 @@
 <Dialog.Root bind:open>
   <Dialog.Content class="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0" showCloseButton={false}>
     <div class="relative shrink-0 overflow-hidden">
-      <img
-        src={course.logo || DEFAULT_COURSE_BANNER_IMAGE}
-        alt={course.title}
-        class="aspect-video w-full object-cover"
-      />
+      {#if course.logo}
+        <img src={course.logo} alt={course.title} class="aspect-video w-full object-cover" />
+      {:else}
+        <div class="course-cover aspect-video" data-course-type={course.type}>
+          <CoverIcon class="course-cover-icon" aria-hidden="true" />
+        </div>
+      {/if}
       <Dialog.Close
         class="ui:bg-secondary ui:text-secondary-foreground ui:hover:bg-secondary/80 absolute top-3 right-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors"
       >
         <XIcon class="size-4" />
-        <span class="sr-only">Close</span>
+        <span class="sr-only">{$t('app.cancel')}</span>
       </Dialog.Close>
     </div>
 
     <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
-      <h2 class="text-xl font-semibold tracking-tight">{course.title}</h2>
+      <Dialog.Title class="text-xl font-semibold tracking-tight">{course.title}</Dialog.Title>
+      <Dialog.Description class="sr-only">{$t('lms_navigation.explore')}</Dialog.Description>
 
       {#if course.description}
         <p class="ui:text-muted-foreground mt-2 text-sm leading-relaxed">{course.description}</p>
       {/if}
 
-      <div class="ui:text-muted-foreground mt-4 flex items-center gap-4 text-sm">
+      <div class="ui:text-muted-foreground mt-4 flex flex-wrap items-center gap-4 text-sm">
         <span class="flex items-center gap-1.5">
           <BookOpenIcon class="size-4" />
           {course.lessonCount ?? 0}
           {$t('courses.course_card.lessons_number')}
         </span>
         <span>
-          {pluralize($t('courses.course_card.exercise'), course.exerciseCount ?? 0, true)}
+          {course.exerciseCount ?? 0}
+          {$t('courses.course_card.exercise')}
         </span>
       </div>
 
@@ -91,33 +106,20 @@
       {/if}
     </div>
 
-    <Dialog.Footer class="flex shrink-0 flex-row items-center justify-between border-t px-6 py-4 sm:justify-between">
-      <div>
-        {#if selfEnrollmentAllowed}
-          <p class="text-lg font-bold">
-            {formatter.format(calculatedCost)}
-            {#if isFree}
-              <span class="text-sm font-normal">
-                ({$t('course.navItem.landing_page.pricing_section.free')})
-              </span>
-            {/if}
-          </p>
-          {#if metadata?.showDiscount && !isFree}
-            <p class="ui:text-muted-foreground text-sm line-through">
-              {formatter.format(course.cost ?? 0)}
-            </p>
-          {/if}
-        {:else}
-          <p class="ui:text-muted-foreground text-sm">
-            {$t('course.navItem.landing_page.pricing_section.not_accepting')}
-          </p>
-        {/if}
-      </div>
-
-      <Button onclick={handleJoinCourse} disabled={!selfEnrollmentAllowed}>
-        {isFree
-          ? $t('course.navItem.landing_page.pricing_section.enroll')
-          : $t('course.navItem.landing_page.pricing_section.buy')}
+    {#if enrollmentFailed}
+      <p class="ui:text-destructive px-6 pb-3 text-sm" role="alert">{$t('snackbar.invite.failed_join')}</p>
+    {/if}
+    {#if !selfEnrollmentAllowed}
+      <p class="ui:text-muted-foreground px-6 pb-3 text-sm">
+        {$t('course.navItem.landing_page.pricing_section.not_accepting')}
+      </p>
+    {/if}
+    <Dialog.Footer class="shrink-0 border-t px-6 py-4">
+      <Button variant="outline" size="sm" onclick={() => (open = false)}>
+        {$t('app.cancel')}
+      </Button>
+      <Button onclick={handleJoinCourse} size="sm" loading={joining} disabled={joining || !selfEnrollmentAllowed}>
+        {$t('course.navItem.landing_page.pricing_section.enroll')}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

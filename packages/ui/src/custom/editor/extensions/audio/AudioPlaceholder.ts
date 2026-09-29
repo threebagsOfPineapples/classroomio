@@ -23,7 +23,10 @@ declare module '@tiptap/core' {
   }
 }
 
-export const AudioPlaceholder = (component: Component<NodeViewProps>): Node<AudioPlaceholderOptions> =>
+export const AudioPlaceholder = (
+  component: Component<NodeViewProps>,
+  context?: Map<unknown, unknown>
+): Node<AudioPlaceholderOptions> =>
   Node.create<AudioPlaceholderOptions>({
     name: 'audio-placeholder',
     addOptions() {
@@ -48,7 +51,7 @@ export const AudioPlaceholder = (component: Component<NodeViewProps>): Node<Audi
     isolating: true,
 
     addNodeView() {
-      return SvelteNodeViewRenderer(component);
+      return SvelteNodeViewRenderer(component, { context });
     },
     addCommands() {
       return {

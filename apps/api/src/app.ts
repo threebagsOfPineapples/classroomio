@@ -45,6 +45,7 @@ import { reportRouter } from '@api/routes/report';
 import rateLimiter from '@api/middlewares/rate-limiter';
 import { secureHeaders } from 'hono/secure-headers';
 import { signupGuard } from '@api/middlewares/signup-guard';
+import { internalTrainingMiddleware } from '@api/middlewares/internal-training';
 import { ssoDiscoveryRouter } from '@api/routes/sso/discovery';
 import { unsplashRouter } from '@api/routes/unsplash/unsplash';
 import { v1Router } from '@api/routes/v1';
@@ -61,6 +62,7 @@ export const app = new Hono()
   // designed for cross-origin consumption, so the right value is
   // `cross-origin`. CORS still gates which origins can read the bytes.
   .use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }))
+  .use('*', internalTrainingMiddleware)
   .use('*', async (c, next) => {
     if (isPublicCorsPath(c.req.path)) return next();
 

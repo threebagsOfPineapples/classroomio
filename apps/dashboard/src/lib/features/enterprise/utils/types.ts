@@ -62,3 +62,13 @@ export type TrainingStatistics = Extract<InferResponseType<GetTrainingStatistics
 export type TrainingMatrix = Extract<InferResponseType<GetTrainingMatrixRequest>, { success: true }>['data'];
 export type AssessmentDraft = InferRequestType<UpdateAssessmentRequest>['json'];
 export type TrainingEvaluationDraft = InferRequestType<SubmitTrainingEvaluationRequest>['json'];
+
+export type ExtendTrainingPlanRequest = (typeof classroomio.enterprise.plans)[':planId']['extend']['$post'];
+export type TrainingPlanExtension = InferRequestType<ExtendTrainingPlanRequest>['json'];
+
+export type RemindTrainingPlanRequest = (typeof classroomio.enterprise.plans)[':planId']['remind']['$post'];
+export type TrainingReminderResult = Extract<InferResponseType<RemindTrainingPlanRequest>, { success: true }>['data'];
+
+export type GrantTrainingMakeupRequest = (typeof classroomio.enterprise.plans)[':planId']['makeup']['$post'];
+export type TrainingMakeupDraft = InferRequestType<GrantTrainingMakeupRequest>['json'];
+export type TrainingMakeupResult = Extract<InferResponseType<GrantTrainingMakeupRequest>, { success: true }>['data'];

@@ -7,6 +7,7 @@
 
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { t } from '$lib/utils/functions/translations';
+  import CourseContextMenuContent from './course-context-menu-content.svelte';
   import CoursePublishBadge from './course-publish-badge.svelte';
   import CourseTagsOverflow from './course-tags-overflow.svelte';
 
@@ -54,7 +55,7 @@
     }
 
     if (isExplore) {
-      goto(resolve(`/course/${slug}`, {}));
+      goto(resolve(`/courses/${id}`, {}));
       return;
     }
 
@@ -65,30 +66,6 @@
 
     goto(resolve(`/courses/[id]`, { id }));
   }
-
-  function handleCloneCourse(e) {
-    e.stopPropagation();
-    // TODO: Clone course functionality
-    alert('WIP: Clone course');
-  }
-
-  function handleShareCourse(e) {
-    e.stopPropagation();
-    // TODO: Share course functionality
-    alert('WIP: Share course');
-  }
-
-  function handleInvite(e) {
-    e.stopPropagation();
-    // TODO: Invite functionality
-    alert('WIP: Invite people to course');
-  }
-
-  function handleDeleteCourse(e) {
-    e.stopPropagation();
-    // TODO: Delete course functionality
-    alert('WIP: Delete course');
-  }
 </script>
 
 <Table.Row class="cursor-pointer" onclick={handleRowClick}>
@@ -97,7 +74,11 @@
     <p>{description}</p>
   </Table.Cell>
   {#if !isMobileStore.current}
-    <Table.Cell class="truncate">{type}</Table.Cell>
+    <Table.Cell class="truncate"
+      >{type === 'PUBLIC'
+        ? $t('enterprise.course.legacy_public')
+        : $t(`course.navItem.settings.${type.toLowerCase()}`)}</Table.Cell
+    >
     <Table.Cell class="w-3/12 min-w-0">
       {#if tags.length === 0}
         <span class="ui:text-muted-foreground text-2xs">-</span>
@@ -122,20 +103,8 @@
         >
           <EllipsisVerticalIcon size={16} />
         </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="end">
-          <DropdownMenu.Item onclick={handleCloneCourse}>
-            {$t('courses.course_card.context_menu.clone')}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item onclick={handleShareCourse}>
-            {$t('courses.course_card.context_menu.share')}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item onclick={handleInvite}>
-            {$t('courses.course_card.context_menu.invite')}
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item class="text-red-600" onclick={handleDeleteCourse}>
-            {$t('courses.course_card.context_menu.delete')}
-          </DropdownMenu.Item>
+        <DropdownMenu.Content align="end" onclick={(event) => event.stopPropagation()}>
+          <CourseContextMenuContent {id} {title} {description} {isPublished} />
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </Table.Cell>

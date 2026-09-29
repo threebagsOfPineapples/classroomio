@@ -105,7 +105,11 @@
           {$t('components.settings.customize_lms.dashboard.banner_image_btn')}
         </Button>
         {#if $currentOrg.customization.dashboard.bannerImage}
-          <img alt="Banner" src={$currentOrg.customization.dashboard.bannerImage} class="mt-2 w-full rounded-md" />
+          <img
+            alt={$t('interface_copy.banner')}
+            src={$currentOrg.customization.dashboard.bannerImage}
+            class="mt-2 w-full rounded-md"
+          />
         {/if}
         {#if $handleOpenWidget.open && widgetKey === 'banner-image'}
           <UploadWidget bind:imageURL={$currentOrg.customization.dashboard.bannerImage} />

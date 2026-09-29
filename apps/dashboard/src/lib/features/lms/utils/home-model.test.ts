@@ -95,6 +95,15 @@ function submissions(statuses: number[]) {
 }
 
 describe('enterprise home display models', () => {
+  it('filters required and optional courses without treating an unset requirement as optional', () => {
+    const classified = courses.map((course, index) => ({
+      ...course,
+      required: index === 0 ? true : index === 1 ? false : null
+    }));
+    expect(filterLearningCourses(classified, 'required').map((course) => course.id)).toEqual(['new']);
+    expect(filterLearningCourses(classified, 'optional').map((course) => course.id)).toEqual(['started']);
+    expect(filterLearningCourses(classified, 'all')).toHaveLength(courses.length);
+  });
   it('separates not started, started and complete without treating compliance content as compliance completion', () => {
     expect(courses.map(getCourseLearningState)).toEqual([
       'not_started',

@@ -236,7 +236,7 @@
           {#if communityApi.isEditMode}
             <div class="my-2">
               <TextEditor
-                placeholder="Give an answer"
+                placeholder={$t('community.ask.give')}
                 content={communityApi.editContent.body}
                 onChange={(content) => (communityApi.editContent.body = content)}
               />
@@ -285,7 +285,7 @@
 
         <div class="mt-4">
           <TextEditor
-            placeholder="Give an answer"
+            placeholder={$t('community.ask.give')}
             class="h-48!"
             content={communityApi.comment}
             onChange={(content) => (communityApi.comment = content)}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import type { Snippet } from 'svelte';
   import type { ExerciseSectionColorTheme } from '@cio/question-types';
   import * as Field from '@cio/ui/base/field';
@@ -163,7 +164,7 @@
     </span>
     <IconButton
       onclick={onDelete}
-      tooltip={labels.delete ?? 'Delete section'}
+      tooltip={labels.delete ?? $t('course.navItem.lessons.exercises.all_exercises.section.delete')}
       tooltipSide="bottom"
       variant="outline"
       size="icon-sm"

@@ -15,7 +15,6 @@
     CertificateIcon,
     ContentIcon,
     HoverableItem,
-    LandingPageIcon,
     MarksIcon,
     NewsFeedIcon,
     PeopleIcon,
@@ -33,10 +32,10 @@
 
   import { NAV_IDS } from './constants';
   import { complianceApi, courseApi } from '$features/course/api';
-  import { t } from '$lib/utils/functions/translations';
+  import { t, locale } from '$lib/utils/functions/translations';
   import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { currentOrg, isFreePlan, isStudentLimitReached, currentOrgPath } from '$lib/utils/store/org';
-  import { isStudentExperience } from '$lib/utils/store/app';
+  import { isStudentExperience, isCoursePreview } from '$lib/utils/store/app';
   import { getNavItemRoute, getLessonsRoute } from '$features/course/utils/functions';
   import { useSidebar } from '@cio/ui/base/sidebar';
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -163,16 +162,6 @@
         icon: getNavIcon(NAV_IDS.COMPLIANCE)
       },
       {
-        id: NAV_IDS.LANDING_PAGE,
-        title: $t('course.navItems.nav_landing_page'),
-        url: getNavItemRoute(id, 'landingpage'),
-        isActive: (path || page.url.pathname) === getNavItemRoute(id, 'landingpage'),
-        show() {
-          return !isStudent;
-        },
-        icon: getNavIcon(NAV_IDS.LANDING_PAGE)
-      },
-      {
         id: NAV_IDS.PEOPLE,
         title: $t('course.navItems.nav_people'),
         url: getNavItemRoute(id, 'people'),
@@ -202,11 +191,17 @@
         },
         icon: getNavIcon(NAV_IDS.SETTINGS)
       }
-    ].filter((item) => !item.show || item.show())
+    ].filter((item) => (!$isCoursePreview || item.id === NAV_IDS.LESSONS) && (!item.show || item.show()))
   );
 
   $effect(() => {
-    if (!isStudent || courseApi.course?.type !== 'COMPLIANCE' || !courseApi.course?.id || !$profile.id) {
+    if (
+      $isCoursePreview ||
+      !isStudent ||
+      courseApi.course?.type !== 'COMPLIANCE' ||
+      !courseApi.course?.id ||
+      !$profile.id
+    ) {
       return;
     }
 
@@ -240,8 +235,6 @@
       return PeopleIcon;
     } else if (id === NAV_IDS.ANALYTICS) {
       return AnalyticsIcon;
-    } else if (id === NAV_IDS.LANDING_PAGE) {
-      return LandingPageIcon;
     } else if (id === NAV_IDS.CERTIFICATES) {
       return CertificateIcon;
     } else if (id === NAV_IDS.SETTINGS) {
@@ -283,7 +276,7 @@
       return '';
     }
 
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat($locale === 'zh' ? 'zh-CN' : $locale, {
       dateStyle: 'medium'
     }).format(date);
   }

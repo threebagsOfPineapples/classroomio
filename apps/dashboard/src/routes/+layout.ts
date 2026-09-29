@@ -1,25 +1,7 @@
-import { config, ensureTranslations, getPersistedLocale } from '$lib/utils/functions/translations';
-
-const SUPPORTED_LANGUAGES = config?.loaders?.map((loader) => loader.locale) || [];
+import { ensureTranslations, getPersistedLocale } from '$lib/utils/functions/translations';
 
 export const load = async ({ data }) => {
-  const persistedLocale = data?.localeCookie || getPersistedLocale();
-  const profileLocale = data?.locals?.profile?.locale;
-  const userLocale = persistedLocale || (profileLocale === 'en' ? 'zh' : profileLocale) || 'zh';
-
-  const initLocale = getInitialLocale(userLocale);
-  const translationsStart = performance.now();
-  await ensureTranslations(initLocale); // keep this just before the `return`
-  const translationsMs = Math.round((performance.now() - translationsStart) * 100) / 100;
-  console.log(`[+layout.ts] ensureTranslations: ${translationsMs}ms | locale=${initLocale}`);
+  await ensureTranslations(getPersistedLocale() ?? data?.localeCookie ?? 'zh');
 
   return data ?? {};
 };
-
-function getInitialLocale(lang: string): string {
-  const locale = lang.split('-')[0];
-
-  if (SUPPORTED_LANGUAGES.includes(locale)) return locale;
-
-  return 'zh';
-}

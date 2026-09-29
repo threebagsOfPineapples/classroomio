@@ -64,18 +64,7 @@
   {/if}
 
   <Sidebar.Inset>
-    {#if isSettingsRoute}
-      <div class="flex h-10 items-center px-3 md:hidden">
-        <Sidebar.Trigger
-          aria-label={$t('common.toggle_sidebar')}
-          title={$t('common.toggle_sidebar')}
-          testId="settings-sidebar-trigger-mobile"
-          variant="secondary"
-        />
-      </div>
-    {:else}
-      <AppHeader enterprise={useEnterpriseShell} />
-    {/if}
+    <AppHeader enterprise={PUBLIC_IS_SELFHOSTED === 'true'} />
 
     <div class="training-page-container">
       {#if useEnterpriseShell && courseSections.some((section) => section.path === currentSection)}

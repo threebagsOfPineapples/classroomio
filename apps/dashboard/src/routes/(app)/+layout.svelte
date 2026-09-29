@@ -1,5 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { afterNavigate } from '$app/navigation';
+  import { setLearnerPortal, setCoursePreview } from '$lib/utils/store/app';
 
   import { UpgradeModal, PageLoadProgress, PageRestricted } from '$features/ui';
   import { VerifyEmailModal, WelcomeModal } from '$features/onboarding/components';
@@ -25,6 +27,19 @@
   let path = $derived(page.url.pathname);
 
   const session = authClient.useSession();
+
+  afterNavigate(({ to, from }) => {
+    const pathname = to?.url.pathname ?? '';
+    const courseId = pathname.match(/^\/courses\/([^/]+)(?:\/|$)/)?.[1];
+    if (!courseId) setCoursePreview(null);
+    else if (to?.url.searchParams.get('preview') === 'true') setCoursePreview(courseId);
+    else if (from?.url.pathname.match(/^\/courses\/([^/]+)(?:\/|$)/)?.[1] !== courseId && from) setCoursePreview(null);
+    if (pathname === '/lms' || pathname.startsWith('/lms/')) {
+      setLearnerPortal(true);
+    } else if (pathname === '/admin' || pathname.startsWith('/admin/') || pathname.startsWith('/org/')) {
+      setLearnerPortal(false);
+    }
+  });
 
   $effect(() => {
     if ($session.isPending || $session.isRefetching || !!$session.data) {

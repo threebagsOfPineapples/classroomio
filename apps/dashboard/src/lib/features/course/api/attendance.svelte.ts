@@ -32,14 +32,14 @@ export class AttendanceApi extends BaseApiWithErrors {
       logContext: 'upserting attendance',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Attendance recorded successfully');
+          snackbar.success('interface_feedback.attendance_recorded_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to record attendance');
+          snackbar.error('interface_feedback.failed_to_record_attendance');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {

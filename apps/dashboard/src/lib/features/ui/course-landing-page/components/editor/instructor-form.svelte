@@ -92,7 +92,7 @@
   className="mt-5"
   labelClassName="font-bold"
   label={$t('course.navItem.landing_page.editor.instructor_form.role')}
-  placeholder="e.g Software developer"
+  placeholder={$t('interface_copy.e_g_software_developer')}
   bind:value={role}
 />
 

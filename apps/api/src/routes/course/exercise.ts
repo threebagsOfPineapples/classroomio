@@ -46,6 +46,7 @@ import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/s
 import {
   assertExamCourse,
   getLearnerExam,
+  getActiveExamMakeupPolicy,
   saveExamDraftService,
   startExamAttemptService
 } from '@api/services/exercise/exam-policy';
@@ -174,7 +175,12 @@ export const exerciseRouter = new Hono()
           });
         }
 
-        const data = learnerExercise ? getLearnerExam(exercise) : { ...exercise, answersVisible: true };
+        const memberId = learnerExercise
+          ? await getGroupMemberIdByCourseAndProfile(c.req.param('courseId')!, user!.id)
+          : null;
+        const makeupPolicy = memberId ? await getActiveExamMakeupPolicy(exerciseId, memberId) : null;
+        const effectiveExercise = makeupPolicy ? { ...exercise, ...makeupPolicy } : exercise;
+        const data = learnerExercise ? getLearnerExam(effectiveExercise) : { ...exercise, answersVisible: true };
         return c.json({ success: true, data }, 200);
       } catch (error) {
         return handleError(c, error, 'Failed to fetch exercise');

@@ -1,23 +1,17 @@
 import {
   ChartColumnIcon,
   AttachmentIcon,
-  CommunityIcon,
   CourseIcon,
   DashboardIcon,
   GoalIcon,
-  HomeIcon,
-  LandingPageIcon,
   PeopleIcon,
   SettingsIcon,
   TagIcon
 } from '@cio/ui/custom/moving-icons';
-import WidgetsIcon from '@cio/ui/custom/moving-icons/widgets.svelte';
 
 import type { AccountOrg } from '$features/app/types';
-import BotIcon from '@lucide/svelte/icons/bot';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
-import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
 import type { PlanLimitResource } from '@cio/utils/plans';
 import type { OrgNavCountKey, OrgNavCounts } from '$features/ui/sidebar/org-sidebar/org-nav-counts.svelte';
 
@@ -96,13 +90,6 @@ function resolveNavTestId(path: string, testId?: string): string {
 export const baseNavConfig: NavItemConfig[] = [
   {
     group: null,
-    titleKey: 'org_navigation.home',
-    path: '',
-    icon: HomeIcon,
-    matchPattern: '^/org/[^/]+/?$'
-  },
-  {
-    group: null,
     titleKey: 'org_navigation.dashboard',
     path: '/dash',
     icon: DashboardIcon,
@@ -163,21 +150,6 @@ export const baseNavConfig: NavItemConfig[] = [
     matchPattern: '^/org/[^/]+/tags(/.*)?$'
   },
   {
-    group: 'distribute',
-    titleKey: 'org_navigation.widgets',
-    path: '/widgets',
-    icon: WidgetsIcon,
-    matchPattern: '^(/org/[^/]+/widgets(/.*)?|/widgets/[^/]+(/.*)?)$'
-  },
-  {
-    group: 'distribute',
-    titleKey: 'settings.tabs.landing_page_tab',
-    path: '/landingpage',
-    icon: LandingPageIcon,
-    requiresAdmin: true,
-    matchPattern: '^/org/[^/]+/landingpage(/.*)?$'
-  },
-  {
     group: 'people',
     titleKey: 'org_navigation.audience',
     path: '/audience',
@@ -192,34 +164,6 @@ export const baseNavConfig: NavItemConfig[] = [
     icon: PeopleIcon
   },
   {
-    group: 'people',
-    titleKey: 'org_navigation.community',
-    path: '/community',
-    icon: CommunityIcon,
-    supportsDynamicSegment: true, // Supports /community/[slug]
-    matchPattern: '^/org/[^/]+/community(/.*)?$', // Matches nested routes
-    nestedRoutes: [
-      {
-        path: 'ask',
-        titleKey: 'Ask Question' // Could be translated
-      }
-    ]
-  },
-  {
-    group: 'automation',
-    titleKey: 'org_navigation.automation',
-    path: '/automation/mcp',
-    icon: BotIcon,
-    requiresAdmin: true,
-    disableWhenNotAdmin: true,
-    matchPattern: '^/org/[^/]+/(automation|mcp|api|zapier)(/.*)?$',
-    nestedRoutes: [
-      { path: 'mcp', titleKey: 'automation.tabs.mcp' },
-      { path: 'api', titleKey: 'automation.tabs.api' },
-      { path: 'zapier', titleKey: 'automation.tabs.zapier' }
-    ]
-  },
-  {
     titleKey: 'org_navigation.settings',
     path: '/settings',
     icon: SettingsIcon,
@@ -229,18 +173,6 @@ export const baseNavConfig: NavItemConfig[] = [
       {
         path: 'notifications',
         titleKey: 'settings.tabs.notifications_tab'
-      },
-      {
-        path: 'billing',
-        titleKey: 'settings.tabs.billing_tab'
-      },
-      {
-        path: 'ai-credits',
-        titleKey: 'settings.tabs.ai_credits_tab'
-      },
-      {
-        path: 'ai-tutor',
-        titleKey: 'settings.tabs.ai_tutor_tab'
       },
       {
         path: 'domains',
@@ -266,28 +198,7 @@ export const baseNavConfig: NavItemConfig[] = [
   }
 ];
 
-function isAiSettingsPath(path: string | undefined): boolean {
-  if (!path) return false;
-
-  return path.includes('ai-tutor') || path.includes('ai-credits');
-}
-
-function isHomePath(path: string): boolean {
-  return path === '';
-}
-
-/**
- * Nav config with the Home item and AI-related settings tabs removed when AI is turned off.
- */
-const resolvedNavConfig = IS_AI_ENABLED
-  ? baseNavConfig
-  : baseNavConfig
-      .filter((config) => !isHomePath(config.path))
-      .map((config) => ({
-        ...config,
-        items: config.items?.filter((sub) => !isAiSettingsPath(sub.path)),
-        nestedRoutes: config.nestedRoutes?.filter((route) => !isAiSettingsPath(route.path))
-      }));
+const resolvedNavConfig = baseNavConfig;
 
 /**
  * Get navigation items based on organization context and permissions

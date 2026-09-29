@@ -3,7 +3,7 @@ import IFrame from './IFrame';
 import type { NodeViewProps } from '@tiptap/core';
 import { SvelteNodeViewRenderer } from 'svelte-tiptap';
 
-export const IFrameExtended = (content: Component<NodeViewProps>) =>
+export const IFrameExtended = (content: Component<NodeViewProps>, context?: Map<unknown, unknown>) =>
   IFrame.extend({
     addAttributes() {
       return {
@@ -29,6 +29,6 @@ export const IFrameExtended = (content: Component<NodeViewProps>) =>
     },
 
     addNodeView: () => {
-      return SvelteNodeViewRenderer(content);
+      return SvelteNodeViewRenderer(content, { context });
     }
   });

@@ -19,7 +19,7 @@ describe('ZPaymentLink', () => {
   });
 });
 
-describe('ZCourseUpdate paid-course invariants', () => {
+describe('ZCourseUpdate historical pricing', () => {
   const validPaid = {
     title: 'Course',
     description: 'Desc',
@@ -42,26 +42,20 @@ describe('ZCourseUpdate paid-course invariants', () => {
     ).toBe(true);
   });
 
-  it('rejects a paid course with a zero cost', () => {
+  it('does not block internal updates on historical payment flags', () => {
     const result = ZCourseUpdate.safeParse({
       ...validPaid,
       cost: 0
     });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.some((issue) => issue.path.join('.') === 'cost')).toBe(true);
-    }
+    expect(result.success).toBe(true);
   });
 
-  it('rejects a paid course without a payment link', () => {
+  it('allows internal updates without a payment link', () => {
     const result = ZCourseUpdate.safeParse({
       ...validPaid,
       metadata: { paymentEnabled: true }
     });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.some((issue) => issue.path.join('.') === 'metadata.paymentLink')).toBe(true);
-    }
+    expect(result.success).toBe(true);
   });
 
   it('rejects a paid course with a non-http(s) payment link', () => {
@@ -73,8 +67,8 @@ describe('ZCourseUpdate paid-course invariants', () => {
     ).toBe(false);
   });
 
-  it('treats a cost-only course as paid and requires a payment link', () => {
-    expect(ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc', cost: 50 }).success).toBe(false);
+  it('does not require a payment link for a historical cost', () => {
+    expect(ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc', cost: 50 }).success).toBe(true);
   });
 });
 

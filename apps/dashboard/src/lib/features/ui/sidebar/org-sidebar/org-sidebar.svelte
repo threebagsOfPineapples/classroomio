@@ -8,7 +8,6 @@
   import NavMain from './nav-main.svelte';
   import { orgNavCountsApi } from './org-nav-counts.svelte';
   import { SidebarFooterMenu } from '../footer';
-  import UpgradeTrigger from './upgrade-trigger.svelte';
   import SidebarSkeleton from '../sidebar-skeleton.svelte';
 
   const isOrgLoaded = $derived($orgs.length > 0 && $profile.id);
@@ -32,7 +31,6 @@
     </Sidebar.Content>
 
     <Sidebar.Footer class="gap-4!">
-      <UpgradeTrigger />
       <SidebarFooterMenu />
     </Sidebar.Footer>
 

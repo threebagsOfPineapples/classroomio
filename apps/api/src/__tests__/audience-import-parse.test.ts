@@ -7,6 +7,20 @@ import {
 } from '@cio/utils/validation/organization';
 
 describe('parseAudienceImportCsv — headers', () => {
+  it('reads Chinese Excel headers with a BOM and preserves duplicate detection', () => {
+    const parsed = parseAudienceImportCsv(
+      '\uFEFF姓名,电子邮箱,课程名称\r\n张三,USER@test.dev,"安全培训,入职培训"\r\n李四,user@test.dev,'
+    );
+    expect(parsed.hadHeader).toBe(true);
+    expect(parsed.unknownColumns).toEqual([]);
+    expect(parsed.rows[0]).toMatchObject({
+      name: '张三',
+      email: 'user@test.dev',
+      courses: ['安全培训', '入职培训'],
+      status: 'ready'
+    });
+    expect(parsed.rows[1].status).toBe('duplicate_in_file');
+  });
   it('reads a header row and maps the columns', () => {
     const parsed = parseAudienceImportCsv('email,name,courses\nada@test.dev,Ada Lovelace,"React,Data"');
 

@@ -22,7 +22,7 @@ export class TextGenerationApi extends BaseApiWithErrors {
         generatedText = response.data.text;
       },
       onError: () => {
-        snackbar.error('Failed to generate text. Please try again.');
+        snackbar.error('interface_feedback.failed_to_generate_text_please_try_again');
       }
     });
 

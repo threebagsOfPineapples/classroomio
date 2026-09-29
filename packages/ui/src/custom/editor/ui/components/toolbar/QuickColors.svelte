@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../../translation';
+  const translate = getEditorTranslation();
   import { Button, buttonVariants } from '$src/base/button';
   import * as Popover from '$src/base/popover';
   import type { Editor } from '@tiptap/core';
@@ -46,7 +48,7 @@
     </EdraToolTip>
   </Popover.Trigger>
   <Popover.Content class="ui:size-fit ui:shadow-lg" portalProps={{ disabled: true, to: undefined }}>
-    <div class="ui:text-muted-foreground ui:my-2 ui:text-xs">Text Colors</div>
+    <div class="ui:text-muted-foreground ui:my-2 ui:text-xs">{translate('Text Colors')}</div>
     <div class="ui:grid ui:gap-2 grid-cols-5">
       {#each colors as color (color)}
         <Button
@@ -57,7 +59,7 @@
             color.value === '' && 'ui:border'
           )}
           style={`color: ${color.value}; background-color: ${color.value}50; border-color: ${color.value};`}
-          title={color.label}
+          title={translate(color.label)}
           onclick={() => {
             if (color.value === '' || color.label === 'Default') editor.chain().focus().unsetColor().run();
             else
@@ -72,7 +74,7 @@
         </Button>
       {/each}
     </div>
-    <div class="ui:text-muted-foreground ui:my-2 ui:text-xs">Highlight Colors</div>
+    <div class="ui:text-muted-foreground ui:my-2 ui:text-xs">{translate('Highlight Colors')}</div>
     <div class="ui:grid ui:gap-2 grid-cols-5">
       {#each colors as color (color)}
         <Button
@@ -83,7 +85,7 @@
             color.value === '' && 'ui:border'
           )}
           style={`background-color: ${color.value}50; border-color: ${color.value};`}
-          title={color.label}
+          title={translate(color.label)}
           onclick={() => {
             if (color.value === '' || color.label === 'Default') editor.chain().focus().unsetHighlight().run();
             else editor.chain().focus().toggleHighlight({ color: color.value }).run();

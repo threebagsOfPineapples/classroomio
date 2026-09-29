@@ -8,7 +8,10 @@ function parseWidthFromStyle(style: string): string | null {
   return match ? match[1].trim() : null;
 }
 
-export const ImageExtended = (component: Component<NodeViewProps>): Node<ImageOptions, unknown> => {
+export const ImageExtended = (
+  component: Component<NodeViewProps>,
+  context?: Map<unknown, unknown>
+): Node<ImageOptions, unknown> => {
   return Image.extend({
     addAttributes() {
       return {
@@ -56,7 +59,7 @@ export const ImageExtended = (component: Component<NodeViewProps>): Node<ImageOp
       };
     },
     addNodeView: () => {
-      return SvelteNodeViewRenderer(component);
+      return SvelteNodeViewRenderer(component, { context });
     }
   }).configure({
     allowBase64: true

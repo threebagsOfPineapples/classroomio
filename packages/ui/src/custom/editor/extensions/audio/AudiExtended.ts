@@ -3,7 +3,7 @@ import type { Component } from 'svelte';
 import type { NodeViewProps } from '@tiptap/core';
 import { SvelteNodeViewRenderer } from 'svelte-tiptap';
 
-export const AudioExtended = (content: Component<NodeViewProps>) =>
+export const AudioExtended = (content: Component<NodeViewProps>, context?: Map<unknown, unknown>) =>
   Audio.extend({
     addAttributes() {
       return {
@@ -29,6 +29,6 @@ export const AudioExtended = (content: Component<NodeViewProps>) =>
     },
 
     addNodeView: () => {
-      return SvelteNodeViewRenderer(content);
+      return SvelteNodeViewRenderer(content, { context });
     }
   });

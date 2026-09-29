@@ -17,8 +17,6 @@
 
   import { Image } from '$features/ui';
   import { t, locale } from '$lib/utils/functions/translations';
-  import { calcCourseCost } from '$lib/utils/functions/course';
-  import getCurrencyFormatter from '$lib/utils/functions/getCurrencyFormatter';
   import { calcCourseProgress, calcProgressRate } from '$features/course/utils/functions';
   import {
     getStudentCourseComplianceDate,
@@ -56,14 +54,8 @@
     totalLessons = 0,
     totalExercises = 0,
     totalStudents = 0,
-    currency = 'USD',
-    progressRate = 45,
-    type,
-    pricingData = {
-      cost: 0,
-      discount: 0,
-      showDiscount: false
-    }
+    progressRate = 0,
+    type
   } = $derived({
     id: course.id,
     slug: course.slug,
@@ -72,12 +64,6 @@
     type: course.type,
     description: course.description,
     isPublished: !!course.isPublished,
-    pricingData: {
-      cost: course.cost,
-      discount: course.metadata?.discount || 0,
-      showDiscount: course.metadata?.showDiscount || false
-    },
-    currency: course.currency,
     totalLessons: course.lessonCount,
     totalExercises: (() => {
       const c = course as { exerciseCount?: number };
@@ -98,7 +84,6 @@
     totalStudents: 'totalStudents' in course ? course.totalStudents : 0
   });
 
-  let formatter = $derived(getCurrencyFormatter(currency));
   const courseTags = $derived(
     ('tags' in course && Array.isArray(course.tags) ? course.tags : []) as Array<{
       id: string;
@@ -142,8 +127,6 @@
     }
   });
 
-  let cost = $derived(calcCourseCost(course));
-
   const isExploreClickable = $derived(!!(isLMS && isExplore && onExploreClick));
   const learningCourse = $derived(
     isLMS && !isExplore && !isCertificateView ? (course as UserEnrolledCourses[number]) : null
@@ -164,14 +147,6 @@
       return `/courses/${id}/certificates`;
     }
 
-    if (isOnLandingPage || isExplore) {
-      if (!slug) {
-        return undefined;
-      }
-
-      return `/course/${slug}`;
-    }
-
     return learningAction?.href ?? `/courses/${id}`;
   });
 
@@ -184,18 +159,6 @@
         }
       : undefined
   );
-
-  const visibilityBadge = $derived(
-    type === 'PUBLIC'
-      ? {
-          label: $t('courses.course_card.public_badge'),
-          icon: GlobeIcon,
-          iconClass: 'custom ui:text-primary size-3.5 shrink-0'
-        }
-      : undefined
-  );
-
-  const showLmsPublicCourseMenu = $derived(isLMS && type === 'PUBLIC' && !!slug?.trim() && isPublished);
 
   const complianceStatusKey = $derived(
     isLMS && type === 'COMPLIANCE' && !isExplore
@@ -242,23 +205,26 @@
   onclick={isExploreClickable ? onExploreClick : undefined}
   {title}
   {description}
-  {typeBadge}
-  {visibilityBadge}
-  class="training-course-card group relative"
+  typeBadge={learningCourse ? undefined : typeBadge}
+  class="training-course-card group relative {learningCourse ? 'learner-course-tile' : ''}"
 >
   {#snippet media()}
     {#if bannerImage}
-      <Image src={bannerImage} alt={title} className="w-full h-full rounded-sm object-cover" />
+      <Image src={bannerImage} alt={title} className="w-full h-full rounded-sm object-cover" fallback={courseCover} />
     {:else}
-      <div class="course-cover" data-course-type={type} aria-hidden="true">
-        {#if typeBadge}
-          {@const CoverIcon = typeBadge.icon}
-          <CoverIcon class="custom course-cover-icon" />
-        {:else}
-          <GlobeIcon class="custom course-cover-icon" />
-        {/if}
-      </div>
+      {@render courseCover()}
     {/if}
+  {/snippet}
+
+  {#snippet courseCover()}
+    <div class="course-cover" data-course-type={type} aria-hidden="true">
+      {#if typeBadge}
+        {@const CoverIcon = typeBadge.icon}
+        <CoverIcon class="custom course-cover-icon" />
+      {:else}
+        <GlobeIcon class="custom course-cover-icon" />
+      {/if}
+    </div>
   {/snippet}
 
   {#snippet overlay()}
@@ -274,28 +240,23 @@
           courseType={type ?? undefined}
           slug={slug ?? undefined}
         />
-      {:else if showLmsPublicCourseMenu}
-        <CardDropdown
-          {id}
-          {title}
-          {description}
-          {isPublished}
-          courseType={type ?? undefined}
-          slug={slug ?? undefined}
-          lmsPublicQuickOnly={true}
-        />
       {/if}
     {/if}
   {/snippet}
 
   {#snippet tags()}
+    {#if learningCourse && typeof learningCourse.required === 'boolean'}
+      <span class="course-learning-kind"
+        >{$t(learningCourse.required ? 'enterprise.learner_home.required' : 'enterprise.learner_home.optional')}</span
+      >
+    {/if}
     {#if !isLMS}
       <CourseTagsOverflow tags={courseTags} variant="card" />
     {/if}
   {/snippet}
 
   {#snippet footer()}
-    <div class="flex justify-between {isLMS && 'items-center'} w-full">
+    <div class="course-card-footer flex justify-between {isLMS && 'items-center'} w-full">
       <div class="w-[60%]">
         {#if isLMS || isOnLandingPage}
           <p class="text-xs {!isLMS && 'pl-2'} flex gap-1 dark:text-white">
@@ -310,20 +271,7 @@
           </p>
         {/if}
         <div class="py-2 text-xs">
-          {#if isOnLandingPage}
-            <span class="px-2">
-              {#if !cost}
-                {$t('course.navItem.landing_page.pricing_section.free')}
-              {:else if pricingData.showDiscount}
-                {formatter.format(cost)}
-                <span class="line-through">
-                  {formatter?.format(pricingData?.cost ?? 0)}
-                </span>
-              {:else}
-                {formatter.format(cost)}
-              {/if}
-            </span>
-          {:else if isLMS}
+          {#if isLMS}
             {#if isCertificateView}
               {#if certificateEarnedAt}
                 <p class="ui:text-muted-foreground text-xs">

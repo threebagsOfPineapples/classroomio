@@ -28,6 +28,7 @@ export function groupMyTrainingAssignments(
       progressPercent: number | null;
       evaluatedAt: string | null;
       assignedAt: string;
+      remindedAt: string | null;
       exams: Array<{ id: string; courseId: string; title: string; opensAt: string; closesAt: string }>;
       courses: Array<{
         id: string;
@@ -58,6 +59,7 @@ export function groupMyTrainingAssignments(
         progressPercent: row.progressPercent,
         evaluatedAt: row.evaluatedAt,
         assignedAt: row.assignedAt,
+        remindedAt: row.remindedAt,
         exams: [],
         courses: []
       };

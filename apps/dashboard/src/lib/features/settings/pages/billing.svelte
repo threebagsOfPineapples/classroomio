@@ -68,7 +68,7 @@
         <Item.Description>{$t('settings.billing.active')}</Item.Description>
       </Item.Content>
       <Item.Actions>
-        <Button size="sm" variant="outline" onclick={openUpgradeModal}>Upgrade</Button>
+        <Button size="sm" variant="outline" onclick={openUpgradeModal}>{$t('org_navigation.upgrade_label')}</Button>
       </Item.Actions>
     </Item.Root>
   {:else}

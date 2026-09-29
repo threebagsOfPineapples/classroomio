@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Button } from '@cio/ui/base/button';
   import { ExportMenu } from '$features/ui';
   import { orgApi } from '$features/org/api/org.svelte';
   import { buildAudienceExportDocument } from '$features/audience/utils/audience-export-utils';
@@ -11,8 +10,6 @@
   import { currentOrgPlan, currentOrgMaxAudience } from '$lib/utils/store/org';
   import { PLAN } from '@cio/utils/plans';
   import * as Page from '@cio/ui/base/page';
-  import { page } from '$app/state';
-  import { resolve } from '$app/paths';
 
   let { data } = $props();
 
@@ -47,7 +44,6 @@
       progress: $t('audience.progress')
     });
   }
-  const atStudentLimit = $derived(audienceLength >= $currentOrgMaxAudience);
 </script>
 
 <svelte:head>
@@ -74,14 +70,6 @@
         disabled={audienceLength === 0}
         testId="audience-export"
       />
-      <Button
-        variant="secondary"
-        disabled={atStudentLimit}
-        href={atStudentLimit ? '#' : resolve(`${page.url.pathname}/import`, {})}
-        title={atStudentLimit ? $t('audience.import_limit_reached') : undefined}
-      >
-        {$t('audience.import_users')}
-      </Button>
     </Page.Action>
   </Page.Header>
   <Page.Body>

@@ -24,7 +24,6 @@ import {
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import { ROLE } from '@cio/utils/constants';
-import { isCoursePaid } from '@cio/utils/validation/course';
 import type { TCreateCourseInvite } from '@cio/utils/validation/course/invite';
 import type { TNewCourseInviteAudit } from '@db/types';
 import crypto from 'node:crypto';
@@ -614,11 +613,7 @@ export async function createStudentInvite(courseId: string, createdByProfileId: 
 }
 
 /**
- * Unified enrollment: with inviteToken validates and consumes invite; without token enrolls in free course only.
- *
- * Self-enrollment also requires the course to accept new students, and when the
- * org sets `internalEnrollmentOnly`, the user must already be an org member.
- * Invites bypass both checks — they are how non-members are let in.
+ * Accepts a course invitation or enrolls an existing organization member in an available elective course.
  */
 export async function enrollInCourse(
   courseId: string,
@@ -639,14 +634,7 @@ export async function enrollInCourse(
     throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
   }
 
-  const { groupId, cost: courseCost, status, isPublished, title } = courseWithRelations;
-  const isPaidCourse = isCoursePaid(
-    courseCost,
-    courseWithRelations.metadata as { paymentEnabled?: boolean; paymentLink?: string | null } | null | undefined
-  );
-  if (isPaidCourse) {
-    throw new AppError('Paid courses require an invite or payment', ErrorCodes.VALIDATION_ERROR, 400);
-  }
+  const { groupId, status, isPublished, title } = courseWithRelations;
 
   if (!groupId) {
     throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
@@ -667,15 +655,13 @@ export async function enrollInCourse(
       allowNewStudent?: boolean;
       welcomeEmailMessage?: string | null;
     } | null) ?? null;
-  const isInternalEnrollmentOnly = org.settings?.internalEnrollmentOnly ?? false;
-
   const orgMemberId = await getOrganizationMemberIdByOrgAndProfile(org.id, user.id);
 
   if (!isSelfEnrollmentAllowed(courseMetadata)) {
     throw new AppError('This course is not accepting new students', ErrorCodes.VALIDATION_ERROR, 400);
   }
 
-  if (isInternalEnrollmentOnly && !orgMemberId) {
+  if (!orgMemberId) {
     throw new AppError(
       'This organization only allows its members to enroll. Ask an admin for an invitation.',
       ErrorCodes.FORBIDDEN,
@@ -695,18 +681,6 @@ export async function enrollInCourse(
       alreadyJoined: true,
       redirectTo: `/courses/${courseId}/lessons?next=true`
     };
-  }
-
-  if (!orgMemberId) {
-    await assertStudentCapacityOrThrow(org.id, 1);
-
-    await createOrganizationMember({
-      organizationId: org.id,
-      roleId: ROLE.STUDENT,
-      profileId: user.id,
-      email: normalizedEmail,
-      verified: true
-    });
   }
 
   await addGroupMember({

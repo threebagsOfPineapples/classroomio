@@ -18,7 +18,8 @@
     "organization_not_found": "Organisation introuvable",
     "restricted_title": "Accès restreint",
     "restricted_description": "L’accès à cette organisation est restreint. Contactez l’administrateur de votre entreprise.",
-    "toggle_sidebar": "Afficher ou masquer la barre latérale"
+    "toggle_sidebar": "Afficher ou masquer la barre latérale",
+    "delete": "Delete"
   },
   "validations": {
     "generic": {
@@ -191,7 +192,11 @@
       "error": {
         "try_again": "Erreur - Veuillez réessayer plus tard",
         "deleting_comments": "Erreur lors de la suppression des commentaires",
-        "deleting_question": "Erreur lors de la suppression de la question"
+        "deleting_question": "Erreur lors de la suppression de la question",
+        "missing_context": "Choose an organization first",
+        "comment_failed": "Failed to post a reply",
+        "update_failed": "Failed to update discussion",
+        "delete_failed": "Failed to delete discussion"
       }
     },
     "invite": {
@@ -213,7 +218,7 @@
       "lesson_update_failed": "Échec de la mise à jour de la leçon",
       "section_created": "Section de cours créée avec succès",
       "section_create_failed": "Échec de la création de la section de cours",
-      "section_updated": "Section du cours mise à jour avec succès",
+      "section_updated": "Section updated",
       "section_update_failed": "Échec de la mise à jour de la section du cours",
       "sections_reordered": "Sections de cours réorganisées avec succès",
       "sections_reorder_failed": "Échec de la réorganisation des sections de cours",
@@ -261,6 +266,16 @@
       "people": {
         "progress_reset": "Progression réinitialisée",
         "progress_reset_failed": "Échec de la réinitialisation de la progression"
+      },
+      "compliance": {
+        "overview_failed": "Failed to load compliance overview",
+        "history_failed": "Failed to load compliance history",
+        "reset_success": "Progress reset",
+        "reset_failed": "Failed to reset progress",
+        "extend_success": "Deadline extended",
+        "extend_failed": "Failed to extend deadline",
+        "waive_success": "Exemption saved",
+        "waive_failed": "Failed to save exemption"
       }
     },
     "landing_page_settings": {
@@ -773,7 +788,8 @@
       },
       "submit_count": "Importer {count} étudiants",
       "result_heading": "{count} étudiants importés",
-      "start_over": "Choisissez un autre fichier"
+      "start_over": "Choisissez un autre fichier",
+      "template_content": "email,name,courses\nada@example.com,Ada Lovelace,\"Intro to React,Data Basics\"\n"
     },
     "page_subtitle": "Découvrez qui appartient à votre organisation, qui apprend, qui est invité et comment les contacter.",
     "user_analytics": {
@@ -1408,7 +1424,8 @@
             "toggle_label": "Invitation de lien active",
             "disabled_notice": "Ce lien est désactivé. Activez-le pour permettre aux nouveaux membres de rejoindre via un lien.",
             "select_role": "Sélectionnez un rôle"
-          }
+          },
+          "select_role": "Choose a role"
         },
         "roles": {
           "admin": "Admin",
@@ -2589,8 +2606,8 @@
         "content_progression_locked_description_exercise": "Cet exercice se débloque après avoir terminé l'élément requis précédent du cours.",
         "completion_policy": {
           "label": "Règle d'achèvement",
-          "manual_label": "Manuel",
-          "manual_description": "Les étudiants marquent eux-mêmes la leçon comme terminée.",
+          "manual_label": "Automatic reading completion",
+          "manual_description": "Text and PDF lessons complete after active reading time and reaching the end. Learners cannot mark completion manually.",
           "video_watch_label": "Visionnage vidéo",
           "none_label": "Aucune",
           "none_description": "Cette leçon ne bloque pas la progression du cours.",
@@ -3015,6 +3032,9 @@
       "create_button": "Créer",
       "error": {
         "failed_to_clone": "Échec du clonage du cours"
+      },
+      "success": {
+        "course_cloned": "Course copied"
       }
     },
     "new_course_modal": {
@@ -3293,7 +3313,8 @@
       "type_answer": "Tapez la réponse",
       "label": "Veuillez saisir un libellé",
       "no_quizz": "Aucun quiz créé",
-      "interactive": "Créez des quiz interactifs avec tableau de bord pour vos élèves."
+      "interactive": "Créez des quiz interactifs avec tableau de bord pour vos élèves.",
+      "placehoolder": "Enter quiz title"
     }
   },
   "markdown_editor": {
@@ -3364,7 +3385,9 @@
       "title": "Téléchargez une photo de profil et mettez à jour le nom d'utilisateur",
       "desc": "Personnalisez et ajoutez une touche humaine en rendant les interactions plus personnelles et mémorables",
       "button_label": "Mettre à jour le profil"
-    }
+    },
+    "info_course": "Create a course first",
+    "info_lesson": "Add a lesson first"
   },
   "pricing": {
     "modal": {
@@ -4273,6 +4296,10 @@
         }
       },
       "personal_page_subtitle": "Choisissez les notifications par e-mail que vous recevez de ClassroomIO."
+    },
+    "account": {
+      "select_language": "Choose interface language",
+      "language": "Interface language"
     }
   },
   "profileMenu": {
@@ -4375,7 +4402,9 @@
       }
     },
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "previous": "Previous",
+    "next": "Next"
   },
   "welcome_modal": {
     "we_at": "Nous à",
@@ -4470,7 +4499,10 @@
     "wrong_address": "Vous vous êtes inscrit avec une mauvaise adresse ?",
     "switch_account": "Changer de compte",
     "confirm_link_prefix": "Cliquez sur le lien que nous avons envoyé à",
-    "confirm_link_suffix": "pour confirmer votre email"
+    "confirm_link_suffix": "pour confirmer votre email",
+    "snackbar": {
+      "error": "Could not send verification email. Try again."
+    }
   },
   "public_courses": {
     "page_title": "Cours - ClassroomIO",
@@ -5357,7 +5389,8 @@
       "inheritance_description": "Héritez des valeurs par défaut de l'espace de travail ou définissez des remplacements par cours."
     },
     "snackbar": {
-      "saved": "Paramètres du tuteur IA enregistrés"
+      "saved": "Paramètres du tuteur IA enregistrés",
+      "fetchError": "Failed to load tutor settings"
     },
     "state": {
       "loading": "Chargement des paramètres du tuteur IA…"
@@ -5685,8 +5718,8 @@
       "body": "Le cours {courseName} arrive bientôt à échéance."
     },
     "training_exam": {
-      "heading": "L'examen commence bientôt",
-      "body": "L'examen {examName} commence bientôt."
+      "heading": "Rappel d’examen",
+      "body": "Consultez l’ouverture de « {examName} » et participez avant la date limite."
     }
   },
   "export": {
@@ -6017,6 +6050,348 @@
       "results": "Training results",
       "import_employees": "Import employees",
       "course_resources": "Course resources"
+    },
+    "operations": {
+      "export_excel": "Export filtered results to Excel",
+      "exported_at": "Exported at",
+      "publish_steps": "Training setup",
+      "publish_help": "Save the training details, courses and recipients first. Prepare the assessment draft, return here to check recipients and publish the training, then publish the assessment scheme.",
+      "configure_assessment": "Configure assessment for this training",
+      "copy_plan": "Copy as a new draft",
+      "copy_help": "Courses and assignment rules have been copied. Enter a new name and code, check the dates and save. Assessment schemes, results and certificates are not copied.",
+      "recipient_list": "Assigned employee preview",
+      "confirm_publish": "Confirm training publication",
+      "confirm_publish_help": "Publication assigns this training to the eligible employees. Check the employee list and dates before continuing. Publish the assessment scheme separately afterwards.",
+      "return_plan": "Return to training plan",
+      "publish_plan_first": "Save the assessment draft, then publish the training plan before publishing this assessment scheme.",
+      "plan_exercises": "Course exams and assignments",
+      "plan_exercises_help": "Exams and assignments from this training’s courses. Open an item to manage it with your existing course permissions.",
+      "open_exercise": "Open exam or assignment"
+    },
+    "learner_home": {
+      "progress": "Course progress",
+      "required": "Required courses",
+      "optional": "Optional courses",
+      "total_time": "Total study time",
+      "progress_hint": "Completed {completed} / {total} courses; courses without a requirement setting are included only in the total.",
+      "time_hint": "Based on recorded study activity. Missing records are shown as —."
+    },
+    "plan_extension": {
+      "action": "Prolonger le délai de formation",
+      "help": "Prolonge le délai et rouvre les tâches expirées. Les horaires des examens et la validité des certificats restent inchangés."
+    },
+    "reminder": {
+      "action": "Envoyer un rappel",
+      "help": "Rappeler dans l’application les employés actifs ayant une formation inachevée, une fois par personne et plan toutes les 24 heures. Prolongez les plans expirés.",
+      "sent": "{count} rappels créés. Les employés ayant terminé, inactifs ou récemment rappelés sont ignorés.",
+      "body": "Veuillez poursuivre la formation « {planName} » et vérifier le délai.",
+      "records": "Derniers rappels",
+      "count": "{count} rappels au total"
+    },
+    "makeup": {
+      "action": "Planifier des rattrapages",
+      "help": "Sélectionnez un examen et jusqu’à 100 employés. Un essai supplémentaire chacun pendant la formation, avec début avant fin. Les essais actifs sont ignorés et les notes conservées.",
+      "result": "{count} employés autorisés ; {skipped} essais actifs ignorés."
+    },
+    "course": {
+      "preview_title": "Aperçu du cours",
+      "preview_description": "Consulter le contenu sans enregistrer la progression, le temps de formation, les évaluations ni les certificats.",
+      "exit_preview": "Retour à la gestion du cours",
+      "internal_link": "Lien interne du cours",
+      "internal_link_description": "Les employés doivent se connecter et être autorisés à suivre ce cours. Le lien ne les inscrit pas automatiquement.",
+      "legacy_public": "Ancien cours public (type original conservé)"
     }
+  },
+  "interface_copy": {
+    "toggle_mobile_menu": "Toggle mobile menu",
+    "menu": "Menu",
+    "close_menu": "Close menu",
+    "sections": "sections,",
+    "exercise_included": "Exercise included",
+    "estimated_cost": "Estimated cost: ~",
+    "of_remaining": "% of remaining)",
+    "actions": "actions",
+    "no_courses_in_this_cohort_yet": "No courses in this cohort yet.",
+    "courses": "courses ·",
+    "classique": "Classique",
+    "est_1892": "— EST 1892 —",
+    "raw": "RAW",
+    "form": "form",
+    "noir": "Noir",
+    "atelier": "★ ATELIER ★",
+    "poster": "Poster",
+    "send_certificate": "Send Certificate",
+    "automatic": "Automatic",
+    "if_you_set_this_as_automatic_certificates_will_be_issued_after_the_learner_completes_the_course": "If you set this as automatic, certificates will be issued after the learner completes the course.",
+    "or_send_a_personalised_custom_certificate_below": "or send a personalised/ custom certificate below:",
+    "email_address_of_the_student": "Email address of the student",
+    "email_comma_seperated": "email,comma seperated",
+    "schedule_date": "Schedule date",
+    "add_a_personalized_message": "Add a personalized message",
+    "your_message_here": "your message here",
+    "issue_certificate": "Issue certificate",
+    "certificate_issued": "Certificate issued",
+    "search_students": "Search students",
+    "name_of_student": "Name of student",
+    "date_issued": "Date issued",
+    "personalized": "personalized",
+    "open_menu": "Open menu",
+    "upload_error": "upload error",
+    "qrcode": "qrcode",
+    "logo": "logo",
+    "email_verification": "email verification",
+    "welcome": "Welcome",
+    "a_welcome_banner": "A welcome banner",
+    "e_g_pepsi_co": "e.g Pepsi Co",
+    "myschool": "myschool",
+    "classroomio": "- ClassroomIO",
+    "1_visit": "1. Visit",
+    "2_enter_pin": "2. Enter Pin",
+    "let_s_go": "Let's go",
+    "view_players": "View Players",
+    "players": "players",
+    "podium": "Podium",
+    "no_question_added": "No question added",
+    "exit_preview": "Exit Preview",
+    "scoreboard": "Scoreboard",
+    "quiz_card": "quiz-card",
+    "theme_preview": "Theme preview",
+    "preview_the_selected_landing_page_theme_with_sample_content": "Preview the selected landing page theme with sample content.",
+    "close_preview": "Close preview",
+    "banner": "Banner",
+    "record": "Record",
+    "default_blue_theme": "Default blue theme",
+    "rose_theme": "Rose theme",
+    "green_theme": "Green theme",
+    "orange_theme": "Orange theme",
+    "purple_theme": "Purple theme",
+    "e_g_software_developer": "e.g Software developer",
+    "process_course_payment": "Process course payment",
+    "your_fullname": "Your Fullname",
+    "john_doe": "John Doe",
+    "you_will_now_be_taken_to_a_payment_page_once_you_ve_paid_send_a_proof_of_payment_to_the_course_admin": "You will now be taken to a payment page, once you've paid send a proof of payment to the course admin",
+    "go_to_payment": "Go to payment",
+    "failed_to_load": "Failed to load",
+    "muse_ai_video_embed": "Muse AI Video Embed",
+    "toggle_menu": "Toggle Menu",
+    "navigate_to": "Navigate to",
+    "select_a_page_to_navigate_to": "Select a page to navigate to.",
+    "alt": "alt",
+    "add_organization": "Add Organization",
+    "widget_options": "Widget options",
+    "quiz": "Quiz",
+    "back_to_quizzes": "Back to Quizzes",
+    "add_question": "Add Question",
+    "please_select_at_least_one_correct_answer": "Please select at least one correct answer",
+    "quiz_settings": "Quiz settings",
+    "preview_quiz": "Preview Quiz",
+    "question_type": "Question type",
+    "multi_choice_answers": "Multi-choice answers",
+    "true_or_false": "True or False",
+    "time_limit": "Time limit",
+    "learners": "learners",
+    "goal": "Goal"
+  },
+  "editor_copy": {
+    "insert_an_audio": "Insert an audio",
+    "insert_an_iframe": "Insert an iframe",
+    "insert_image": "Insert image",
+    "uploading": "Uploading…",
+    "drag_and_drop_an_image_here_or_click_to_select": "Drag and drop an image here, or click to select",
+    "accepted_jpeg_jpg_png_webp": "Accepted: jpeg, jpg, png, webp",
+    "search_images_on_unsplash": "Search images on Unsplash...",
+    "search_for_images_on_unsplash": "Search for images on Unsplash",
+    "insert": "Insert",
+    "insert_an_image": "Insert an image",
+    "image_caption": "Image caption",
+    "add_caption": "Add caption...",
+    "resize_left": "Resize left",
+    "resize_right": "Resize right",
+    "align_left": "Align Left",
+    "align_center": "Align Center",
+    "align_right": "Align Right",
+    "more_options": "More Options",
+    "caption": "Caption",
+    "duplicate": "Duplicate",
+    "full_width": "Full Width",
+    "delete": "Delete",
+    "paragraph": "Paragraph",
+    "text_colors": "Text Colors",
+    "highlight_colors": "Highlight Colors",
+    "show_more": "Show More",
+    "search": "Search...",
+    "previous": "Previous",
+    "next": "Next",
+    "replace": "Replace",
+    "insert_a_video": "Insert a video",
+    "drag_handle": "Drag Handle",
+    "turn_into": "Turn Into",
+    "add_node": "Add Node",
+    "remove_formatting": "Remove Formatting",
+    "duplicate_node": "Duplicate Node",
+    "copy_to_clipboard": "Copy to clipboard",
+    "delete_node": "Delete Node",
+    "copy_link": "Copy Link",
+    "remove_link": "Remove Link",
+    "alignment": "Alignment",
+    "tiny": "Tiny",
+    "smaller": "Smaller",
+    "small": "Small",
+    "default": "Default",
+    "large": "Large",
+    "extra_large": "Extra Large",
+    "font_size": "Font Size",
+    "headings": "Headings",
+    "blue": "Blue",
+    "brown": "Brown",
+    "green": "Green",
+    "grey": "Grey",
+    "orange": "Orange",
+    "pink": "Pink",
+    "purple": "Purple",
+    "red": "Red",
+    "yellow": "Yellow",
+    "quick_colors": "Quick Colors",
+    "search_and_replace": "Search and Replace",
+    "case_sensitive": "Case Sensitive",
+    "go_to_previous": "Go to previous",
+    "go_to_next": "Go to next",
+    "replace_all": "Replace All",
+    "add_column_after": "Add Column After",
+    "add_column_before": "Add Column Before",
+    "delete_this_column": "Delete This Column",
+    "add_row_after": "Add Row After",
+    "add_row_before": "Add Row Before",
+    "delete_this_row": "Delete This Row",
+    "undo": "Undo",
+    "redo": "Redo",
+    "heading_1": "Heading 1",
+    "heading_2": "Heading 2",
+    "heading_3": "Heading 3",
+    "heading_4": "Heading 4",
+    "link": "Link",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strikethrough": "Strikethrough",
+    "blockquote": "BlockQuote",
+    "inline_code": "Inline Code",
+    "superscript": "Superscript",
+    "subscript": "Subscript",
+    "align_justify": "Align Justify",
+    "bullet_list": "Bullet List",
+    "ordered_list": "Ordered List",
+    "task_list": "Task List",
+    "image_placeholder": "Image Placeholder",
+    "video_placeholder": "Video Placeholder",
+    "audio_placeholder": "Audio Placeholder",
+    "iframe_placeholder": "IFrame Placeholder",
+    "table": "Table",
+    "inline_expression": "Inline Expression",
+    "block_expression": "Block Expression",
+    "medium": "Medium",
+    "upload": "Upload",
+    "unsplash": "Unsplash",
+    "format": "Format",
+    "please_enter_the_audio_url": "Please enter the audio URL",
+    "please_enter_the_iframe_url": "Please enter the IFrame URL",
+    "please_enter_the_video_url": "Please enter the video URL",
+    "failed_to_upload_image": "Failed to upload image",
+    "unsupported_image": "Unsupported image",
+    "failed_to_fetch_images_from_unsplash_please_try_again": "Failed to fetch images from Unsplash. Please try again.",
+    "enter_the_url_of_the_link": "Enter the URL of the link:",
+    "enter_new_calculation": "Enter new calculation:",
+    "image_exceeds_the_size_limit": "Image exceeds the size limit",
+    "code_block": "Code Block",
+    "horizontal_rule": "Horizontal Rule"
+  },
+  "interface_feedback": {
+    "failed_to_generate_text_please_try_again": "Failed to generate text. Please try again.",
+    "attendance_recorded_successfully": "Attendance recorded successfully",
+    "failed_to_record_attendance": "Failed to record attendance",
+    "failed_to_fetch_course": "Failed to fetch course",
+    "failed_to_fetch_course_by_slug": "Failed to fetch course by slug",
+    "course_created_successfully": "Course created successfully",
+    "failed_to_create_course": "Failed to create course",
+    "failed_to_update_course": "Failed to update course",
+    "course_deleted_successfully": "Course deleted successfully",
+    "failed_to_delete_course": "Failed to delete course",
+    "failed_to_fetch_course_progress": "Failed to fetch course progress",
+    "failed_to_load_certification_status": "Failed to load certification status",
+    "failed_to_fetch_course_analytics": "Failed to fetch course analytics",
+    "failed_to_send_payment_request": "Failed to send payment request",
+    "failed_to_fetch_exercise": "Failed to fetch exercise",
+    "exercise_created_successfully": "Exercise created successfully",
+    "failed_to_create_exercise": "Failed to create exercise",
+    "failed_to_update_exercise": "Failed to update exercise",
+    "exercise_deleted_successfully": "Exercise deleted successfully",
+    "failed_to_delete_exercise": "Failed to delete exercise",
+    "exercise_submitted_successfully": "Exercise submitted successfully",
+    "failed_to_submit_exercise": "Failed to submit exercise",
+    "failed_to_create_exercise_from_template": "Failed to create exercise from template",
+    "failed_to_fetch_marks": "Failed to fetch marks",
+    "failed_to_list_newsfeed": "Failed to list newsfeed",
+    "failed_to_fetch_newsfeed_item": "Failed to fetch newsfeed item",
+    "post_created_successfully": "Post created successfully",
+    "failed_to_create_post": "Failed to create post",
+    "post_updated_successfully": "Post updated successfully",
+    "failed_to_update_post": "Failed to update post",
+    "failed_to_update_reaction": "Failed to update reaction",
+    "post_deleted_successfully": "Post deleted successfully",
+    "failed_to_delete_post": "Failed to delete post",
+    "failed_to_fetch_comments": "Failed to fetch comments",
+    "failed_to_load_more_comments": "Failed to load more comments",
+    "failed_to_load_more_replies": "Failed to load more replies",
+    "failed_to_add_comment": "Failed to add comment",
+    "comment_updated_successfully": "Comment updated successfully",
+    "failed_to_update_comment": "Failed to update comment",
+    "comment_deleted_successfully": "Comment deleted successfully",
+    "failed_to_delete_comment": "Failed to delete comment",
+    "failed_to_list_course_members": "Failed to list course members",
+    "failed_to_add_course_members": "Failed to add course members",
+    "failed_to_create_student_invite": "Failed to create student invite",
+    "failed_to_list_invites": "Failed to list invites",
+    "failed_to_revoke_invite": "Failed to revoke invite",
+    "failed_to_load_invite_audit": "Failed to load invite audit",
+    "member_updated_successfully": "Member updated successfully",
+    "failed_to_update_course_member": "Failed to update course member",
+    "member_removed_successfully": "Member removed successfully",
+    "failed_to_delete_course_member": "Failed to delete course member",
+    "failed_to_fetch_user_course_analytics": "Failed to fetch user course analytics",
+    "submission_updated_successfully": "Submission updated successfully",
+    "failed_to_update_submission": "Failed to update submission",
+    "submission_deleted_successfully": "Submission deleted successfully",
+    "failed_to_delete_submission": "Failed to delete submission",
+    "failed_to_update_grades": "Failed to update grades",
+    "failed_to_update_answer": "Failed to update answer",
+    "document_not_loaded_correctly": "Document not loaded correctly",
+    "failed_to_fetch_history": "Failed to fetch history",
+    "failed_to_restore": "Failed to restore",
+    "failed_to_list_quizzes": "Failed to list quizzes",
+    "failed_to_fetch_quiz": "Failed to fetch quiz",
+    "failed_to_create_quiz": "Failed to create quiz",
+    "failed_to_update_quiz": "Failed to update quiz",
+    "failed_to_delete_quiz": "Failed to delete quiz",
+    "sso_connection_activated": "SSO connection activated",
+    "sso_connection_created_successfully": "SSO connection created successfully",
+    "sso_connection_deleted": "SSO connection deleted",
+    "grade_cant_be_more_than_max_value": "grade cant be more than max value",
+    "grade_cant_be_less_than_0": "grade cant be less than 0"
+  },
+  "reading_progress": {
+    "error": "Reading progress could not sync. Retrying automatically; completion is paused.",
+    "complete": "The system has confirmed lesson completion. Assessment results are recorded separately.",
+    "unsupported": "This lesson contains materials that cannot be verified automatically. Contact the administrator.",
+    "status": "Active reading {seconds} / {required} seconds. Background or idle time is excluded.",
+    "end_reached": "End reached",
+    "end_required": "Read to the end and view every page of each PDF.",
+    "loading": "Loading learning progress…"
+  },
+  "pdf_reader": {
+    "previous": "Page précédente (←)",
+    "next": "Page suivante (→)",
+    "zoom_out": "Réduire (-)",
+    "zoom_in": "Agrandir (+)",
+    "close": "Fermer (Échap)"
   }
 }

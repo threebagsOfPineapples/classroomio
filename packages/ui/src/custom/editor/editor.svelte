@@ -5,8 +5,11 @@
   import { EdraEditor, EdraToolBar, EdraBubbleMenu, EdraDragHandleExtended } from './ui';
   import { slide } from 'svelte/transition';
   import { cn } from '$src/tools';
+  import { setContext } from 'svelte';
+  import { EDITOR_TRANSLATION_CONTEXT } from './translation';
 
   interface Props {
+    translate?: (message: string) => string;
     // Content of the editor
     content?: HTMLContent;
     // Whether the toolbar should be visible
@@ -34,6 +37,7 @@
   }
 
   let {
+    translate = (message: string) => message,
     content = $bindable(''),
     showToolBar = true,
     editable = true,
@@ -48,6 +52,8 @@
     onImageUpload,
     onSearchUnsplash
   }: Props = $props();
+
+  setContext(EDITOR_TRANSLATION_CONTEXT, (message: string) => translate(message));
 
   let editor = $state<Editor>();
 

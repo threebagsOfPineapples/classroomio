@@ -1,13 +1,11 @@
 import { db, type DbOrTxClient } from '@db/drizzle';
 import {
   assessmentScore,
-  assessmentItem,
-  assessmentScheme,
   course,
   group,
   groupmember,
   exercise,
-  lesson,
+  examMakeup,
   learningActivityMinute,
   organizationmember,
   submission,
@@ -70,7 +68,13 @@ export async function getTrainingPlanDetail(organizationId: string, planId: stri
       .orderBy(asc(trainingPlanCourse.sort)),
     db.select().from(trainingPlanTarget).where(eq(trainingPlanTarget.planId, planId)),
     db
-      .select({ memberId: trainingEnrollment.memberId })
+      .select({
+        memberId: trainingEnrollment.memberId,
+        status: trainingEnrollment.status,
+        remindedAt: trainingEnrollment.remindedAt,
+        remindedByProfileId: trainingEnrollment.remindedByProfileId,
+        reminderCount: trainingEnrollment.reminderCount
+      })
       .from(trainingEnrollment)
       .where(eq(trainingEnrollment.planId, planId))
   ]);
@@ -80,6 +84,10 @@ export async function getTrainingPlanDetail(organizationId: string, planId: stri
     courses,
     targets,
     enrollmentCount: enrollments.length,
+    makeupMemberIds: enrollments
+      .filter((item) => ['NOT_STARTED', 'IN_PROGRESS', 'FAILED'].includes(item.status))
+      .map((item) => item.memberId),
+    reminders: enrollments.filter((item) => item.remindedAt !== null),
     enrolledMemberIds: enrollments.map((item) => item.memberId)
   };
 }
@@ -105,6 +113,38 @@ export function updateTrainingPlanDraft(
       )
     )
     .returning();
+}
+
+export async function extendTrainingPlanRecord(
+  organizationId: string,
+  planId: string,
+  endAt: string,
+  client: DbOrTxClient
+) {
+  const updatedAt = new Date().toISOString();
+  await client
+    .update(trainingPlan)
+    .set({ endAt, updatedAt })
+    .where(
+      and(
+        eq(trainingPlan.organizationId, organizationId),
+        eq(trainingPlan.id, planId),
+        eq(trainingPlan.status, 'PUBLISHED')
+      )
+    );
+  await client
+    .update(trainingEnrollment)
+    .set({
+      status: sql`CASE WHEN ${trainingEnrollment.startedAt} IS NULL THEN 'NOT_STARTED'::"TRAINING_ENROLLMENT_STATUS" ELSE 'IN_PROGRESS'::"TRAINING_ENROLLMENT_STATUS" END`,
+      updatedAt
+    })
+    .where(
+      and(
+        eq(trainingEnrollment.organizationId, organizationId),
+        eq(trainingEnrollment.planId, planId),
+        eq(trainingEnrollment.status, 'EXPIRED')
+      )
+    );
 }
 
 export async function replaceTrainingPlanItems(
@@ -208,6 +248,7 @@ export function listMyTrainingAssignments(organizationId: string, profileId: str
       progressPercent: trainingEnrollment.progressPercent,
       evaluatedAt: trainingEvaluation.createdAt,
       assignedAt: trainingEnrollment.assignedAt,
+      remindedAt: trainingEnrollment.remindedAt,
       courseId: course.id,
       courseTitle: course.title,
       courseSort: trainingPlanCourse.sort,
@@ -241,32 +282,33 @@ export function listMyTrainingExams(organizationId: string, profileId: string) {
     .innerJoin(groupmember, eq(submission.submittedBy, groupmember.id))
     .where(and(eq(submission.exerciseId, exercise.id), eq(groupmember.profileId, profileId)));
 
+  const hasMakeup = sql<boolean>`${examMakeup.closesAt} > clock_timestamp() AND (
+    (SELECT count(*) FROM exam_attempt WHERE exam_attempt.exercise_id = ${exercise.id} AND exam_attempt.group_member_id = ${groupmember.id}) < ${examMakeup.maxAttempts}
+    OR EXISTS (SELECT 1 FROM exam_attempt WHERE exam_attempt.exercise_id = ${exercise.id} AND exam_attempt.group_member_id = ${groupmember.id} AND exam_attempt.submitted_at IS NULL AND exam_attempt.expires_at > clock_timestamp())
+  )`;
   return db
     .select({
       enrollmentId: trainingEnrollment.id,
       exerciseId: exercise.id,
       courseId: trainingPlanCourse.courseId,
       title: exercise.title,
-      opensAt: exercise.opensAt,
-      closesAt: exercise.closesAt
+      opensAt: sql<string | null>`CASE WHEN ${hasMakeup} THEN ${examMakeup.opensAt} ELSE ${exercise.opensAt} END`,
+      closesAt: sql<string | null>`CASE WHEN ${hasMakeup} THEN ${examMakeup.closesAt} ELSE ${exercise.closesAt} END`
     })
     .from(trainingEnrollment)
     .innerJoin(organizationmember, eq(trainingEnrollment.memberId, organizationmember.id))
     .innerJoin(trainingPlan, eq(trainingEnrollment.planId, trainingPlan.id))
+    .innerJoin(trainingPlanCourse, eq(trainingPlanCourse.planId, trainingPlan.id))
+    .innerJoin(course, eq(course.id, trainingPlanCourse.courseId))
     .innerJoin(
-      assessmentScheme,
-      and(eq(assessmentScheme.planId, trainingPlan.id), eq(assessmentScheme.status, 'PUBLISHED'))
-    )
-    .innerJoin(assessmentItem, and(eq(assessmentItem.schemeId, assessmentScheme.id), eq(assessmentItem.type, 'EXAM')))
-    .innerJoin(exercise, eq(assessmentItem.exerciseId, exercise.id))
-    .leftJoin(lesson, eq(exercise.lessonId, lesson.id))
-    .innerJoin(
-      trainingPlanCourse,
-      and(
-        eq(trainingPlanCourse.planId, trainingPlan.id),
-        or(eq(exercise.courseId, trainingPlanCourse.courseId), eq(lesson.courseId, trainingPlanCourse.courseId))
+      exercise,
+      or(
+        eq(exercise.courseId, course.id),
+        sql`EXISTS (SELECT 1 FROM lesson WHERE lesson.id = ${exercise.lessonId} AND lesson.course_id = ${course.id})`
       )
     )
+    .innerJoin(groupmember, and(eq(groupmember.groupId, course.groupId), eq(groupmember.profileId, profileId)))
+    .leftJoin(examMakeup, and(eq(examMakeup.exerciseId, exercise.id), eq(examMakeup.groupMemberId, groupmember.id)))
     .where(
       and(
         eq(trainingEnrollment.organizationId, organizationId),
@@ -280,9 +322,15 @@ export function listMyTrainingExams(organizationId: string, profileId: string) {
         ne(trainingEnrollment.status, 'CANCELLED'),
         ne(trainingEnrollment.status, 'EXPIRED'),
         eq(exercise.isExam, true),
-        isNotNull(exercise.opensAt),
-        isNotNull(exercise.closesAt),
-        notExists(submitted)
+        or(
+          hasMakeup,
+          and(
+            sql`EXISTS (SELECT 1 FROM assessment_item INNER JOIN assessment_scheme ON assessment_item.scheme_id = assessment_scheme.id WHERE assessment_scheme.plan_id = ${trainingPlan.id} AND assessment_scheme.status = 'PUBLISHED' AND assessment_item.type = 'EXAM' AND assessment_item.exercise_id = ${exercise.id})`,
+            isNotNull(exercise.opensAt),
+            isNotNull(exercise.closesAt),
+            notExists(submitted)
+          )
+        )
       )
     );
 }
@@ -357,4 +405,35 @@ export function publishTrainingPlanRecord(
       )
     )
     .returning();
+}
+
+export function remindTrainingEnrollments(
+  organizationId: string,
+  planId: string,
+  memberIds: number[],
+  profileId: string,
+  client: DbOrTxClient
+) {
+  if (memberIds.length === 0) return Promise.resolve([]);
+
+  const remindedAt = new Date().toISOString();
+  const cooldownBefore = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  return client
+    .update(trainingEnrollment)
+    .set({
+      remindedAt,
+      remindedByProfileId: profileId,
+      reminderCount: sql`${trainingEnrollment.reminderCount} + 1`,
+      updatedAt: remindedAt
+    })
+    .where(
+      and(
+        eq(trainingEnrollment.organizationId, organizationId),
+        eq(trainingEnrollment.planId, planId),
+        inArray(trainingEnrollment.memberId, memberIds),
+        inArray(trainingEnrollment.status, ['NOT_STARTED', 'IN_PROGRESS']),
+        or(isNull(trainingEnrollment.remindedAt), lt(trainingEnrollment.remindedAt, cooldownBefore))
+      )
+    )
+    .returning({ memberId: trainingEnrollment.memberId });
 }

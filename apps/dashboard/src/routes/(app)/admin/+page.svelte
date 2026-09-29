@@ -169,10 +169,6 @@
             href="/admin/statistics">{$t('org_navigation.stats')}</Button
           >{/if}
         {#if overview?.canManage}<Button size="sm" href="/admin/plans">{$t('enterprise.ui_v2.new_plan')}</Button>{/if}
-      {:else if activeView === 'employees' && $isOrgAdmin}
-        <Button size="sm" href={`${$currentOrgPath}/audience/import`}
-          >{$t('enterprise.navigation.import_employees')}</Button
-        >
       {/if}
     </Page.Action>
   </Page.Header>
@@ -329,6 +325,9 @@
               {#if selectedEmployee}
                 <div class="space-y-4 rounded-lg border p-4">
                   <h3 class="text-lg font-medium">{selectedEmployee.fullname ?? selectedEmployee.email}</h3>
+                  <Button variant="secondary" href={`/admin/employees/${selectedEmployee.member.id}/archive`}
+                    >{$t('enterprise.assessment.archive')}</Button
+                  >
                   <form onsubmit={saveEmployee}>
                     <Field.Group>
                       <Field.Set>

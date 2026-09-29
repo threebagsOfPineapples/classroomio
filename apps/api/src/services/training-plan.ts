@@ -1,9 +1,16 @@
+import { listAssessmentPlanCourses, listAssessmentExercises } from '@cio/db/queries/assessment';
+import { grantExamMakeup } from '@cio/db/queries/exercise';
+import { getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
+import type { TTrainingMakeup } from '@cio/utils/validation/training-plan';
+import { assertCourseCompletionReady } from '@cio/core/services/course/completion-readiness';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getEnterpriseOverview } from '@api/services/enterprise';
 import { resolveTrainingRecipients } from './training-plan-scope';
 import { listEnterpriseDepartments } from '@cio/db/queries/enterprise';
 import {
   createTrainingPlan,
+  remindTrainingEnrollments,
+  extendTrainingPlanRecord,
   getEligibleTrainingMembers,
   getOrgTrainingCourses,
   getPlanItems,
@@ -212,6 +219,10 @@ export async function publishTrainingPlan(organizationId: string, profileId: str
     );
     if (validCourses.length !== courses.length) invalidPlan('Plan includes an unavailable course');
 
+    for (const trainingCourse of courses) {
+      await assertCourseCompletionReady(trainingCourse.courseId, transaction);
+    }
+
     const activeDepartmentIds = new Set(departments.filter((item) => item.status === 'ACTIVE').map((item) => item.id));
     const activeMemberIds = new Set(members.map((item) => item.id));
     for (const target of targets) {
@@ -285,6 +296,10 @@ export async function supplementTrainingPlan(
     if (courses.length === 0 || validCourses.length !== courses.length)
       invalidPlan('Plan includes an unavailable course');
 
+    for (const trainingCourse of courses) {
+      await assertCourseCompletionReady(trainingCourse.courseId, transaction);
+    }
+
     const inserted = await insertTrainingEnrollments(
       selectedMembers.map((member) => ({
         organizationId,
@@ -312,4 +327,89 @@ export async function supplementTrainingPlan(
   });
 
   return getTrainingPlanById(organizationId, profileId, planId);
+}
+
+export async function extendTrainingPlan(
+  organizationId: string,
+  profileId: string,
+  planId: string,
+  previousEndAt: string,
+  endAt: string
+) {
+  await requireTrainingManager(organizationId, profileId);
+  await withTrainingPlanTransaction(async (transaction) => {
+    const plan = await lockTrainingPlan(organizationId, planId, transaction);
+    if (!plan || plan.status !== 'PUBLISHED') invalidPlan('只能延期已发布的培训计划');
+    if (Date.parse(plan.endAt) !== Date.parse(previousEndAt)) invalidPlan('培训期限已被修改，请刷新后重试');
+    if (Date.parse(endAt) <= Math.max(Date.now(), Date.parse(plan.endAt), Date.parse(plan.startAt))) {
+      invalidPlan('新截止时间必须晚于当前截止时间和当前时间');
+    }
+
+    await extendTrainingPlanRecord(organizationId, planId, endAt, transaction);
+  });
+  return getTrainingPlanById(organizationId, profileId, planId);
+}
+
+export async function remindTrainingPlan(organizationId: string, profileId: string, planId: string) {
+  await requireTrainingManager(organizationId, profileId);
+  const count = await withTrainingPlanTransaction(async (transaction) => {
+    const plan = await lockTrainingPlan(organizationId, planId, transaction);
+    if (!plan || plan.status !== 'PUBLISHED') invalidPlan('只能催学已发布的培训计划');
+    if (Date.parse(plan.startAt) > Date.now()) invalidPlan('培训尚未开始，无需催学');
+    if (Date.parse(plan.endAt) <= Date.now()) invalidPlan('培训已截止，请先延期后再催学');
+
+    const members = await getEligibleTrainingMembers(organizationId, transaction);
+    const activeMemberIds = members.filter((member) => member.profileId).map((member) => member.id);
+    const recipients = await remindTrainingEnrollments(organizationId, planId, activeMemberIds, profileId, transaction);
+    return recipients.length;
+  });
+  return { count };
+}
+
+export async function grantTrainingMakeup(
+  organizationId: string,
+  profileId: string,
+  planId: string,
+  values: TTrainingMakeup
+) {
+  await requireTrainingManager(organizationId, profileId);
+  const courses = await listAssessmentPlanCourses(organizationId, planId);
+  const exercises = await listAssessmentExercises(courses.map((course) => course.courseId));
+  const exercise = exercises.find((item) => item.id === values.exerciseId && item.isExam);
+  if (!exercise) invalidPlan('所选考试不属于此培训计划');
+  const detail = await getTrainingPlanDetail(organizationId, planId);
+  if (!detail) invalidPlan('培训计划不存在');
+
+  const selectedIds = [...new Set(values.memberIds)].sort((first, second) => first - second);
+  const members = await getEligibleTrainingMembers(organizationId);
+  const selectedMembers = selectedIds.map((id) =>
+    members.find((member) => member.id === id && member.profileId && detail.makeupMemberIds.includes(id))
+  );
+  if (selectedMembers.some((member) => !member)) invalidPlan('所选员工未加入培训或账号已停用');
+
+  const recipients: string[] = [];
+  for (const member of selectedMembers) {
+    const groupMemberId = await getGroupMemberIdByCourseAndProfile(exercise.courseId, member!.profileId!);
+    if (!groupMemberId) invalidPlan('所选员工尚未加入考试课程');
+
+    recipients.push(groupMemberId);
+  }
+  const count = await withTrainingPlanTransaction(async (transaction) => {
+    const plan = await lockTrainingPlan(organizationId, planId, transaction);
+    if (!plan || plan.status !== 'PUBLISHED') invalidPlan('只能为已发布的计划安排补考');
+    if (
+      Date.parse(values.closesAt) <= Date.now() ||
+      Date.parse(values.closesAt) > Date.parse(plan.endAt) ||
+      Date.parse(values.opensAt) < Date.parse(plan.startAt)
+    )
+      invalidPlan('补考时间须在培训周期内，且尚未截止；必要时请先延期培训');
+
+    let granted = 0;
+    for (const memberId of [...new Set(recipients)].sort()) {
+      if (await grantExamMakeup(exercise.id, memberId, values.opensAt, values.closesAt, profileId, transaction))
+        granted++;
+    }
+    return granted;
+  });
+  return { count, skipped: recipients.length - count };
 }

@@ -1,6 +1,7 @@
 export type NotificationKind =
   | 'org_invite'
   | 'training_assignment'
+  | 'training_reminder'
   | 'training_start'
   | 'training_deadline'
   | 'training_score'

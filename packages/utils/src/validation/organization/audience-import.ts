@@ -75,6 +75,12 @@ export type AudienceImportResult = {
 
 /** Column aliases accepted in the header row, so a hand-made file still parses. */
 const HEADER_ALIASES: Record<string, 'email' | 'name' | 'courses'> = {
+  邮箱: 'email',
+  电子邮箱: 'email',
+  姓名: 'name',
+  员工姓名: 'name',
+  课程: 'courses',
+  课程名称: 'courses',
   email: 'email',
   'email address': 'email',
   'e-mail': 'email',

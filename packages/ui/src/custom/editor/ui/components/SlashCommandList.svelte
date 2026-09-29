@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import { Button } from '$src/base/button';
   import { cn } from '$src/tools';
 
@@ -99,7 +101,7 @@
     class="ui:bg-popover ui:flex ui:max-h-80 ui:flex-col ui:gap-1 ui:overflow-auto ui:scroll-smooth ui:rounded ui:border"
   >
     {#each items as grp, groupIndex (groupIndex)}
-      <span class="ui:text-muted-foreground ui:p-2 ui:text-xs">{grp.title}</span>
+      <span class="ui:text-muted-foreground ui:p-2 ui:text-xs">{translate(grp.title)}</span>
 
       {#each grp.commands as command, commandIndex (commandIndex)}
         {@const Icon = command.icon}
@@ -111,7 +113,7 @@
           onclick={() => selectItem(groupIndex, commandIndex)}
         >
           <Icon />
-          <span>{command.tooltip}</span>
+          <span>{translate(command.tooltip ?? '')}</span>
         </Button>
       {/each}
     {/each}

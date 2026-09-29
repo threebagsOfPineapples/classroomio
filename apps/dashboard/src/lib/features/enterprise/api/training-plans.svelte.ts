@@ -3,6 +3,8 @@ import { enterpriseApi } from './enterprise.svelte';
 import type {
   AvailableTrainingCourses,
   TrainingPlanDetail,
+  TrainingReminderResult,
+  TrainingPlanExtension,
   TrainingPlanDraft,
   TrainingPlanPreview,
   TrainingPlanSupplement,
@@ -11,6 +13,7 @@ import type {
 
 class TrainingPlansApi {
   private organizationId: string | null = null;
+  private selectionRequest = 0;
   plans = $state<TrainingPlans>([]);
   courses = $state<AvailableTrainingCourses>([]);
   selected = $state<TrainingPlanDetail | null>(null);
@@ -18,6 +21,12 @@ class TrainingPlansApi {
   loading = $state(false);
   busy = $state(false);
   error = $state('');
+
+  clearSelection() {
+    this.selectionRequest += 1;
+    this.selected = null;
+    this.preview = null;
+  }
 
   async load(organizationId: string) {
     if (this.organizationId !== organizationId) {
@@ -45,12 +54,19 @@ class TrainingPlansApi {
   }
 
   async select(organizationId: string, planId: string) {
+    const request = ++this.selectionRequest;
+    this.selected = null;
+    this.preview = null;
     this.error = '';
     try {
-      this.selected = await enterpriseApi.request<TrainingPlanDetail>(organizationId, `/plans/${planId}`);
-      this.preview = null;
+      const detail = await enterpriseApi.request<TrainingPlanDetail>(organizationId, `/plans/${planId}`);
+      if (request !== this.selectionRequest || this.organizationId !== organizationId) return null;
+
+      this.selected = detail;
+      return detail;
     } catch {
-      this.error = t.get('enterprise.load_failed');
+      if (request === this.selectionRequest) this.error = t.get('enterprise.load_failed');
+      return null;
     }
   }
 
@@ -73,9 +89,17 @@ class TrainingPlansApi {
   }
 
   async loadPreview(organizationId: string, planId: string) {
+    const selectionRequest = this.selectionRequest;
+    this.preview = null;
     this.error = '';
     try {
-      this.preview = await enterpriseApi.request<TrainingPlanPreview>(organizationId, `/plans/${planId}/preview`);
+      const preview = await enterpriseApi.request<TrainingPlanPreview>(organizationId, `/plans/${planId}/preview`);
+      if (
+        this.organizationId === organizationId &&
+        this.selected?.plan.id === planId &&
+        selectionRequest === this.selectionRequest
+      )
+        this.preview = preview;
     } catch {
       this.error = t.get('enterprise.request_failed');
     }
@@ -95,6 +119,53 @@ class TrainingPlansApi {
     } catch {
       this.error = t.get('enterprise.request_failed');
       return false;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  async extend(organizationId: string, planId: string, extension: TrainingPlanExtension) {
+    const selectionRequest = this.selectionRequest;
+    this.busy = true;
+    this.error = '';
+    try {
+      const detail = await enterpriseApi.request<TrainingPlanDetail>(
+        organizationId,
+        `/plans/${planId}/extend`,
+        'POST',
+        extension
+      );
+      if (this.organizationId !== organizationId || selectionRequest !== this.selectionRequest) return false;
+
+      this.selected = detail;
+      this.plans = this.plans.map((plan) => (plan.id === planId ? detail.plan : plan));
+      return true;
+    } catch (error) {
+      if (this.organizationId === organizationId)
+        this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
+      return false;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  async remind(organizationId: string, planId: string) {
+    this.busy = true;
+    this.error = '';
+    try {
+      const result = await enterpriseApi.request<TrainingReminderResult>(
+        organizationId,
+        `/plans/${planId}/remind`,
+        'POST'
+      );
+      if (this.organizationId === organizationId && this.selected?.plan.id === planId) {
+        await this.select(organizationId, planId);
+      }
+      return result;
+    } catch (error) {
+      if (this.organizationId === organizationId)
+        this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
+      return null;
     } finally {
       this.busy = false;
     }

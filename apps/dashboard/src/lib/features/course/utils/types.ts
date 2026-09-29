@@ -1,4 +1,8 @@
 import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+
+export type ReadingProgressRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['reading-progress']['$post'];
+export type ReadingProgress = Extract<InferResponseType<ReadingProgressRequest>, { success: true }>['data'];
 import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
 import type { TLocale } from '@cio/db/types';
 import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';

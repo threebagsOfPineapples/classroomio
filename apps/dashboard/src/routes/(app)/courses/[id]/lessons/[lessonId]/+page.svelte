@@ -36,11 +36,6 @@
     if (lesson.lessonLanguages) {
       lessonApi.setTranslations();
     }
-
-    // Set current locale from profile if available
-    if ($profile.locale) {
-      lessonApi.currentLocale = $profile.locale;
-    }
   });
 </script>
 

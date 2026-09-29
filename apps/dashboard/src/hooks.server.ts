@@ -6,6 +6,7 @@ import { type Handle, type HandleServerError, isRedirect, redirect } from '@svel
 import { isPublicApiRoute, isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
 import { ROUTE } from '$lib/utils/constants/routes';
 import { isCustomDomainHost } from '$lib/utils/functions/custom-domain';
+import { getInternalTrainingRedirect } from '$lib/utils/functions/routes/internal-training';
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   const err = error as Error;
@@ -172,6 +173,8 @@ export const handle: Handle = async (args) => {
 const handlePagesRoutes: Handle = async ({ event, resolve }) => {
   const { pathname } = event.url;
   const hasCioCookie = getHasCioCookies(event.cookies);
+  const internalDestination = getInternalTrainingRedirect(event.url);
+  if (internalDestination) redirect(303, internalDestination);
 
   if (isPublicRoute(pathname)) {
     return resolve(event);

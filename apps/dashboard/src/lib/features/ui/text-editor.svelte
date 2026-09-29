@@ -21,6 +21,7 @@
   import { cn } from '@cio/ui/tools';
   import { uploadImage } from '$lib/utils/services/upload';
   import { queryUnsplash } from './upload-widget/utils';
+  import { t } from '$lib/utils/functions/translations';
 
   interface Props {
     placeholder?: string | ((node: any) => string);
@@ -46,11 +47,21 @@
     editableStorageKey = 'edra-editable',
     class: className = '',
     editorClass = '',
-    placeholder = 'Welcome to ClassroomIO',
+    placeholder = $t('course.navItem.lessons.materials.tabs.note.placeholder'),
     onChange,
     onReady,
     onEditorDestroy
   }: Props = $props();
+
+  function translateEditor(message: string) {
+    if (!message) return '';
+
+    const key = message
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_|_$/g, '');
+    return t.get(`editor_copy.${key}`);
+  }
 </script>
 
 {#await loadEditor()}
@@ -66,6 +77,7 @@
   </div>
 {:then { Editor }}
   <Editor
+    translate={translateEditor}
     {content}
     {showToolBar}
     {editable}

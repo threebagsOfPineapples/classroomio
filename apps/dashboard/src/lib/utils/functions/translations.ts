@@ -1,13 +1,10 @@
 import type { TLocale } from '@cio/db/types';
 import i18n from '@sveltekit-i18n/base';
 import parser from '@sveltekit-i18n/parser-icu';
-import merge from 'lodash/merge';
 import { writable } from 'svelte/store';
 
 async function loadChineseTranslations() {
-  const english = (await import('../translations/en.json')).default;
-  const chinese = (await import('../translations/zh.json')).default;
-  return merge({}, english, chinese);
+  return (await import('../translations/zh.json')).default;
 }
 
 export const config = {
@@ -116,7 +113,8 @@ function primeLocale(targetLocale: string): Promise<unknown> {
  * Load a locale's translations once per process, then activate it for this
  * render. Use this instead of calling `loadTranslations` directly.
  */
-export async function ensureTranslations(targetLocale: string): Promise<void> {
+export async function ensureTranslations(requestedLocale: string): Promise<void> {
+  const targetLocale = isSupportedLocale(requestedLocale) ? requestedLocale : 'zh';
   await primeLocale(targetLocale);
 
   // `locale.set` re-enters the library's loader trigger; `forceSet` just marks
@@ -126,7 +124,7 @@ export async function ensureTranslations(targetLocale: string): Promise<void> {
 }
 
 export function handleLocaleChange(newLocale: TLocale) {
-  if (!newLocale) {
+  if (!isSupportedLocale(newLocale)) {
     return;
   }
 

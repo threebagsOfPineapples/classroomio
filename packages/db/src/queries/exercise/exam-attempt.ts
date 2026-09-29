@@ -1,5 +1,7 @@
+import { getActiveMakeupPolicy } from '@cio/utils/functions/exam-makeup';
 import * as schema from '@db/schema';
 import { and, asc, db, desc, eq, gt, isNull, lte, sql } from '@db/drizzle';
+import type { DbOrTxClient } from '@db/drizzle';
 import type { TNewQuestionAnswer, TNewSubmission } from '@db/types';
 
 export function getExamExpiresAt(startedAt: string, closesAt: string, durationMinutes: number | null) {
@@ -38,7 +40,13 @@ export async function startExamAttempt(exerciseId: string, groupMemberId: string
       .from(schema.exercise)
       .where(eq(schema.exercise.id, exerciseId));
 
-    if (!exercise?.isExam || !exercise.opensAt || !exercise.closesAt) return null;
+    if (!exercise?.isExam) return null;
+
+    const makeup = await getExamMakeup(exerciseId, groupMemberId, tx);
+    const policy = getActiveMakeupPolicy(makeup, Date.parse(exercise.currentTime));
+    if (policy) Object.assign(exercise, policy);
+
+    if (!exercise.opensAt || !exercise.closesAt) return null;
 
     const now = Date.parse(exercise.currentTime);
     if (now < Date.parse(exercise.opensAt) || now >= Date.parse(exercise.closesAt)) return null;
@@ -87,7 +95,7 @@ export async function saveExamDraft(
         eq(schema.examAttempt.groupMemberId, groupMemberId),
         isNull(schema.examAttempt.submittedAt),
         gt(schema.examAttempt.expiresAt, sql`clock_timestamp()`),
-        sql`EXISTS (SELECT 1 FROM exercise WHERE exercise.id = ${exerciseId} AND exercise.is_exam AND exercise.opens_at <= clock_timestamp() AND exercise.closes_at > clock_timestamp())`
+        sql`(EXISTS (SELECT 1 FROM exercise WHERE exercise.id = ${exerciseId} AND exercise.is_exam AND exercise.opens_at <= clock_timestamp() AND exercise.closes_at > clock_timestamp()) OR EXISTS (SELECT 1 FROM exam_makeup WHERE exam_makeup.exercise_id = ${exerciseId} AND exam_makeup.group_member_id = ${groupMemberId} AND exam_makeup.opens_at <= clock_timestamp() AND exam_makeup.closes_at > clock_timestamp()))`
       )
     )
     .returning({ id: schema.examAttempt.id });
@@ -162,7 +170,7 @@ export async function createExamSubmission(
             eq(schema.examAttempt.groupMemberId, submissionData.submittedBy),
             isNull(schema.examAttempt.submittedAt),
             gt(schema.examAttempt.expiresAt, sql`clock_timestamp()`),
-            sql`EXISTS (SELECT 1 FROM exercise WHERE exercise.id = ${submissionData.exerciseId} AND exercise.is_exam AND exercise.opens_at <= clock_timestamp() AND exercise.closes_at > clock_timestamp())`
+            sql`(EXISTS (SELECT 1 FROM exercise WHERE exercise.id = ${submissionData.exerciseId} AND exercise.is_exam AND exercise.opens_at <= clock_timestamp() AND exercise.closes_at > clock_timestamp()) OR EXISTS (SELECT 1 FROM exam_makeup WHERE exam_makeup.exercise_id = ${submissionData.exerciseId} AND exam_makeup.group_member_id = ${submissionData.submittedBy} AND exam_makeup.opens_at <= clock_timestamp() AND exam_makeup.closes_at > clock_timestamp()))`
           )
         )
         .returning({ id: schema.examAttempt.id });
@@ -178,4 +186,43 @@ export async function createExamSubmission(
 
     throw error;
   }
+}
+
+export async function getExamMakeup(exerciseId: string, groupMemberId: string, client: DbOrTxClient = db) {
+  const [makeup] = await client
+    .select()
+    .from(schema.examMakeup)
+    .where(and(eq(schema.examMakeup.exerciseId, exerciseId), eq(schema.examMakeup.groupMemberId, groupMemberId)));
+  return makeup ?? null;
+}
+
+export async function grantExamMakeup(
+  exerciseId: string,
+  groupMemberId: string,
+  opensAt: string,
+  closesAt: string,
+  grantedBy: string,
+  client: DbOrTxClient
+) {
+  await client.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${exerciseId}), hashtext(${groupMemberId}))`);
+  const attempts = await client
+    .select({
+      id: schema.examAttempt.id,
+      submittedAt: schema.examAttempt.submittedAt,
+      expiresAt: schema.examAttempt.expiresAt
+    })
+    .from(schema.examAttempt)
+    .where(and(eq(schema.examAttempt.exerciseId, exerciseId), eq(schema.examAttempt.groupMemberId, groupMemberId)));
+  if (attempts.some((attempt) => !attempt.submittedAt && Date.parse(attempt.expiresAt) > Date.now())) return false;
+
+  const maxAttempts = attempts.length + 1;
+  const grantedAt = new Date().toISOString();
+  await client
+    .insert(schema.examMakeup)
+    .values({ exerciseId, groupMemberId, opensAt, closesAt, maxAttempts, grantedBy, grantedAt })
+    .onConflictDoUpdate({
+      target: [schema.examMakeup.exerciseId, schema.examMakeup.groupMemberId],
+      set: { opensAt, closesAt, maxAttempts, grantedBy, grantedAt }
+    });
+  return true;
 }

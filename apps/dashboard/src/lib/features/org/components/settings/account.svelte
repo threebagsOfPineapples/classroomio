@@ -13,7 +13,7 @@
     change?: () => void;
   }
 
-  let { className = '', value = $bindable('en'), hasLangChanged = $bindable(false), change }: Props = $props();
+  let { className = '', value = $bindable('zh'), hasLangChanged = $bindable(false), change }: Props = $props();
 
   function handleSelect(selectedValue: string) {
     value = selectedValue as TLocale;
@@ -24,18 +24,18 @@
   }
 
   const triggerContent = $derived(
-    LANGUAGES.find((lang) => lang.id === value)?.text ?? $t('settings.account.select_language')
+    LANGUAGES.find((lang) => lang.id === 'zh')?.text ?? $t('settings.account.select_language')
   );
 </script>
 
 <div class={className}>
   <Label>{$t('settings.account.language')}</Label>
-  <Select.Root type="single" bind:value onValueChange={handleSelect}>
+  <Select.Root type="single" value="zh" disabled>
     <Select.Trigger>
       {triggerContent}
     </Select.Trigger>
     <Select.Content>
-      {#each LANGUAGES as lang}
+      {#each LANGUAGES.filter((language) => language.id === 'zh') as lang}
         <Select.Item value={lang.id} label={lang.text}>
           {lang.text}
         </Select.Item>

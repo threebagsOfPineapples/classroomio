@@ -108,7 +108,13 @@
     buildCoursePlaceholderAvatarUrl(`${id}:student:1`)
   ]);
 
-  const typeLabel = $derived(type ? $t(`course.navItem.settings.${type.toLowerCase()}`) : null);
+  const typeLabel = $derived(
+    type === 'PUBLIC'
+      ? $t('enterprise.course.legacy_public')
+      : type
+        ? $t(`course.navItem.settings.${type.toLowerCase()}`)
+        : null
+  );
 
   const updatedDateString = $derived.by(() => {
     if (!updatedAt) return null;
@@ -124,14 +130,6 @@
   const courseUrl = $derived.by(() => {
     if (isExplore && onExploreClick) {
       return undefined;
-    }
-
-    if (isExplore) {
-      if (!slug.trim()) {
-        return undefined;
-      }
-
-      return resolve(`/course/${slug}`, {});
     }
 
     if (isLMS) {

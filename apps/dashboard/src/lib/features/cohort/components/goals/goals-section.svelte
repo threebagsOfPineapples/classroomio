@@ -107,7 +107,9 @@
                 <p class="ui:text-muted-foreground mt-1 text-sm">{goal.description}</p>
               {/if}
               <p class="ui:text-muted-foreground mt-2 text-xs">
-                {goal.courseIds.length} courses · {summarizeDeadline(goal)}
+                {goal.courseIds.length}
+                {$t('interface_copy.courses')}
+                {summarizeDeadline(goal)}
               </p>
             </div>
             {#if canManage}

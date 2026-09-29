@@ -3,12 +3,11 @@
   import { resolve } from '$app/paths';
   import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-  import { CircleCheckIcon } from '$features/ui/icons';
   import { Button } from '@cio/ui/base/button';
   import * as Tooltip from '@cio/ui/base/tooltip';
   import { PercentRingProgress } from '@cio/ui/custom/percent-ring-progress';
   import { get } from 'svelte/store';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { getStudentContentLockReason } from '$features/ai-assistant/utils/content-ask-ai-bar';
   import { getStudentContentLockTitleKey } from '$features/course/utils/content-lock-utils';
   import { t } from '$lib/utils/functions/translations';
@@ -17,7 +16,6 @@
   import { ContentType } from '@cio/utils/constants/content';
   import { snackbar } from '$features/ui/snackbar/store';
   import type { CourseContentItem } from '$features/course/utils/types';
-  import { toggleLessonCompletion } from '$features/course/utils/toggle-lesson-completion';
   import { getLessonCompletionState } from '$features/course/utils/lesson-completion-state';
 
   interface Props {
@@ -51,7 +49,7 @@
   });
 
   function getNavigableLockReason(target: CourseContentItem | null) {
-    if (!target) return null;
+    if ($isCoursePreview || !target) return null;
 
     const targetType = target.type === ContentType.Lesson ? ContentType.Lesson : ContentType.Exercise;
     return getStudentContentLockReason(courseApi.course, target.id, targetType);
@@ -94,7 +92,7 @@
 
   const currentLessonItem = $derived(lessonId ? (lessonItems.find((l) => l.id === lessonId) ?? null) : null);
   const contentLockReason = $derived(
-    lessonId ? getStudentContentLockReason(courseApi.course, lessonId, ContentType.Lesson) : null
+    lessonId && !$isCoursePreview ? getStudentContentLockReason(courseApi.course, lessonId, ContentType.Lesson) : null
   );
   const completionState = $derived(
     getLessonCompletionState({
@@ -133,7 +131,12 @@
     isMarkingComplete || isLessonLocked || isLessonComplete || isVideoWatchLesson
   );
   const showWatchProgress = $derived(
-    !!lessonId && $isCourseLearnerView && isVideoWatchLesson && !showVideoWatchCompleteState && !isLessonLocked
+    !!lessonId &&
+      $isCourseLearnerView &&
+      !$isCoursePreview &&
+      isVideoWatchLesson &&
+      !showVideoWatchCompleteState &&
+      !isLessonLocked
   );
 
   const watchProgressTooltip = $derived(
@@ -145,12 +148,6 @@
         })
       : t.get('course.navItem.lessons.watch_progress.status', { percent: watchedPercentDisplay })
   );
-
-  async function markLessonComplete(currentLessonId: string) {
-    isMarkingComplete = true;
-    await toggleLessonCompletion(courseId, currentLessonId);
-    isMarkingComplete = false;
-  }
 
   const INTERACTIVE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
@@ -183,17 +180,6 @@
           {watchProgressTooltip}
         </Tooltip.Content>
       </Tooltip.Root>
-    {:else if showPrevNext && showMarkComplete && lessonId && !isLessonLocked && !isLessonComplete && !isVideoWatchLesson}
-      <Button
-        size="sm"
-        variant="secondary"
-        onclick={() => markLessonComplete(lessonId)}
-        loading={isMarkingComplete}
-        disabled={isMarkCompleteDisabled || showVideoWatchCompleteState}
-      >
-        <CircleCheckIcon size={14} filled={isLessonComplete || showVideoWatchCompleteState} />
-        <span class="text-xs">{$t('course.navItem.lessons.mark_as')} {$t('course.navItem.lessons.complete')}</span>
-      </Button>
     {/if}
 
     {#if showPrevNext}

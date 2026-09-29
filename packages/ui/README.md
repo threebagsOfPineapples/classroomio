@@ -546,3 +546,6 @@ When adding a new component to this package, follow these steps:
 - `jsrepo.json` - jsrepo configuration for component installation
 - `svelte.config.js` - Svelte configuration
 - `tsconfig.json` - TypeScript configuration
+# Editor localization
+
+`Editor` accepts `translate: (message: string) => string`. The host supplies localized labels for toolbar actions, menus, image dialogs and embedded media controls; omission preserves the existing English labels. The dashboard maps these messages to its `editor_copy` translations. Context is forwarded to detached node views and the slash-command popup so the same labels apply throughout the editor.

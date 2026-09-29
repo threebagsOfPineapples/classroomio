@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import type { Editor } from '@tiptap/core';
   import * as Dialog from '$src/base/dialog';
   import * as UnderlineTabs from '../../../underline-tabs';
@@ -32,9 +34,9 @@
   }: Props = $props();
 
   const tabs = $derived([
-    ...(onImageUpload ? [{ label: 'Upload', value: 'upload' }] : []),
-    ...(onSearchUnsplash ? [{ label: 'Unsplash', value: 'unsplash' }] : []),
-    { label: 'Link', value: 'link' }
+    ...(onImageUpload ? [{ label: translate('Upload'), value: 'upload' }] : []),
+    ...(onSearchUnsplash ? [{ label: translate('Unsplash'), value: 'unsplash' }] : []),
+    { label: translate('Link'), value: 'link' }
   ]);
 
   let currentTab = $state(tabs[0].value);
@@ -66,7 +68,7 @@
       if (url) handleImageSelect(url);
     } catch (error) {
       console.error('Image upload failed:', error);
-      window.alert('Failed to upload image');
+      window.alert(translate('Failed to upload image'));
     } finally {
       isUploading = false;
     }
@@ -78,7 +80,7 @@
   }
 
   function handleUnsupportedFile(file: File) {
-    window.alert(`Unsupported image: ${file.type}`);
+    window.alert(`${translate('Unsupported image')}: ${file.type}`);
   }
 
   function handleUrlInsert() {
@@ -94,7 +96,7 @@
     } catch (error) {
       console.error('Error fetching images from Unsplash:', error);
       unsplashImages = [];
-      searchError = 'Failed to fetch images from Unsplash. Please try again.';
+      searchError = translate('Failed to fetch images from Unsplash. Please try again.');
     } finally {
       isSearching = false;
     }
@@ -104,7 +106,7 @@
 <Dialog.Root bind:open>
   <Dialog.Content class="ui:z-[300]! ui:w-[95%] ui:max-w-2xl!">
     <Dialog.Header>
-      <Dialog.Title>Insert image</Dialog.Title>
+      <Dialog.Title>{translate('Insert image')}</Dialog.Title>
     </Dialog.Header>
     <div class="ui:w-full ui:p-2">
       <UnderlineTabs.Root bind:value={currentTab}>
@@ -133,11 +135,15 @@
                 >
                   {#if isUploading}
                     <LoaderCircle class="ui:text-muted-foreground ui:size-6 ui:animate-spin" />
-                    <p class="ui:m-0 ui:text-sm ui:font-medium">Uploading…</p>
+                    <p class="ui:m-0 ui:text-sm ui:font-medium">{translate('Uploading…')}</p>
                   {:else}
                     <UploadCloudIcon class="ui:text-muted-foreground" size={28} />
-                    <p class="ui:m-0 ui:text-sm ui:font-medium">Drag and drop an image here, or click to select</p>
-                    <p class="ui:m-0 ui:text-xs ui:text-muted-foreground">Accepted: jpeg, jpg, png, webp</p>
+                    <p class="ui:m-0 ui:text-sm ui:font-medium">
+                      {translate('Drag and drop an image here, or click to select')}
+                    </p>
+                    <p class="ui:m-0 ui:text-xs ui:text-muted-foreground">
+                      {translate('Accepted: jpeg, jpg, png, webp')}
+                    </p>
                   {/if}
                 </ImageCropper.UploadTrigger>
 
@@ -166,7 +172,7 @@
                 class="ui:mt-1 ui:flex ui:gap-2 ui:pb-3"
               >
                 <div class="ui:flex-1">
-                  <InputField bind:value={searchQuery} placeholder="Search images on Unsplash..." />
+                  <InputField bind:value={searchQuery} placeholder={translate('Search images on Unsplash...')} />
                 </div>
                 <Button type="submit" variant="outline" loading={isSearching}>
                   <SearchIcon size={16} />
@@ -204,7 +210,9 @@
                   {/each}
                 </div>
               {:else if !isSearching}
-                <p class="ui:py-7 ui:text-center ui:text-sm ui:text-muted-foreground">Search for images on Unsplash</p>
+                <p class="ui:py-7 ui:text-center ui:text-sm ui:text-muted-foreground">
+                  {translate('Search for images on Unsplash')}
+                </p>
               {/if}
             </div>
           </UnderlineTabs.Content>
@@ -213,7 +221,7 @@
         <UnderlineTabs.Content value="link">
           <div class="ui:flex ui:flex-col ui:gap-3 ui:p-1">
             <InputField bind:value={imageUrl} placeholder="https://example.com/image.png" />
-            <Button type="button" onclick={handleUrlInsert} class="ui:self-start">Insert</Button>
+            <Button type="button" onclick={handleUrlInsert} class="ui:self-start">{translate('Insert')}</Button>
           </div>
         </UnderlineTabs.Content>
       </UnderlineTabs.Root>

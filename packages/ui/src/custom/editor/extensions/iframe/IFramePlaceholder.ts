@@ -17,7 +17,7 @@ declare module '@tiptap/core' {
   }
 }
 
-export const IFramePlaceholder = (content: Component<NodeViewProps>) =>
+export const IFramePlaceholder = (content: Component<NodeViewProps>, context?: Map<unknown, unknown>) =>
   Node.create<IFramePlaceholderOptions>({
     name: 'iframe-placeholder',
     addOptions() {
@@ -42,7 +42,7 @@ export const IFramePlaceholder = (content: Component<NodeViewProps>) =>
     isolating: true,
 
     addNodeView() {
-      return SvelteNodeViewRenderer(content);
+      return SvelteNodeViewRenderer(content, { context });
     },
     addCommands() {
       return {

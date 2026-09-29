@@ -31,7 +31,7 @@
   import { ZExerciseUpdate, type TExerciseUpdate } from '@cio/utils/validation/exercise';
   import { mapZodErrorsToTranslations } from '$lib/utils/validation';
   import { transformQuestionsToApiFormat } from '$features/course/components/exercise/functions';
-  import { isOrgStudent, isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
@@ -42,6 +42,8 @@
   import EditMode from '$features/course/components/exercise/edit-mode.svelte';
   import QuestionBank from '$features/course/components/exercise/question-bank.svelte';
   import ExerciseSettingsTab from '$features/course/components/exercise/exercise-settings-tab.svelte';
+  import Preview from '$features/course/components/exercise/preview.svelte';
+  import { SafeHtmlContent } from '@cio/ui/custom/safe-html-content';
   import ViewMode from '$features/course/components/exercise/view-mode.svelte';
   import Submissions from '$features/course/components/exercise/submissions/submissions.svelte';
   import UpdateDescription from '$features/course/components/exercise/update-description.svelte';
@@ -361,7 +363,7 @@
 
   async function handleSave(options?: { silent?: boolean }): Promise<boolean> {
     const silent = options?.silent ?? false;
-    if ($isOrgStudent || !courseApi.course?.id) return false;
+    if ($isCourseLearnerView || !courseApi.course?.id) return false;
 
     // Transform questionnaire to API format for validation
     // Include all non-deleted options (even empty ones) so Zod can catch validation errors
@@ -494,7 +496,10 @@
         if (publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id) {
           const activeQuestions = getActiveExerciseQuestions($questionnaire.questions ?? []);
           const manualQuestions = getManualQuestionsFromList(activeQuestions);
-          const exerciseTitle = exerciseApi.exercise?.title || $questionnaire.title || 'Untitled Exercise';
+          const exerciseTitle =
+            exerciseApi.exercise?.title ||
+            $questionnaire.title ||
+            $t('course.navItem.lessons.add_content_options.exercise_title');
 
           publicConversionFlow.syncExerciseQuestions(exerciseId, manualQuestions, exerciseTitle);
         }
@@ -524,7 +529,7 @@
   onMount(() =>
     onUpgradeCheckoutHandoff(() => {
       const courseId = courseApi.course?.id;
-      if ($isOrgStudent || !courseId || !hasDirtyQuestionnaire()) return;
+      if ($isCourseLearnerView || !courseId || !hasDirtyQuestionnaire()) return;
 
       saveExerciseDraft(courseId, exerciseId, $questionnaire);
       hasUnsavedChanges = false;
@@ -532,7 +537,7 @@
   );
 
   $effect(() => {
-    if (courseApi.course?.id) {
+    if (!$isCourseLearnerView && courseApi.course?.id) {
       publicConversionFlow.restoreForCourse(courseApi.course.id);
     }
   });
@@ -544,7 +549,7 @@
   });
 
   $effect(() => {
-    hasUnsavedChanges = !$isOrgStudent && hasDirtyQuestionnaire();
+    hasUnsavedChanges = !$isCourseLearnerView && hasDirtyQuestionnaire();
   });
 
   $effect(() => {
@@ -557,7 +562,7 @@
   $effect(() => {
     const currentTab = normalizeExerciseTab(page.url.searchParams.get('tab'));
     // Prevent self-navigation loops: only update URL when it actually changes.
-    if (currentTab === selectedTab) return;
+    if ($isCourseLearnerView || currentTab === selectedTab) return;
 
     untrack(() => {
       const url = new URL(page.url);
@@ -598,7 +603,7 @@
   });
 
   $effect(() => {
-    if ($isOrgStudent) return;
+    if ($isCourseLearnerView) return;
     if ($questionnaireMetaData.exerciseId !== exerciseId) return;
 
     const addNewQ = $questionnaire?.questions?.length < 1;
@@ -621,10 +626,10 @@
   const isCourseContentReady = $derived(courseApi.course?.id != null);
   const isExerciseTeacherLocked = $derived((exerciseContentItem?.isUnlocked ?? true) === false);
   const isExerciseProgressionLocked = $derived(
-    $isOrgStudent && exerciseContentItem?.accessible === false && !isExerciseTeacherLocked
+    $isCourseLearnerView && exerciseContentItem?.accessible === false && !isExerciseTeacherLocked
   );
   const isExerciseAccessible = $derived.by(() => {
-    if ($isOrgStudent && (!isCourseContentReady || !exerciseContentItem)) {
+    if ($isCourseLearnerView && (!isCourseContentReady || !exerciseContentItem)) {
       return false;
     }
 
@@ -650,7 +655,7 @@
   const requiresPositivePointsForAutoGrade = $derived(isFullyAutoGradable);
 
   const teacherAutoGradeBadge = $derived.by(() => {
-    if ($isOrgStudent || isPublicCourse || activeQuestionTypeIds.length === 0) return null;
+    if ($isCourseLearnerView || isPublicCourse || activeQuestionTypeIds.length === 0) return null;
     return isFullyAutoGradable ? ('auto' as const) : ('manual' as const);
   });
 
@@ -841,7 +846,17 @@
 <Page.Body>
   {#snippet child()}
     <div class="overflow-x-hidden pb-20">
-      {#if $isCourseLearnerView}
+      {#if $isCoursePreview}
+        <div class="mx-auto w-full max-w-3xl">
+          {#if $questionnaire.description}
+            <div class="mb-6"><SafeHtmlContent content={$questionnaire.description} /></div>
+          {/if}
+          <Preview
+            questions={$questionnaire.questions.filter((question) => !question.deletedAt)}
+            sections={$questionnaire.sections}
+          />
+        </div>
+      {:else if $isCourseLearnerView}
         {#if isExerciseAccessible}
           <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
         {:else}

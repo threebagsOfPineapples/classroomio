@@ -29,6 +29,7 @@
       className
     )}
     {...restProps}
+    interactOutsideBehavior="ignore"
   >
     {@render children?.()}
     {#if showCloseButton}

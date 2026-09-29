@@ -24,7 +24,10 @@ declare module '@tiptap/core' {
   }
 }
 
-export const ImagePlaceholder = (component: Component<NodeViewProps>): Node<ImagePlaceholderOptions> =>
+export const ImagePlaceholder = (
+  component: Component<NodeViewProps>,
+  context?: Map<unknown, unknown>
+): Node<ImagePlaceholderOptions> =>
   Node.create<ImagePlaceholderOptions>({
     name: 'image-placeholder',
     addOptions() {
@@ -50,7 +53,7 @@ export const ImagePlaceholder = (component: Component<NodeViewProps>): Node<Imag
     isolating: true,
 
     addNodeView() {
-      return SvelteNodeViewRenderer(component);
+      return SvelteNodeViewRenderer(component, { context });
     },
     addCommands() {
       return {

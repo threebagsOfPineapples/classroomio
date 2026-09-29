@@ -1,3 +1,4 @@
+import { t } from '$lib/utils/functions/translations';
 import { SvelteSet } from 'svelte/reactivity';
 import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 import type {
@@ -135,7 +136,7 @@ class PublicConversionStore {
       const typeId = Number(q.questionTypeId ?? q.questionType?.id ?? 1);
       return {
         exerciseId,
-        exerciseTitle: exerciseTitle || 'Untitled Exercise',
+        exerciseTitle: exerciseTitle || t.get('course.navItem.lessons.add_content_options.exercise_title'),
         questionId: q.id ?? `${exerciseId}-${index}`,
         questionTitle: q.title || `Question ${index + 1}`,
         typeId

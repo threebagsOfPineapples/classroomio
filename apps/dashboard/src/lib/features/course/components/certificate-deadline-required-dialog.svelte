@@ -21,7 +21,7 @@
     </Dialog.Header>
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (open = false)}>
-        {$t('cancel')}
+        {$t('app.cancel')}
       </Button>
       <Button onclick={onGoToDeadline}>
         {$t('course.navItem.settings.go_to_completion_deadline')}

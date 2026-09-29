@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { preventDefault } from '$lib/utils/functions/svelte';
   import { coursePaymentValidation } from '$lib/utils/functions/validator';
   import { courseApi } from '$features/course/api/course.svelte';
@@ -73,22 +74,22 @@
 <Dialog.Root {open} onOpenChange={handleOpenChange}>
   <Dialog.Content class="w-96">
     <Dialog.Header>
-      <Dialog.Title>Process course payment</Dialog.Title>
+      <Dialog.Title>{$t('interface_copy.process_course_payment')}</Dialog.Title>
     </Dialog.Header>
     {#if step === STEPS.STEP_1}
       <form onsubmit={preventDefault(onSubmit)}>
         <InputField
-          label="Your Fullname"
+          label={$t('interface_copy.your_fullname')}
           bind:value={fields.fullname}
           autoFocus={true}
-          placeholder="John Doe"
+          placeholder={$t('interface_copy.john_doe')}
           className="mb-4"
           isRequired={true}
           autoComplete={false}
           errorMessage={errors.fullname}
         />
         <InputField
-          label="Your Email"
+          label={$t('course.navItem.landing_page.email')}
           bind:value={fields.email}
           placeholder="johndoe@email.com"
           className="mb-4"
@@ -104,10 +105,14 @@
         </div>
       </form>
     {:else if step === STEPS.STEP_2}
-      <p>You will now be taken to a payment page, once you've paid send a proof of payment to the course admin</p>
+      <p>
+        {$t(
+          'interface_copy.you_will_now_be_taken_to_a_payment_page_once_you_ve_paid_send_a_proof_of_payment_to_the_course_admin'
+        )}
+      </p>
       <div class="mt-5 flex flex-row-reverse items-center">
         <a href={paymentLink} target="_blank" onclick={onClickPaymentLink} class="text-sm font-semibold"
-          >Go to payment</a
+          >{$t('interface_copy.go_to_payment')}</a
         >
       </div>
     {/if}

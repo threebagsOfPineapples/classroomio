@@ -2,6 +2,8 @@ import { t } from '$lib/utils/functions/translations';
 import { enterpriseApi } from './enterprise.svelte';
 import type {
   AssessmentDraft,
+  TrainingMakeupDraft,
+  TrainingMakeupResult,
   AssessmentExercises,
   AssessmentScheme,
   EnrollmentAssessment,
@@ -16,10 +18,12 @@ import type {
 export class AssessmentApi {
   private organizationId = '';
   private managerPlanId = '';
+  private managerRequest = 0;
   private detailEnrollmentId = '';
   scheme = $state<AssessmentScheme>(null);
   exercises = $state<AssessmentExercises>([]);
   archive = $state<TrainingArchive>([]);
+  private archiveRequest = 0;
   archiveSummary = $state<TrainingArchiveSummary | null>(null);
   matrix = $state<TrainingMatrix | null>(null);
   statistics = $state<TrainingStatistics | null>(null);
@@ -49,6 +53,7 @@ export class AssessmentApi {
   }
 
   async loadManager(organizationId: string, planId: string, from?: string, to?: string) {
+    const request = ++this.managerRequest;
     this.useOrganization(organizationId);
     if (this.managerPlanId !== planId) {
       this.scheme = null;
@@ -71,17 +76,38 @@ export class AssessmentApi {
           `/plans/${planId}/statistics?${new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) })}`
         )
       ]);
-      if (this.organizationId !== organizationId || this.managerPlanId !== planId) return;
+      if (request !== this.managerRequest || this.organizationId !== organizationId || this.managerPlanId !== planId)
+        return;
 
       this.scheme = scheme;
       this.exercises = exercises;
       this.archive = archive;
       this.statistics = statistics;
+      return true;
     } catch {
-      if (this.organizationId === organizationId && this.managerPlanId === planId)
+      if (request === this.managerRequest && this.organizationId === organizationId && this.managerPlanId === planId)
         this.error = t.get('enterprise.load_failed');
     } finally {
-      if (this.organizationId === organizationId && this.managerPlanId === planId) this.loading = false;
+      if (request === this.managerRequest && this.organizationId === organizationId && this.managerPlanId === planId)
+        this.loading = false;
+    }
+  }
+
+  async grantMakeup(organizationId: string, planId: string, values: TrainingMakeupDraft) {
+    this.busy = true;
+    this.error = '';
+    try {
+      return await enterpriseApi.request<TrainingMakeupResult>(
+        organizationId,
+        `/plans/${planId}/makeup`,
+        'POST',
+        values
+      );
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
+      return null;
+    } finally {
+      this.busy = false;
     }
   }
 
@@ -100,17 +126,19 @@ export class AssessmentApi {
   }
 
   async loadArchiveSummary(organizationId: string, memberId?: number) {
+    const request = ++this.archiveRequest;
     this.useOrganization(organizationId);
+    this.archiveSummary = null;
     this.loading = true;
     this.error = '';
     try {
       const query = memberId ? `?memberId=${memberId}` : '';
       const summary = await enterpriseApi.request<TrainingArchiveSummary>(organizationId, `/archive/summary${query}`);
-      if (this.organizationId === organizationId) this.archiveSummary = summary;
+      if (request === this.archiveRequest && this.organizationId === organizationId) this.archiveSummary = summary;
     } catch {
-      this.error = t.get('enterprise.load_failed');
+      if (request === this.archiveRequest) this.error = t.get('enterprise.load_failed');
     } finally {
-      this.loading = false;
+      if (request === this.archiveRequest) this.loading = false;
     }
   }
 

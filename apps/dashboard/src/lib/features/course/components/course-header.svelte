@@ -1,20 +1,22 @@
 <script lang="ts">
+  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import * as ButtonGroup from '@cio/ui/base/button-group';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
-  import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
+  import EyeIcon from '@lucide/svelte/icons/eye';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
   import { Button } from '@cio/ui/base/button';
   import { Waves } from '@cio/ui/custom/animation';
   import { page } from '$app/state';
-  import { currentOrg, currentOrgDomain } from '$lib/utils/store/org';
-  import { isStudentExperience, isCourseLearnerView } from '$lib/utils/store/app';
+  import { currentOrgDomain, isOrgTeamMember } from '$lib/utils/store/org';
+  import { isStudentExperience, isCourseLearnerView, isCoursePreview, setCoursePreview } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import { courseApi } from '$features/course/api';
   import { getActiveCourseNavKey } from '$features/course/utils/functions';
   import { toggleAiAssistant } from '$features/ai-assistant/utils/store';
@@ -23,14 +25,9 @@
   import { t } from '$lib/utils/functions/translations';
   import CourseProgressPopover from './course-progress-popover.svelte';
   import CoursePublishBadge from './course-publish-badge.svelte';
-  import CoursePublicBadge from './course-public-badge.svelte';
   import CourseContextMenuContent from './course-context-menu-content.svelte';
-  import ViewAsStudentModal from './view-as-student-modal.svelte';
-  import ViewCourseSiteUnpublishedModal from './view-course-site-unpublished-modal.svelte';
 
-  const siteName = $derived($currentOrg.siteName);
   const showCoursePublishBadge = $derived(!$isStudentExperience);
-  const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
   const activeNavKey = $derived(getActiveCourseNavKey(page.url.pathname, courseApi.course?.id ?? ''));
   const isPublished = $derived(courseApi.course?.isPublished ?? false);
   const lessonId = $derived(page.params.lessonId as string | undefined);
@@ -44,23 +41,9 @@
     })
   );
 
-  let viewAsStudentOpen = $state(false);
-  let viewCourseSiteUnpublishedOpen = $state(false);
-
-  $effect(() => {
-    if (!siteName) return;
-
-    setupProgressApi.fetchSetupProgress(siteName);
-  });
-
   function handleViewCourseSite() {
     const course = courseApi.course;
     if (!course?.id) {
-      return;
-    }
-
-    if (!isPublished) {
-      viewCourseSiteUnpublishedOpen = true;
       return;
     }
 
@@ -88,10 +71,6 @@
           {activeNavKey ? $t(activeNavKey) : ''}
         </p>
 
-        {#if isPublicCourse}
-          <CoursePublicBadge class="shrink-0" />
-        {/if}
-
         {#if showCoursePublishBadge}
           <CoursePublishBadge {isPublished} />
         {/if}
@@ -99,8 +78,15 @@
     </div>
 
     <span class="grow"></span>
+    <InterfaceLanguage />
 
-    {#if $isCourseLearnerView && !showMobileBottomNav}
+    {#if $isOrgTeamMember}
+      <Button href={$isCourseLearnerView ? '/admin' : '/lms'} variant="outline" size="sm">
+        {$t($isCourseLearnerView ? 'enterprise.interface.admin_portal' : 'enterprise.interface.learner_portal')}
+      </Button>
+    {/if}
+
+    {#if $isCourseLearnerView && !$isCoursePreview && !showMobileBottomNav}
       <CourseProgressPopover class="md:hidden" />
     {/if}
 
@@ -131,10 +117,10 @@
           size="sm"
           onclick={handleViewCourseSite}
           disabled={!courseApi.course?.id}
-          aria-label={$t('course.header.view_course_site')}
+          aria-label={$t('enterprise.course.preview_title')}
         >
-          <ExternalLinkIcon size={14} />
-          <span class="hidden sm:inline">{$t('course.header.view_course_site')}</span>
+          <EyeIcon size={14} />
+          <span class="hidden sm:inline">{$t('enterprise.course.preview_title')}</span>
         </Button>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
@@ -159,8 +145,6 @@
                 isPublished={courseApi.course.isPublished ?? false}
                 courseType={courseApi.course.type}
                 slug={courseApi.course.slug ?? ''}
-                includeViewAsStudent={true}
-                onViewAsStudent={() => (viewAsStudentOpen = true)}
               />
             {/if}
           </DropdownMenu.Content>
@@ -170,11 +154,25 @@
   </div>
 </header>
 
-<ViewAsStudentModal
-  bind:open={viewAsStudentOpen}
-  courseId={courseApi.course?.id}
-  courseSlug={courseApi.course?.slug}
-  currentOrgDomain={$currentOrgDomain}
-/>
+{#if $isCoursePreview}
+  <div
+    class="ui:border-border ui:bg-muted flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3"
+    role="status"
+  >
+    <div>
+      <p class="text-sm font-semibold">{$t('enterprise.course.preview_title')}</p>
+      <p class="ui:text-muted-foreground text-xs">{$t('enterprise.course.preview_description')}</p>
+    </div>
+    <Button
+      size="sm"
+      variant="outline"
+      onclick={() => {
+        const courseId = courseApi.course?.id;
+        if (!courseId) return;
 
-<ViewCourseSiteUnpublishedModal bind:open={viewCourseSiteUnpublishedOpen} currentOrgDomain={$currentOrgDomain} />
+        setCoursePreview(null);
+        goto(resolve(`/courses/${courseId}/lessons`, {}));
+      }}>{$t('enterprise.course.exit_preview')}</Button
+    >
+  </div>
+{/if}

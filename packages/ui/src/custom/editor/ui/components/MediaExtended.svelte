@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { NodeViewWrapper } from 'svelte-tiptap';
   import type { NodeViewProps } from '@tiptap/core';
@@ -166,10 +168,10 @@
       {#if node.attrs.title !== null && node.attrs.title !== undefined && node.attrs.title !== ''}
         <input
           type="text"
-          aria-label="Image caption"
+          aria-label={translate('Image caption')}
           value={node.attrs.title}
           oninput={(e) => updateAttributes({ title: (e.target as HTMLInputElement).value })}
-          placeholder="Add caption..."
+          placeholder={translate('Add caption...')}
           class="ui:mt-1 ui:w-full ui:bg-transparent ui:text-center ui:text-xs ui:text-muted-foreground ui:outline-none"
         />
       {/if}
@@ -179,7 +181,7 @@
         <div
           role="button"
           tabindex="0"
-          aria-label="Resize left"
+          aria-label={translate('Resize left')}
           class="ui:absolute ui:inset-y-0 ui:left-0 ui:z-20 ui:flex ui:w-5 ui:cursor-col-resize ui:items-center ui:justify-start ui:p-1"
           onmousedown={(event: MouseEvent) => {
             handleResizingPosition(event, 'left');
@@ -202,7 +204,7 @@
         <div
           role="button"
           tabindex="0"
-          aria-label="Resize right"
+          aria-label={translate('Resize right')}
           class="ui:absolute ui:inset-y-0 ui:right-0 ui:z-20 ui:flex ui:w-5 ui:cursor-col-resize ui:items-center ui:justify-end ui:p-1"
           onmousedown={(event: MouseEvent) => {
             handleResizingPosition(event, 'right');
@@ -233,7 +235,7 @@
             variant="ghost"
             class={cn('ui:size-6 ui:p-0', node.attrs.align === 'left' && 'ui:bg-muted')}
             onclick={() => updateAttributes({ align: 'left' })}
-            title="Align Left"
+            title={translate('Align Left')}
           >
             <AlignLeft class="ui:size-4" />
           </Button>
@@ -241,7 +243,7 @@
             variant="ghost"
             class={cn('ui:size-6 ui:p-0', node.attrs.align === 'center' && 'ui:bg-muted')}
             onclick={() => updateAttributes({ align: 'center' })}
-            title="Align Center"
+            title={translate('Align Center')}
           >
             <AlignCenter class="ui:size-4" />
           </Button>
@@ -249,14 +251,14 @@
             variant="ghost"
             class={cn('ui:size-6 ui:p-0', node.attrs.align === 'right' && 'ui:bg-muted')}
             onclick={() => updateAttributes({ align: 'right' })}
-            title="Align Right"
+            title={translate('Align Right')}
           >
             <AlignRight class="ui:size-4" />
           </Button>
           <DropdownMenu.Root bind:open={openedMore} onOpenChange={(value) => (openedMore = value)}>
             <DropdownMenu.Trigger
               class={buttonVariants({ variant: 'ghost', class: 'size-6 p-0' })}
-              title="More Options"
+              title={translate('More Options')}
             >
               <EllipsisVertical class="ui:size-4" />
             </DropdownMenu.Trigger>
@@ -274,14 +276,16 @@
                   }
                 }}
               >
-                <Captions class="ui:mr-1 ui:size-4" /> Caption
+                <Captions class="ui:mr-1 ui:size-4" />
+                {translate('Caption')}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onclick={() => {
                   duplicateContent(editor, node);
                 }}
               >
-                <CopyIcon class="ui:mr-1 ui:size-4" /> Duplicate
+                <CopyIcon class="ui:mr-1 ui:size-4" />
+                {translate('Duplicate')}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onclick={() => {
@@ -290,7 +294,8 @@
                   });
                 }}
               >
-                <Fullscreen class="ui:mr-1 ui:size-4" /> Full Width
+                <Fullscreen class="ui:mr-1 ui:size-4" />
+                {translate('Full Width')}
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onclick={() => {
@@ -298,7 +303,8 @@
                 }}
                 class="ui:text-destructive"
               >
-                <Trash class="ui:mr-1 ui:size-4" /> Delete
+                <Trash class="ui:mr-1 ui:size-4" />
+                {translate('Delete')}
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>

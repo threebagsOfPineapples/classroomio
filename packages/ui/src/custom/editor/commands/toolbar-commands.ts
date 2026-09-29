@@ -31,6 +31,7 @@ import SquareRadical from '@lucide/svelte/icons/square-radical';
 import { isTextSelection } from '@tiptap/core';
 import Pilcrow from '@lucide/svelte/icons/pilcrow';
 import { isMac } from '../utils';
+import { getEditorTranslation } from '../translation';
 
 const commands: Record<string, EdraToolBarCommands[]> = {
   'undo-redo': [
@@ -142,7 +143,8 @@ const commands: Record<string, EdraToolBarCommands[]> = {
         if (editor.isActive('link')) {
           editor.chain().focus().unsetLink().run();
         } else {
-          const url = window.prompt('Enter the URL of the link:');
+          const translate = getEditorTranslation(editor);
+          const url = window.prompt(translate('Enter the URL of the link:'));
           if (url) {
             editor.chain().focus().toggleLink({ href: url }).run();
           }

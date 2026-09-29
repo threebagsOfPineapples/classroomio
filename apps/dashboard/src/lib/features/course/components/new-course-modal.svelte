@@ -39,13 +39,6 @@
       subtitle: $t('new_course_modal.compliance_subtitle'),
       type: 'COMPLIANCE' as TCourseType,
       isDisabled: false
-    },
-    {
-      id: 'public',
-      title: $t('new_course_modal.public_label'),
-      subtitle: $t('new_course_modal.public_subtitle'),
-      type: 'PUBLIC' as TCourseType,
-      isDisabled: false
     }
   ];
   const courseTypeOptionsForGroup = options.map((o) => ({
@@ -107,7 +100,7 @@
         {@render course_type_selector()}
 
         <Dialog.Footer>
-          <Button onclick={() => (step = 1)} disabled={!type}>
+          <Button size="sm" onclick={() => (step = 1)} disabled={!type}>
             {$t('courses.new_course_modal.next')}
           </Button>
         </Dialog.Footer>
@@ -139,10 +132,10 @@
         />
 
         <Dialog.Footer>
-          <Button variant="outline" onclick={() => (step = 0)}>
+          <Button size="sm" variant="outline" onclick={() => (step = 0)}>
             {$t('courses.new_course_modal.back')}
           </Button>
-          <Button type="submit" disabled={courseApi.isLoading} loading={courseApi.isLoading}>
+          <Button size="sm" type="submit" disabled={courseApi.isLoading} loading={courseApi.isLoading}>
             {$t('courses.new_course_modal.button')}
           </Button>
         </Dialog.Footer>

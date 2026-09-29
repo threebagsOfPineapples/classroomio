@@ -97,7 +97,9 @@
               {question.title}
             </Item.Title>
             <Item.Description>
-              {question?.authorFullname} asked {calDateDiff(question.createdAt || new Date())}
+              {question?.authorFullname}
+              {$t('community.asked')}
+              {calDateDiff(question.createdAt || new Date())}
             </Item.Description>
             <Button
               class="m-0! justify-start! px-0! py-0! underline"

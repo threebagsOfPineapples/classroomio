@@ -127,7 +127,7 @@ class SsoApi extends BaseApiWithErrors {
       requestFn: () => classroomio.organization.sso.activate.$post(),
       logContext: 'activating SSO connection',
       onSuccess: (response) => {
-        snackbar.success('SSO connection activated');
+        snackbar.success('interface_feedback.sso_connection_activated');
         if (this.config?.config) {
           this.config.config.isActive = response.data?.isActive ?? true;
         }

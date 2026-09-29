@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view';
 import { Node } from '@tiptap/pm/model';
+import { getEditorTranslation } from './translation';
 
 /**
  * Check if the current browser is in mac or not
@@ -28,7 +29,8 @@ export function getHandlePaste(editor: Editor, maxSize: number = 2) {
     const filesize = (file?.size / 1024 / 1024).toFixed(4);
 
     if (filesize && Number(filesize) > maxSize) {
-      window.alert(`too large image! filesize: ${filesize} mb`);
+      const translate = getEditorTranslation(editor);
+      window.alert(`${translate('Image exceeds the size limit')}: ${filesize} MB`);
       return;
     }
 

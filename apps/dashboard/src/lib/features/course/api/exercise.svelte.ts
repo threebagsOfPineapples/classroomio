@@ -61,7 +61,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to fetch exercise');
+          snackbar.error('interface_feedback.failed_to_fetch_exercise');
         }
       }
     });
@@ -165,7 +165,7 @@ export class ExerciseApi extends BaseApiWithErrors {
           createdExercise = response.data as unknown as Exercise;
           this.exercise = createdExercise;
           if (!silent) {
-            snackbar.success('Exercise created successfully');
+            snackbar.success('interface_feedback.exercise_created_successfully');
           }
           this.success = true;
           this.errors = {};
@@ -173,7 +173,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to create exercise');
+          snackbar.error('interface_feedback.failed_to_create_exercise');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -217,7 +217,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       onError: (result) => {
         this.success = false;
         if (typeof result === 'string') {
-          snackbar.error('Failed to update exercise');
+          snackbar.error('interface_feedback.failed_to_update_exercise');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -243,14 +243,14 @@ export class ExerciseApi extends BaseApiWithErrors {
       logContext: 'deleting exercise',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Exercise deleted successfully');
+          snackbar.success('interface_feedback.exercise_deleted_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to delete exercise');
+          snackbar.error('interface_feedback.failed_to_delete_exercise');
         }
       }
     });
@@ -310,14 +310,14 @@ export class ExerciseApi extends BaseApiWithErrors {
       logContext: 'submitting exercise',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Exercise submitted successfully');
+          snackbar.success('interface_feedback.exercise_submitted_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to submit exercise');
+          snackbar.error('interface_feedback.failed_to_submit_exercise');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -424,7 +424,7 @@ export class ExerciseApi extends BaseApiWithErrors {
           createdExercise = response.data as unknown as Exercise;
           this.exercise = createdExercise;
           if (!silent) {
-            snackbar.success('Exercise created successfully');
+            snackbar.success('interface_feedback.exercise_created_successfully');
           }
           this.success = true;
           this.errors = {};
@@ -432,7 +432,7 @@ export class ExerciseApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to create exercise from template');
+          snackbar.error('interface_feedback.failed_to_create_exercise_from_template');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {

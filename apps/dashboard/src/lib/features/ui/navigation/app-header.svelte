@@ -1,4 +1,5 @@
 <script lang="ts">
+  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { onMount } from 'svelte';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
@@ -7,25 +8,15 @@
   import * as Popover from '@cio/ui/base/popover';
   import Search from '$features/ui/search.svelte';
   import AppBreadcrumbs from './app-breadcrumbs.svelte';
-  import { currentOrg } from '$lib/utils/store/org';
+  import { currentOrg, isOrgTeamMember } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
-  import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import { notificationsApi } from '$features/notifications/api/notifications.svelte';
   import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
-  import AppSetup from './app-setup.svelte';
-  import VisitOrgSiteBtn from '$features/ui/visit-org-site-btn.svelte';
   import { t } from '$lib/utils/functions/translations';
 
   let { enterprise = false }: { enterprise?: boolean } = $props();
 
-  const siteName = $derived($currentOrg.siteName);
   const notificationCount = $derived(notificationsApi.unreadCount);
-
-  $effect(() => {
-    if (!siteName) return;
-
-    setupProgressApi.fetchSetupProgress(siteName);
-  });
 
   $effect(() => {
     if (!$currentOrg.id || !$profile.id) return;
@@ -60,12 +51,12 @@
     {/if}
 
     <span class="grow"></span>
+    <InterfaceLanguage />
 
-    {#if enterprise}
-      <Button href="/lms" variant="outline" size="sm">{$t('enterprise.interface.learner_portal')}</Button>
-    {:else}
-      <AppSetup />
-      <VisitOrgSiteBtn variant="outline" labelKey="dashboard.open_academy" />
+    {#if $isOrgTeamMember}
+      <Button href="/lms" variant="outline" size="sm" testId="switch-to-learning">
+        {$t('enterprise.interface.learner_portal')}
+      </Button>
     {/if}
 
     <div class="hidden sm:block"><Search /></div>

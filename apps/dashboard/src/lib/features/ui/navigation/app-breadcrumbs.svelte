@@ -44,7 +44,7 @@
         <Breadcrumb.Item>
           {#if isDesktop.current}
             <DropdownMenu.Root bind:open>
-              <DropdownMenu.Trigger class="flex items-center gap-1" aria-label="Toggle menu">
+              <DropdownMenu.Trigger class="flex items-center gap-1" aria-label={$t('interface_copy.toggle_menu')}>
                 <Breadcrumb.Ellipsis class="size-4" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="start">
@@ -59,13 +59,13 @@
             </DropdownMenu.Root>
           {:else}
             <Drawer.Root bind:open>
-              <Drawer.Trigger aria-label="Toggle Menu">
+              <Drawer.Trigger aria-label={$t('interface_copy.toggle_menu')}>
                 <Breadcrumb.Ellipsis class="size-4" />
               </Drawer.Trigger>
               <Drawer.Content>
                 <Drawer.Header class="text-start">
-                  <Drawer.Title>Navigate to</Drawer.Title>
-                  <Drawer.Description>Select a page to navigate to.</Drawer.Description>
+                  <Drawer.Title>{$t('interface_copy.navigate_to')}</Drawer.Title>
+                  <Drawer.Description>{$t('interface_copy.select_a_page_to_navigate_to')}</Drawer.Description>
                 </Drawer.Header>
                 <div class="grid gap-1 px-4">
                   {#each breadcrumbs.slice(0, -ITEMS_TO_DISPLAY) as breadcrumb, i (i)}
@@ -75,7 +75,9 @@
                   {/each}
                 </div>
                 <Drawer.Footer class="pt-4">
-                  <Drawer.Close class={buttonVariants({ variant: 'outline' })}>Close</Drawer.Close>
+                  <Drawer.Close class={buttonVariants({ variant: 'outline' })}
+                    >{$t('course.completion.modal.later')}</Drawer.Close
+                  >
                 </Drawer.Footer>
               </Drawer.Content>
             </Drawer.Root>

@@ -20,7 +20,7 @@
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { RadioIcon } from '@cio/ui/custom/moving-icons';
   import CourseContentIcon from '$features/course/components/course-content-icon.svelte';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
@@ -90,7 +90,8 @@
 
 {#snippet contentItemRow(contentItem: (typeof contentData.items)[number])}
   {@const isContentLocked = (contentItem.isUnlocked ?? true) === false}
-  {@const isLockedForStudent = $isCourseLearnerView && (isContentLocked || contentItem.accessible === false)}
+  {@const isLockedForStudent =
+    $isCourseLearnerView && !$isCoursePreview && (isContentLocked || contentItem.accessible === false)}
   <Sidebar.MenuSubItem>
     <Sidebar.MenuSubButton isActive={isContentItemInPath(contentItem.id, currentPath)}>
       {#snippet child({ props })}

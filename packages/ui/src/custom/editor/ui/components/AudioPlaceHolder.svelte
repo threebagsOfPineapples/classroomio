@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import MediaPlaceHolder from '../../components/MediaPlaceHolder.svelte';
   import type { NodeViewProps } from '@tiptap/core';
 
@@ -7,7 +9,7 @@
   import { buttonVariants } from '$src/base/button';
 
   function handleClick() {
-    const audioUrl = prompt('Please enter the audio URL');
+    const audioUrl = prompt(translate('Please enter the audio URL'));
     if (audioUrl) {
       editor.chain().focus().setAudio(audioUrl).run();
     }
@@ -17,6 +19,6 @@
 <MediaPlaceHolder
   class={buttonVariants({ variant: 'secondary', class: 'my-2 w-full justify-start p-6' })}
   icon={Audio}
-  title="Insert an audio"
+  title={translate('Insert an audio')}
   onClick={handleClick}
 />

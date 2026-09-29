@@ -2,6 +2,15 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
   import { Editor } from '@cio/ui/custom/editor';
   import { FIELDS, DEFAULT_CONTENT } from './constants';
+  import chinese from '../../../../../apps/dashboard/src/lib/utils/translations/zh.json';
+
+  function translateChinese(message) {
+    const key = message
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_|_$/g, '');
+    return chinese.editor_copy[key] ?? message;
+  }
 
   const { Story } = defineMeta({
     title: 'Molecules/Editor',
@@ -19,6 +28,12 @@
 <Story name="Default">
   {#snippet template()}
     <Editor />
+  {/snippet}
+</Story>
+
+<Story name="Chinese Interface">
+  {#snippet template()}
+    <Editor translate={translateChinese} placeholder="请输入课程正文" content="<p>这是中文课程编辑器。</p>" />
   {/snippet}
 </Story>
 

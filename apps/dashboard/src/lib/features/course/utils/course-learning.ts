@@ -26,7 +26,15 @@ export function filterLearningCourses(courses: UserEnrolledCourses, filter: stri
   return courses
     .filter((course) => {
       const state = getCourseLearningState(course);
-      const matchesState = filter === 'all' || (filter === 'pending' ? state !== 'completed' : state === filter);
+      const matchesState =
+        filter === 'all' ||
+        (filter === 'required'
+          ? course.required === true
+          : filter === 'optional'
+            ? course.required === false
+            : filter === 'pending'
+              ? state !== 'completed'
+              : state === filter);
       return matchesState && course.title.toLocaleLowerCase().includes(query);
     })
     .sort((left, right) => {

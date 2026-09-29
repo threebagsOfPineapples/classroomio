@@ -1,5 +1,7 @@
 import { apiClient, getRequestBaseUrl } from '$lib/utils/services/api';
-import { t } from '$lib/utils/functions/translations';
+import { locale, t } from '$lib/utils/functions/translations';
+import { get } from 'svelte/store';
+import { ApiError } from '$lib/utils/services/api/types';
 import type { EnterpriseEmployee, EnterpriseEmployees, EnterpriseOverview, EnterpriseRole } from '../utils/types';
 
 class EnterpriseApi {
@@ -13,16 +15,36 @@ class EnterpriseApi {
   notice = $state('');
 
   async request<T>(organizationId: string, path: string, method = 'GET', body?: unknown): Promise<T> {
-    const response = await apiClient.request(`${getRequestBaseUrl()}/enterprise${path}`, {
-      method,
-      credentials: 'include',
-      headers: { 'cio-org-id': organizationId, 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body)
-    });
-    const result = (await response.json()) as { success: boolean; data: T; error?: string };
-    if (!response.ok || !result.success) throw new Error(result.error ?? t.get('enterprise.request_failed'));
+    try {
+      const response = await apiClient.request(`${getRequestBaseUrl()}/enterprise${path}`, {
+        method,
+        credentials: 'include',
+        headers: { 'cio-org-id': organizationId, 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+      const result = (await response.json()) as { success: boolean; data: T; error?: string };
+      if (!response.ok || !result.success) throw new Error(result.error ?? '');
 
-    return result.data;
+      return result.data;
+    } catch (error) {
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        throw new Error(t.get('common.restricted_description'));
+      }
+
+      if (error instanceof ApiError && error.status === 404) throw new Error(t.get('common.page_not_found'));
+
+      let message = error instanceof Error ? error.message : '';
+      try {
+        const result = JSON.parse(message) as { error?: unknown };
+        message = typeof result.error === 'string' ? result.error : '';
+      } catch {
+        message = message.trim();
+      }
+
+      const displayMessage =
+        get(locale) === 'zh' && /[\u3400-\u9fff]/.test(message) ? message : t.get('enterprise.request_failed');
+      throw new Error(displayMessage);
+    }
   }
 
   async load(organizationId: string) {

@@ -3,7 +3,7 @@
   import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import { Progress } from '@cio/ui/base/progress';
-  import { t } from '$lib/utils/functions/translations';
+  import { t, locale } from '$lib/utils/functions/translations';
   import { Empty } from '@cio/ui/custom/empty';
   import BookOpenIcon from '@lucide/svelte/icons/book-open';
   import { coursesApi } from '$features/course/api';
@@ -46,7 +46,7 @@
       return '';
     }
 
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat($locale === 'zh' ? 'zh-CN' : $locale, {
       dateStyle: 'medium'
     }).format(date);
   }
@@ -64,11 +64,13 @@
         {#each highlightedCourses as course (course.id)}
           <div class="p-5">
             <span class="flex flex-col items-start gap-3 pb-5 lg:flex-row">
-              <img
-                src={course.logo || '/images/classroomio-course-img-template.jpg'}
-                alt="course"
-                class="hidden lg:block lg:h-[60px] lg:w-[60px]"
-              />
+              {#if course.logo}
+                <img src={course.logo} alt={course.title} class="hidden size-[60px] object-cover lg:block" />
+              {:else}
+                <span class="course-cover hidden size-[60px] shrink-0 lg:grid" data-course-type={course.type}>
+                  <BookOpenIcon class="size-8" aria-hidden="true" />
+                </span>
+              {/if}
               <div class="w-full">
                 <p class="text-base font-semibold dark:text-white">{course.title}</p>
                 <p class="line-clamp-2 text-xs font-normal text-[#656565] dark:text-white">

@@ -318,13 +318,6 @@
               {total}/{maxPoints}
             </Badge>
           </div>
-          <!-- <div class="flex items-center text-sm p-3">
-        <p class="dark:text-white w-1/2">Status</p>
-        <div class="flex items-center">
-          <p class="dark:text-white rounded-full w-5 h-5 bg-yellow-300 mr-2" />
-          <p class="dark:text-white">Grading</p>
-        </div>
-      </div> -->
           <div class="flex items-center space-x-4 px-3 py-2 text-sm">
             <p class="text-sm font-semibold text-gray-500 dark:text-white">
               {$t('course.navItem.submissions.grading_modal.student')}:
@@ -342,13 +335,6 @@
               </div>
             {/if}
           </div>
-          <!-- <div class="flex items-center space-x-4 text-sm px-3 py-2">
-        <p class="dark:text-white text-sm text-gray-500 font-semibold">Assesment Type:</p>
-        <Tag
-          class="dark:text-white font-semibold bg-gray-100 dark:bg-neutral-700 rounded-md text-black w-fit"
-          >Paragraph</Tag
-        >
-      </div> -->
 
           <div class="flex flex-col items-start px-3 py-2 text-sm">
             <p class="font-semibold text-gray-500 dark:text-white">
@@ -404,10 +390,6 @@
               {$t('course.navItem.submissions.grading_modal.submit_grades')}
             </Button>
           </div>
-          <!-- <div class="flex items-center text-sm p-3">
-        <p class="dark:text-white w-1/2">Teacher</p>
-        <p class="dark:text-white">rotimi-best</p>
-      </div> -->
         </div>
       </div>
     </div>

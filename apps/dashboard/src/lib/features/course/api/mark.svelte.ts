@@ -28,7 +28,7 @@ export class MarkApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to fetch marks');
+          snackbar.error('interface_feedback.failed_to_fetch_marks');
         }
       }
     });

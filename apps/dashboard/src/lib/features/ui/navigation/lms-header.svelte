@@ -1,14 +1,17 @@
 <script lang="ts">
+  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import BellIcon from '@lucide/svelte/icons/bell';
+  import MenuIcon from '@lucide/svelte/icons/menu';
   import { Button } from '@cio/ui/base/button';
   import * as Popover from '@cio/ui/base/popover';
+  import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
   import Search from '../search.svelte';
   import { getLmsNavigationItems } from './lms-navigation';
   import { SidebarFooterMenu } from '../sidebar/footer';
   import { t } from '$lib/utils/functions/translations';
-  import { currentOrg } from '$lib/utils/store/org';
+  import { currentOrg, isOrgTeamMember } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { notificationsApi } from '$features/notifications/api/notifications.svelte';
   import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
@@ -42,6 +45,7 @@
       </span>
     </a>
     <span class="grow"></span>
+    <InterfaceLanguage />
 
     {#if !hideSearch}
       <div class="hidden lg:block"><Search scope="lms" /></div>
@@ -79,6 +83,11 @@
         {/if}
       </div>
     {/if}
+    {#if $isOrgTeamMember}
+      <Button href="/admin" variant="outline" size="sm" testId="switch-to-management">
+        {$t('enterprise.interface.admin_portal')}
+      </Button>
+    {/if}
     <div class="learner-user-menu"><SidebarFooterMenu compact /></div>
   </div>
   <nav class="learner-navigation" aria-label={$t('enterprise.interface.learner_portal')}>
@@ -87,5 +96,24 @@
         {item.title}
       </a>
     {/each}
+  </nav>
+  <nav class="learner-mobile-navigation" aria-label={$t('enterprise.interface.learner_portal')}>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        {#snippet child({ props })}
+          <Button {...props} variant="secondary" size="sm" testId="learner-navigation-trigger">
+            <MenuIcon class="size-4" />
+            {navigation.find((item) => item.isActive)?.title ?? $t('enterprise.interface.learner_portal')}
+          </Button>
+        {/snippet}
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content align="start">
+        {#each navigation as item (item.url)}
+          <DropdownMenu.Item>
+            <a href={item.url} aria-current={item.isActive ? 'page' : undefined} class="w-full">{item.title}</a>
+          </DropdownMenu.Item>
+        {/each}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   </nav>
 </header>

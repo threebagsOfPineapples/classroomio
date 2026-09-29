@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import MediaPlaceHolder from '../../components/MediaPlaceHolder.svelte';
   import type { NodeViewProps } from '@tiptap/core';
 
@@ -7,7 +9,7 @@
   import { buttonVariants } from '$src/base/button';
 
   function handleClick() {
-    const videoUrl = prompt('Please enter the video URL');
+    const videoUrl = prompt(translate('Please enter the video URL'));
     if (videoUrl) {
       editor.chain().focus().setVideo(videoUrl).run();
     }
@@ -17,6 +19,6 @@
 <MediaPlaceHolder
   class={buttonVariants({ variant: 'secondary', class: 'my-2 w-full justify-start p-6' })}
   icon={Video}
-  title="Insert a video"
+  title={translate('Insert a video')}
   onClick={handleClick}
 />

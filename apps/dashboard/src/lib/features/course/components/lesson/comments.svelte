@@ -46,7 +46,9 @@
         avatar: apiComment.profile?.avatarUrl ?? 'AV',
         commentAt: new Date(apiComment.createdAt),
         groupmemberId: apiComment.groupmemberId,
-        name: isCurrentUser ? $t('course.navItem.lessons.comments.you') : apiComment.profile?.fullname || 'Unknown'
+        name: isCurrentUser
+          ? $t('course.navItem.lessons.comments.you')
+          : apiComment.profile?.fullname || $t('course.navItem.news_feed.user')
       };
     });
   });

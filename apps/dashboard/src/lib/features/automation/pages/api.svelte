@@ -161,7 +161,7 @@
                   {#if !key.revokedAt}
                     <DropdownMenu.Root>
                       <DropdownMenu.Trigger class="inline-flex items-center justify-center">
-                        <IconButton aria-label="actions">
+                        <IconButton aria-label={$t('interface_copy.actions')}>
                           <EllipsisVerticalIcon size={16} />
                         </IconButton>
                       </DropdownMenu.Trigger>

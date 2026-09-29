@@ -27,7 +27,7 @@
   import { profile } from '$lib/utils/store/user';
   import { currentOrg, isOrgAdmin } from '$lib/utils/store/org';
   import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { canRecordCourseLearning, isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { CourseMobileBottomNav } from '$features/course/components/mobile';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
@@ -101,10 +101,17 @@
   const exerciseId = $derived((page.params.exerciseId as string | undefined) ?? data.exerciseId);
   const isLessonOrExercisePage = $derived(Boolean(lessonId || exerciseId));
   const isLessonEditMode = $derived(page.url.searchParams.get('mode') === 'edit');
+  const previewRedirectRequired = $derived(
+    $isCoursePreview && !/^\/courses\/[^/]+\/(?:lessons|exercises)(?:\/|$)/.test(page.url.pathname)
+  );
+
+  $effect(() => {
+    if (previewRedirectRequired) goto(`/courses/${courseId}/lessons?preview=true`, { replaceState: true });
+  });
 
   $effect(() => {
     const organizationId = $currentOrg.id;
-    if (!organizationId || !isCourseReady || !isPermitted || !$isCourseLearnerView) return;
+    if (!organizationId || !isCourseReady || !isPermitted || !$canRecordCourseLearning) return;
     if (!isLessonOrExercisePage || isLessonEditMode) return;
 
     let timer: ReturnType<typeof setInterval> | undefined;
@@ -257,10 +264,12 @@
 
   <Sidebar.Inset class="min-w-0 flex-1 {showMobileBottomNav ? 'pb-24' : ''}">
     <CourseHeader />
-    <ContentCreateModal />
-    <CourseCompletionModal />
+    {#if !$isCoursePreview}
+      <ContentCreateModal />
+      <CourseCompletionModal />
+    {/if}
 
-    {#if !isCourseReady}
+    {#if !isCourseReady || previewRedirectRequired}
       <div class="mx-auto flex h-[calc(100vh-56px)] w-full items-center justify-center">
         <Empty
           title={$t('course.loading.title')}

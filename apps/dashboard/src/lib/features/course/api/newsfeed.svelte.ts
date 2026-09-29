@@ -83,7 +83,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to list newsfeed');
+          snackbar.error('interface_feedback.failed_to_list_newsfeed');
         }
       }
     });
@@ -101,7 +101,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       logContext: 'fetching newsfeed item',
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to fetch newsfeed item');
+          snackbar.error('interface_feedback.failed_to_fetch_newsfeed_item');
         }
       }
     });
@@ -134,7 +134,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       logContext: 'creating newsfeed',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Post created successfully');
+          snackbar.success('interface_feedback.post_created_successfully');
           const feedsArray = Array.isArray(this.feeds) ? this.feeds : [];
           const author = get(profile);
 
@@ -154,7 +154,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to create post');
+          snackbar.error('interface_feedback.failed_to_create_post');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -177,7 +177,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
         ZNewsfeedUpdate.safeParse({ ...fields, content: '' }).error!,
         'newsfeed'
       );
-      snackbar.error(this.errors.content ?? 'Failed to update post');
+      snackbar.error(this.errors.content ?? 'interface_feedback.failed_to_update_post');
       return;
     }
 
@@ -197,7 +197,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       logContext: 'updating newsfeed',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Post updated successfully');
+          snackbar.success('interface_feedback.post_updated_successfully');
           this.feeds = this.feeds.map((feed) => {
             if (feed.id !== feedId) {
               return feed;
@@ -217,7 +217,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update post');
+          snackbar.error('interface_feedback.failed_to_update_post');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -268,7 +268,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update reaction');
+          snackbar.error('interface_feedback.failed_to_update_reaction');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -294,13 +294,13 @@ export class NewsfeedApi extends BaseApiWithErrors {
       logContext: 'deleting newsfeed',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Post deleted successfully');
+          snackbar.success('interface_feedback.post_deleted_successfully');
           this.feeds = this.feeds.filter((feed) => feed.id !== feedId);
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to delete post');
+          snackbar.error('interface_feedback.failed_to_delete_post');
         }
       }
     });
@@ -468,7 +468,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       onError: (result) => {
         this.threadByFeedId[feedId].isLoading = false;
         if (typeof result === 'string') {
-          snackbar.error('Failed to fetch comments');
+          snackbar.error('interface_feedback.failed_to_fetch_comments');
         }
       }
     });
@@ -497,7 +497,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       onError: (result) => {
         thread.isLoading = false;
         if (typeof result === 'string') {
-          snackbar.error('Failed to load more comments');
+          snackbar.error('interface_feedback.failed_to_load_more_comments');
         }
       }
     });
@@ -541,7 +541,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
         const current = this.nodeState(parentId);
         if (current) current.isLoading = false;
         if (typeof result === 'string') {
-          snackbar.error('Failed to load more replies');
+          snackbar.error('interface_feedback.failed_to_load_more_replies');
         }
       }
     });
@@ -670,7 +670,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       onError: (result) => {
         rollback();
         if (typeof result === 'string') {
-          snackbar.error('Failed to add comment');
+          snackbar.error('interface_feedback.failed_to_add_comment');
         }
       }
     });
@@ -693,14 +693,14 @@ export class NewsfeedApi extends BaseApiWithErrors {
       onSuccess: (response) => {
         if (!response.data) return;
 
-        snackbar.success('Comment updated successfully');
+        snackbar.success('interface_feedback.comment_updated_successfully');
 
         const existing = this.commentById[commentId];
         if (existing) existing.content = response.data.content ?? content;
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update comment');
+          snackbar.error('interface_feedback.failed_to_update_comment');
         }
       }
     });
@@ -716,7 +716,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       onSuccess: (response) => {
         if (!response.data) return;
 
-        snackbar.success('Comment deleted successfully');
+        snackbar.success('interface_feedback.comment_deleted_successfully');
 
         const numericId = Number(commentId);
         const state = this.nodeState(numericId);
@@ -748,7 +748,7 @@ export class NewsfeedApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to delete comment');
+          snackbar.error('interface_feedback.failed_to_delete_comment');
         }
       }
     });

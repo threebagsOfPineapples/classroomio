@@ -1,3 +1,4 @@
+import { t } from '$lib/utils/functions/translations';
 import { isAutoGradableQuestionType, isAutoGradableQuestionTypeId, type QuestionTypeKey } from '@cio/question-types';
 import { ContentType } from '@cio/utils/constants/content';
 import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
@@ -115,7 +116,7 @@ export function groupOffendersByExercise(
     if (!group) {
       group = {
         exerciseId: offender.exerciseId,
-        exerciseTitle: offender.exerciseTitle || 'Untitled Exercise',
+        exerciseTitle: offender.exerciseTitle || t.get('course.navItem.lessons.add_content_options.exercise_title'),
         questions: []
       };
       groupedMap.set(offender.exerciseId, group);
@@ -123,7 +124,9 @@ export function groupOffendersByExercise(
 
     group.questions.push({
       questionId: offender.questionId,
-      questionTitle: offender.questionTitle || 'Untitled question',
+      questionTitle:
+        offender.questionTitle ||
+        t.get('course.navItem.lessons.exercises.all_exercises.shared_question.question.edit.title_label'),
       typeId: offender.typeId
     });
   }

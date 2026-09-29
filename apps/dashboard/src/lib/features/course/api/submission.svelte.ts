@@ -38,14 +38,14 @@ export class SubmissionApi extends BaseApiWithErrors {
       logContext: 'updating submission',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Submission updated successfully');
+          snackbar.success('interface_feedback.submission_updated_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update submission');
+          snackbar.error('interface_feedback.failed_to_update_submission');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -71,14 +71,14 @@ export class SubmissionApi extends BaseApiWithErrors {
       logContext: 'deleting submission',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Submission deleted successfully');
+          snackbar.success('interface_feedback.submission_deleted_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to delete submission');
+          snackbar.error('interface_feedback.failed_to_delete_submission');
         }
       }
     });
@@ -110,7 +110,7 @@ export class SubmissionApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update grades');
+          snackbar.error('interface_feedback.failed_to_update_grades');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -147,7 +147,7 @@ export class SubmissionApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update answer');
+          snackbar.error('interface_feedback.failed_to_update_answer');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {

@@ -53,7 +53,7 @@ import { syncComplianceProgressFromSubmission } from '@api/services/course/compl
 import { syncAssessmentsForSubmission } from '@api/services/assessment';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExerciseCompletedForMember } from '@cio/db/queries/course/progression';
-import { assertExamOpen } from '@api/services/exercise/exam-policy';
+import { assertExamOpen, getActiveExamMakeupPolicy } from '@api/services/exercise/exam-policy';
 
 type SubmissionGradingState = 'queued' | 'processing' | 'awaiting_manual' | 'completed' | 'failed';
 type SubmissionOverallStatus = 'auto_graded' | 'manual_required' | 'hybrid';
@@ -574,7 +574,13 @@ export async function createSubmissionService(
     ]);
     const course = courseRows[0];
 
-    assertExamOpen(exerciseWithRelations.exercise);
+    const makeupPolicy = exerciseWithRelations.exercise.isExam
+      ? await getActiveExamMakeupPolicy(exerciseId, submittedBy)
+      : null;
+    const effectiveExam = makeupPolicy
+      ? { ...exerciseWithRelations.exercise, ...makeupPolicy }
+      : exerciseWithRelations.exercise;
+    assertExamOpen(effectiveExam);
 
     if (exerciseWithRelations.exercise.isExam && (await getExamCourseId(exerciseId)) !== courseId) {
       throw new AppError('Exam does not belong to this course', ErrorCodes.VALIDATION_ERROR, 403);

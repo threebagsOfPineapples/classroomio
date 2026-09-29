@@ -45,7 +45,7 @@
       <Field.Group>
         <Field.Field>
           <Field.Label>{$t('add_org.name')}</Field.Label>
-          <Input bind:value={orgName} placeholder="e.g Pepsi Co" autofocus />
+          <Input bind:value={orgName} placeholder={$t('interface_copy.e_g_pepsi_co')} autofocus />
           {#if orgApi.errors.name || orgApi.errors.orgName}
             <Field.Error>{orgApi.errors.name || orgApi.errors.orgName}</Field.Error>
           {/if}
@@ -53,7 +53,12 @@
 
         <Field.Field>
           <Field.Label>{$t('add_org.org_sitename')}</Field.Label>
-          <DomainInput bind:value={siteName} placeholder="myschool" prefix="https://" suffix=".{TENANT_ROOT_DOMAIN}" />
+          <DomainInput
+            bind:value={siteName}
+            placeholder={$t('interface_copy.myschool')}
+            prefix="https://"
+            suffix=".{TENANT_ROOT_DOMAIN}"
+          />
           {#if orgApi.errors.siteName || orgApi.errors.general}
             <Field.Error>{orgApi.errors.siteName || orgApi.errors.general}</Field.Error>
           {/if}

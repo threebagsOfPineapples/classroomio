@@ -3,7 +3,6 @@
   import { currentOrgPath } from '$lib/utils/store/org';
   import { page } from '$app/state';
   import { t } from '$lib/utils/functions/translations';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { BackButton } from '@cio/ui';
   import Search from '$features/ui/search.svelte';
   import { isActive } from '$lib/utils/functions/app';
@@ -22,21 +21,12 @@
         { key: 'settings.sidebar.branding', path: '/settings/org' },
         { key: 'settings.tabs.domains_tab', path: '/settings/domains' },
         { key: 'settings.tabs.teams_tab', path: '/settings/teams' },
-        { key: 'settings.tabs.customize_lms_tab', path: '/settings/customize-lms' },
-        { key: 'settings.tabs.billing_tab', path: '/settings/billing' }
+        { key: 'settings.tabs.customize_lms_tab', path: '/settings/customize-lms' }
       ]
     },
     {
       label: 'settings.sidebar.extensions',
-      items: [
-        ...(IS_AI_ENABLED
-          ? [
-              { key: 'settings.tabs.ai_tutor_tab', path: '/settings/ai-tutor' },
-              { key: 'settings.tabs.ai_credits_tab', path: '/settings/ai-credits' }
-            ]
-          : []),
-        { key: 'settings.tabs.auth_tab', path: '/settings/auth' }
-      ]
+      items: [{ key: 'settings.tabs.auth_tab', path: '/settings/auth' }]
     }
   ];
 

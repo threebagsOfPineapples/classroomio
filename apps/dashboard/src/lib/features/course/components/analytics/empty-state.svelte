@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import type { Component } from 'svelte';
   import ChartBarIcon from '@lucide/svelte/icons/chart-bar';
 
@@ -10,8 +11,8 @@
   }
 
   let {
-    title = 'No data available',
-    description = 'There is no data to display at this time.',
+    title = $t('analytics.no_data_default'),
+    description = $t('analytics.no_data_default_description'),
     icon = ChartBarIcon,
     className = ''
   }: Props = $props();

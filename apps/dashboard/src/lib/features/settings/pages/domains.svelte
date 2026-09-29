@@ -362,11 +362,11 @@
     >
 
     <Field.Field>
-      <Field.Label>URL</Field.Label>
+      <Field.Label>{$t('components.settings.domains.url')}</Field.Label>
       <DomainInput
         value={siteName ?? ''}
         onchange={(e) => (siteName = (e.target as HTMLInputElement)?.value ?? '')}
-        placeholder="myschool"
+        placeholder={$t('interface_copy.myschool')}
         prefix="https://"
         suffix=".{TENANT_ROOT_DOMAIN}"
       />
@@ -490,7 +490,8 @@
                       {record.type}
                     </span>
                     <span class="ui:text-muted-foreground text-xs">
-                      Record {i + 1} of {domainSetup.dnsRecords.length}
+                      {$t('interface_copy.record')}
+                      {i + 1} of {domainSetup.dnsRecords.length}
                     </span>
 
                     <span

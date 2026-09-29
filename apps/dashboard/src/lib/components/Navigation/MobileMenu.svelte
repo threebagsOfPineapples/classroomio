@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { stopPropagation } from '$lib/utils/functions/svelte';
 
   import { page } from '$app/state';
@@ -38,10 +39,10 @@
       onclick={stopPropagation()}
     >
       <div class="flex items-center justify-between border-b border-gray-200 p-4">
-        <h3 class="text-lg font-semibold text-gray-800">Menu</h3>
+        <h3 class="text-lg font-semibold text-gray-800">{$t('interface_copy.menu')}</h3>
         <button
           onclick={closeMobileMenu}
-          aria-label="Close menu"
+          aria-label={$t('interface_copy.close_menu')}
           class="rounded-md p-2 text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700"
         >
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

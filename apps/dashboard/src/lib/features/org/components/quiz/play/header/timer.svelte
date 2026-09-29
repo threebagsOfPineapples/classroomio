@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/utils/functions/translations';
   import { onMount } from 'svelte';
   import CircleContent from './circle-content.svelte';
 
@@ -42,4 +43,4 @@
   });
 </script>
 
-<CircleContent value={countDownNo} label="Second(s)" className="mr-3" />
+<CircleContent value={countDownNo} label={$t('components.quiz.second')} className="mr-3" />

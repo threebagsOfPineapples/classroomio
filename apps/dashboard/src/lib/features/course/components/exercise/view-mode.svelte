@@ -1,5 +1,6 @@
 <script lang="ts">
   import { get } from 'svelte/store';
+  import { canRecordCourseLearning } from '$lib/utils/store/app';
   import { untrack } from 'svelte';
   import { fly } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
@@ -105,6 +106,8 @@
   const viewedAttemptIndex = $derived(selectedTryIndex >= 0 ? selectedTryIndex : submissionList.length - 1);
 
   async function handleStart() {
+    if (preview || !$canRecordCourseLearning) return;
+
     if ($questionnaire.isExam) {
       if (!courseApi.course?.id || isStartingExam) return;
 
@@ -196,6 +199,8 @@
   }
 
   async function flushExamDraft() {
+    if (preview || !$canRecordCourseLearning) return true;
+
     if (draftSaveTimer) clearTimeout(draftSaveTimer);
     draftSaveTimer = null;
 
@@ -220,12 +225,16 @@
   }
 
   function queueExamDraftSave() {
+    if (preview || !$canRecordCourseLearning) return;
+
     if (!$questionnaire.isExam || !$questionnaireMetaData.examAttemptId || remainingSeconds === 0) return;
     if (draftSaveTimer) clearTimeout(draftSaveTimer);
     draftSaveTimer = setTimeout(() => void flushExamDraft(), 500);
   }
 
   async function submitExercise() {
+    if (preview || !$canRecordCourseLearning) return;
+
     if (!courseApi.course?.id || isSubmitting) return;
     if ($questionnaire.isExam && remainingSeconds === 0) return;
 
@@ -716,6 +725,8 @@
 
   $effect(() => {
     if (
+      !preview &&
+      $canRecordCourseLearning &&
       !alreadyCheckedAutoSavedData &&
       !isFetchingExercise &&
       $questionnaire.questions.length &&
@@ -726,7 +737,7 @@
   });
 
   $effect(() => {
-    if (!$questionnaire.isExam) return;
+    if (preview || !$canRecordCourseLearning || !$questionnaire.isExam) return;
 
     const timer = window.setInterval(() => {
       clockNow = Date.now();
@@ -740,7 +751,14 @@
       : 0
   );
   $effect(() => {
-    if (!$questionnaire.isExam || !$questionnaireMetaData.examAttemptId || finalDraftFlushStarted || isSubmitting)
+    if (
+      preview ||
+      !$canRecordCourseLearning ||
+      !$questionnaire.isExam ||
+      !$questionnaireMetaData.examAttemptId ||
+      finalDraftFlushStarted ||
+      isSubmitting
+    )
       return;
     if (remainingSeconds > 2 || remainingSeconds === 0) return;
 

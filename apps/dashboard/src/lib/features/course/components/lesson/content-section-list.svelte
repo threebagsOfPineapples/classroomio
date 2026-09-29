@@ -14,7 +14,7 @@
   import { HoverableItem, AttachmentIcon } from '@cio/ui/custom/moving-icons';
   import formatDate from '$lib/utils/functions/formatDate';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgStudent } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { contentApi, courseApi, exerciseApi, lessonApi } from '$features/course/api';
   import { snackbar } from '$features/ui/snackbar/store';
   import { profile } from '$lib/utils/store/user';
@@ -53,7 +53,7 @@
   const courseId = $derived(courseApi.course?.id || '');
   const profileId = $derived($profile?.id || '');
   const contentData = $derived(getCourseContent(courseApi.course));
-  const isStudentView = $derived($isOrgStudent === true);
+  const isStudentView = $derived($isCourseLearnerView === true);
   const isLiveCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
   const isSelfPacedCourse = $derived(isSelfPacedLikeCourse(courseApi.course?.type));
   const metaChipClass =
@@ -366,7 +366,7 @@
   }
 
   function isLockedForStudent(item: ContentDndItem) {
-    if (!isStudentView) return false;
+    if ($isCoursePreview || !isStudentView) return false;
     if ((item.isUnlocked ?? true) === false) return true;
 
     return item.accessible === false;
@@ -667,8 +667,8 @@
                 </Button>
               {/if}
 
-              {#if isStudentView && canRenderContinueButton && !isEditingItem}
-                {#if canRenderJoinButton}
+              {#if !$isCoursePreview && isStudentView && canRenderContinueButton && !isEditingItem}
+                {#if !$isCoursePreview && canRenderJoinButton}
                   <Button size="sm" onclick={() => openExternalUrl(item.callUrl!)}>{$t('schedule.join')}</Button>
                 {:else}
                   <a href={resolve(getItemPath(item), {})}>

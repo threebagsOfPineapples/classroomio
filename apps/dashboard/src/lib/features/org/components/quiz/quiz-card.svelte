@@ -57,7 +57,7 @@
   >
     <Image
       src={themeImages[quiz.theme]?.card || themeImages.standard.card}
-      alt="quiz-card"
+      alt={$t('interface_copy.quiz_card')}
       className="max-w-[300px] min-w-[200px]"
     />
 

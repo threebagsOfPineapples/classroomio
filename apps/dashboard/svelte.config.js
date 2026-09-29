@@ -21,7 +21,7 @@ const config = {
       pollInterval: 60_000
     },
     // Default: Node server (Render, Docker). Opt into Cloudflare Pages only when CI_ENVIRONMENT=cloudflare.
-    adapter: IS_CLOUDFLARE ? adapterCloudflare() : adapterNode(),
+    adapter: IS_CLOUDFLARE ? adapterCloudflare() : adapterNode({ out: process.env.DASHBOARD_BUILD_DIR || 'build' }),
     alias: {
       $lib: path.resolve('./src/lib'),
       $features: path.resolve('./src/lib/features'),

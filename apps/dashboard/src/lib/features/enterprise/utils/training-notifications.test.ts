@@ -196,6 +196,39 @@ describe('training notifications', () => {
       body: { key: 'notifications.training_exam.body', params: { examName: '安全考试' } }
     });
     expect(toExamNotifications(assignments, new Set([notifications[0].id]), now)[0].unread).toBe(false);
-    expect(toExamNotifications(assignments, new Set(), Date.parse('2026-09-27T00:00:00.000Z'))).toHaveLength(0);
+    expect(toExamNotifications(assignments, new Set(), Date.parse('2026-09-27T00:00:00.000Z'))).toHaveLength(1);
+    expect(toExamNotifications(assignments, new Set(), Date.parse('2026-09-28T00:00:00.000Z'))).toHaveLength(0);
   });
+});
+
+it('催学使用独立已读标识，并跳转到对应培训', () => {
+  const assignment = {
+    enrollmentId: 'first',
+    name: '新人培训',
+    assignedAt: '2026-09-01T00:00:00Z',
+    startAt: '2026-09-01T00:00:00Z',
+    endAt: '2026-12-01T00:00:00Z',
+    enrollmentStatus: 'NOT_STARTED' as const,
+    planStatus: 'PUBLISHED' as const,
+    finalScore: null,
+    result: 'PENDING' as const,
+    scoreCalculatedAt: null,
+    remindedAt: '2026-09-29T00:00:00Z'
+  };
+  const reminders = toTrainingNotifications([assignment], new Set(), Date.parse(assignment.remindedAt)).filter(
+    (item) => item.kind === 'training_reminder'
+  );
+  expect(reminders).toHaveLength(1);
+  expect(reminders[0].href).toBe('/lms/training/first');
+  const readReminders = toTrainingNotifications(
+    [assignment],
+    new Set([reminders[0].id]),
+    Date.parse(assignment.remindedAt)
+  );
+  expect(readReminders.find((item) => item.id === reminders[0].id)?.unread).toBe(false);
+  expect(
+    toTrainingNotifications([{ ...assignment, enrollmentStatus: 'COMPLETED' }], new Set()).some(
+      (item) => item.kind === 'training_reminder'
+    )
+  ).toBe(false);
 });

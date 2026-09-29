@@ -1,8 +1,8 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { Button } from '@cio/ui/base/button';
-  import { Progress } from '@cio/ui/base/progress';
   import BookOpenIcon from '@lucide/svelte/icons/book-open';
+  import ClockIcon from '@lucide/svelte/icons/clock';
   import AwardIcon from '@lucide/svelte/icons/award';
   import { t, locale } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
@@ -12,7 +12,6 @@
   import { myTrainingApi } from '$features/enterprise/api/my-training.svelte';
   import { AssessmentApi } from '$features/enterprise/api/assessment.svelte';
   import { lmsExercisesApi } from '$features/lms/api/exercises.svelte';
-  import { getStudentCourseProgressPercent } from '$features/course/utils/compliance-utils';
   import { filterLearningCourses, getCourseLearningAction } from '$features/course/utils/course-learning';
   import { getHomeExams, getPendingTraining } from '../utils/home-model';
   import LearningCourses from '../components/learning-courses.svelte';
@@ -21,6 +20,8 @@
   const assessmentApi = new AssessmentApi();
   let loadedFor = '';
   const pendingCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'pending'));
+  const requiredCourses = $derived(coursesApi.enrolledCourses.filter((course) => course.required === true));
+  const optionalCourses = $derived(coursesApi.enrolledCourses.filter((course) => course.required === false));
   const completedCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'completed'));
   const startedCourses = $derived(filterLearningCourses(coursesApi.enrolledCourses, 'in_progress'));
   const nextCourse = $derived(startedCourses[0] ?? pendingCourses[0] ?? completedCourses[0]);
@@ -117,83 +118,69 @@
 {/snippet}
 
 <div class="learner-home-v2 space-y-6 pb-8">
-  <div class="learner-welcome-grid">
-    <section class="training-panel learner-next" aria-label={$t('enterprise.ui_v2.next_learning')}>
-      <div class="learner-next-copy">
-        <h2 class="learner-next-label">{$t('enterprise.ui_v2.next_learning')}</h2>
-        {#if coursesApi.isLoading}<h3 class="learner-next-title">{$t('enterprise.loading')}</h3>
-        {:else if coursesApi.error}{@render retry(() => void coursesApi.getEnrolledCourses())}
-        {:else if nextCourse && nextAction}
-          <h3 class="learner-next-title">{nextCourse.title}</h3>
-          <p class="learner-next-note">
-            {$t(pendingCourses.length ? 'enterprise.ui_v2.next_hint' : 'enterprise.ui_v2.all_learning_done')}
+  <div class="learner-summary-grid">
+    <section class="training-panel learner-summary-card">
+      <h2><BookOpenIcon aria-hidden="true" />{$t('enterprise.learner_home.progress')}</h2>
+      {#if coursesApi.isLoading}<p>{$t('enterprise.loading')}</p>
+      {:else if coursesApi.error}{@render retry(() => void coursesApi.getEnrolledCourses())}
+      {:else}
+        <div class="learner-summary-values">
+          <p>
+            {$t('enterprise.learner_home.required')}<strong
+              >{filterLearningCourses(requiredCourses, 'completed').length}</strong
+            ><span>/ {requiredCourses.length}</span>
           </p>
-          <div class="learner-next-bottom">
-            <Button href={nextAction.href}>{$t(nextAction.key)}</Button>
-            <div class="learner-next-progress">
-              <Progress value={getStudentCourseProgressPercent(nextCourse)} />
-              <p>{$t('enterprise.ui_v2.content_progress')}: {getStudentCourseProgressPercent(nextCourse)}%</p>
-            </div>
-          </div>
-        {:else}
-          <h3 class="learner-next-title">{$t('enterprise.ui_v2.no_course')}</h3>
-          <p class="learner-next-note">{$t('enterprise.ui_v2.no_course_hint')}</p>
-          <Button href="/lms/explore" class="mt-5">{$t('my_learning.find_courses')}</Button>
-        {/if}
-      </div>
-      <BookOpenIcon class="custom learner-next-art" aria-hidden="true" />
-    </section>
-    <section class="training-panel learner-personal">
-      <h2 class="font-semibold">{$t('enterprise.ui_v2.personal_overview')}</h2>
-      <div class="training-metrics grid grid-cols-2 gap-5">
-        <p>
-          {$t('enterprise.ui_v2.pending')}<strong
-            >{coursesApi.isLoading || coursesApi.error ? '—' : pendingCourses.length}<small
-              >{$t('enterprise.ui_v2.course_unit')}</small
-            ></strong
-          >
+          <p>
+            {$t('enterprise.learner_home.optional')}<strong
+              >{filterLearningCourses(optionalCourses, 'completed').length}</strong
+            ><span>/ {optionalCourses.length}</span>
+          </p>
+        </div>
+        <p class="learner-summary-note">
+          {$t('enterprise.learner_home.progress_hint', {
+            completed: completedCourses.length,
+            total: coursesApi.enrolledCourses.length
+          })}
         </p>
+      {/if}
+    </section>
+    <section class="training-panel learner-summary-card">
+      <h2><ClockIcon aria-hidden="true" />{$t('enterprise.assessment.learning_hours')}</h2>
+      <div class="learner-summary-values">
         <p>
-          {$t('enterprise.ui_v2.completed')}<strong
-            >{coursesApi.isLoading || coursesApi.error ? '—' : completedCourses.length}<small
-              >{$t('enterprise.ui_v2.course_unit')}</small
-            ></strong
-          >
+          {$t('enterprise.learner_home.total_time')}<strong
+            >{assessmentApi.loading || assessmentApi.error || learningHours == null
+              ? '—'
+              : Math.round(learningHours * 60)}</strong
+          ><span>{$t('enterprise.ui_v2.minute_unit')}</span>
         </p>
         <p>
           {$t('enterprise.assessment.average_score')}<strong
             >{assessmentApi.loading || assessmentApi.error
               ? '—'
-              : (assessmentApi.archiveSummary?.averageScore ?? '—')}<small>{$t('enterprise.ui_v2.score_unit')}</small
-            ></strong
-          >
-        </p>
-        <p>
-          {$t('enterprise.assessment.learning_hours')}<strong
-            >{assessmentApi.loading || assessmentApi.error || learningHours == null
-              ? '—'
-              : learningHours < 1
-                ? Math.round(learningHours * 60)
-                : learningHours}<small
-              >{$t(
-                learningHours != null && learningHours < 1
-                  ? 'enterprise.ui_v2.minute_unit'
-                  : 'enterprise.ui_v2.hour_unit'
-              )}</small
-            ></strong
-          >
+              : (assessmentApi.archiveSummary?.averageScore ?? '—')}</strong
+          ><span>{$t('enterprise.ui_v2.score_unit')}</span>
         </p>
       </div>
-      <div class="learner-overview-foot">
-        <span
-          >{$t('enterprise.assessment.training_count')}: {assessmentApi.loading || assessmentApi.error
-            ? '—'
-            : (assessmentApi.archiveSummary?.trainingCount ?? '—')}</span
-        ><Button href="/lms/training/archive" variant="link" size="sm">{$t('enterprise.assessment.archive')}</Button>
+      <div class="learner-summary-note">
+        <span>{$t('enterprise.learner_home.time_hint')}</span><Button
+          href="/lms/training/archive"
+          variant="link"
+          size="sm">{$t('enterprise.assessment.archive')}</Button
+        >
       </div>
       {#if assessmentApi.error}{@render retry(() => void assessmentApi.loadArchiveSummary($currentOrg.id))}{/if}
     </section>
   </div>
+  {#if nextCourse && nextAction && !coursesApi.error && !coursesApi.isLoading}
+    <section class="learner-next-inline" aria-label={$t('enterprise.ui_v2.next_learning')}>
+      <div>
+        <span>{$t('enterprise.ui_v2.next_learning')}</span>
+        <h2>{nextCourse.title}</h2>
+      </div>
+      <Button href={nextAction.href} size="sm">{$t(nextAction.key)}</Button>
+    </section>
+  {/if}
   <div class="learner-learning-grid">
     <section class="learner-courses-v2 min-w-0">
       <div class="mb-4 flex items-center justify-between gap-3">

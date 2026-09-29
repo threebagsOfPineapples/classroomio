@@ -1,6 +1,16 @@
 import type { AttachmentListFile } from '@cio/ui';
 import type { LessonDocument } from '$features/course/utils/types';
 
+export function isPdfPageEndVisible(
+  canvasBottom: number,
+  viewport: { top: number; bottom: number },
+  windowHeight: number
+): boolean {
+  const visibleTop = Math.max(0, viewport.top);
+  const visibleBottom = Math.min(windowHeight, viewport.bottom);
+  return visibleBottom > visibleTop && canvasBottom >= visibleTop && canvasBottom <= visibleBottom;
+}
+
 export function getDocumentAttachmentId(document: LessonDocument, index: number): string {
   return document.key || `document-${index}`;
 }

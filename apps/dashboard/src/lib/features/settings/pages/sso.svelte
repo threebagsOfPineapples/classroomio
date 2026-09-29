@@ -68,7 +68,7 @@
     });
 
     if (result?.data) {
-      snackbar.success('SSO connection created successfully');
+      snackbar.success('interface_feedback.sso_connection_created_successfully');
       // Refresh store to get latest data
       await ssoStore.refreshConfig();
     }
@@ -80,7 +80,7 @@
     if (result?.data) {
       // Update store directly
       ssoStore.updateConfig({ ...ssoStore.config!.config!, isActive: true });
-      snackbar.success('SSO connection activated');
+      snackbar.success('interface_feedback.sso_connection_activated');
     }
     isActivating = false;
   }
@@ -93,7 +93,7 @@
     const result = await ssoApi.deleteConnection();
     if (result) {
       ssoStore.clear();
-      snackbar.success('SSO connection deleted');
+      snackbar.success('interface_feedback.sso_connection_deleted');
     }
     isDeleting = false;
   }
@@ -151,9 +151,9 @@
     <Field.Set>
       <Field.Legend class="flex items-center gap-2">
         <ShieldIcon class="size-5" />
-        SSO Connection
+        {$t('settings.auth.sso.connection.heading')}
       </Field.Legend>
-      <Field.Description>Manage your SSO connection status</Field.Description>
+      <Field.Description>{$t('settings.auth.sso.connection.description')}</Field.Description>
 
       <div class="mt-4 rounded-lg border bg-slate-50 p-4 dark:bg-slate-900">
         <div class="flex items-center justify-between">
@@ -171,16 +171,20 @@
         <div class="mt-4 flex gap-2">
           {#if !ssoStore.config.config.isActive}
             <Button variant="default" onclick={onActivate} loading={isActivating} disabled={isActivating}>
-              Activate Connection
+              {$t('settings.auth.sso.connection.activate_button')}
             </Button>
           {/if}
-          <Button variant="destructive" onclick={onDelete} loading={isDeleting} disabled={isDeleting}>Delete</Button>
+          <Button variant="destructive" onclick={onDelete} loading={isDeleting} disabled={isDeleting}
+            >{$t('cohorts.newsfeed.comments.delete')}</Button
+          >
         </div>
       </div>
 
       {#if ssoStore.config.config.isActive}
         <div class="mt-4 rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
-          <p class="font-medium text-blue-800 dark:text-blue-200">Callback URL:</p>
+          <p class="font-medium text-blue-800 dark:text-blue-200">
+            {$t('settings.auth.sso.connection.callback_url_label')}
+          </p>
           <div class="relative mt-1">
             <Code.Root
               code={getCallbackUrl(ssoStore.config.config.betterAuthProviderId)}
@@ -193,7 +197,7 @@
             </Code.Root>
           </div>
           <p class="mt-2 text-blue-600 dark:text-blue-300">
-            Copy this URL to your IdP's callback/redirect URL configuration.
+            {$t('settings.auth.sso.connection.callback_url_description')}
           </p>
         </div>
       {/if}
@@ -205,16 +209,16 @@
     <Field.Set>
       <Field.Legend class="flex items-center gap-2">
         <KeyIcon class="size-5" />
-        Access Policies
+        {$t('settings.auth.sso.policies.heading')}
       </Field.Legend>
-      <Field.Description>Configure how users access your organization</Field.Description>
+      <Field.Description>{$t('settings.auth.sso.policies.description')}</Field.Description>
 
       <div class="mt-4 space-y-4">
         <Field.Field class="flex flex-row items-center justify-between rounded-lg border p-4">
           <div class="space-y-0.5">
-            <Field.Label class="text-base">Force SSO</Field.Label>
+            <Field.Label class="text-base">{$t('settings.auth.sso.policies.force_sso.label')}</Field.Label>
             <Field.Description>
-              Require all users to sign in via SSO. Email/password login will be disabled.
+              {$t('settings.auth.sso.policies.force_sso.description')}
             </Field.Description>
           </div>
           <Switch
@@ -226,9 +230,9 @@
 
         <Field.Field class="flex flex-row items-center justify-between rounded-lg border p-4">
           <div class="space-y-0.5">
-            <Field.Label class="text-base">Auto-join</Field.Label>
+            <Field.Label class="text-base">{$t('settings.auth.sso.policies.auto_join.label')}</Field.Label>
             <Field.Description>
-              Allow users with matching email domains to automatically join your organization.
+              {$t('settings.auth.sso.policies.auto_join.description')}
             </Field.Description>
           </div>
           <Switch
@@ -240,8 +244,8 @@
 
         <Field.Field class="flex flex-row items-center justify-between rounded-lg border p-4">
           <div class="space-y-0.5">
-            <Field.Label class="text-base">Break-glass Access</Field.Label>
-            <Field.Description>Allow admins to bypass SSO with email/password in case of emergency.</Field.Description>
+            <Field.Label class="text-base">{$t('settings.auth.sso.policies.break_glass.label')}</Field.Label>
+            <Field.Description>{$t('settings.auth.sso.policies.break_glass.description')}</Field.Description>
           </div>
           <Switch
             bind:checked={breakGlassEnabled}
@@ -258,15 +262,15 @@
     <Field.Set>
       <Field.Legend class="flex items-center gap-2">
         <ShieldIcon class="size-5" />
-        Setup SSO
+        {$t('settings.auth.sso.setup.heading')}
       </Field.Legend>
       <Field.Description class="mb-5">
-        Configure Single Sign-On for your organization. This feature requires an Enterprise plan.
+        {$t('settings.auth.sso.setup.description')}
       </Field.Description>
 
       <Field.Group class="space-y-4">
         <Field.Field>
-          <Field.Label>Provider</Field.Label>
+          <Field.Label>{$t('media_manager.table.provider')}</Field.Label>
           <Select.Root type="single" bind:value={provider} disabled={!$isEnterprisePlan}>
             <Select.Trigger class="w-full">
               <p>{getProviderLabel(provider)}</p>
@@ -280,9 +284,9 @@
         </Field.Field>
 
         <Field.Field>
-          <Field.Label>Display Name</Field.Label>
+          <Field.Label>{$t('settings.auth.sso.setup.display_name_label')}</Field.Label>
           <Input
-            placeholder="e.g., Acme Corp SSO"
+            placeholder={$t('settings.auth.sso.setup.display_name_placeholder')}
             bind:value={displayName}
             class="w-full"
             disabled={!$isEnterprisePlan}
@@ -293,7 +297,7 @@
         </Field.Field>
 
         <Field.Field>
-          <Field.Label>Issuer URL</Field.Label>
+          <Field.Label>{$t('settings.auth.sso.setup.issuer_label')}</Field.Label>
           <Input
             placeholder="https://your-org.okta.com"
             bind:value={issuer}
@@ -306,7 +310,7 @@
         </Field.Field>
 
         <Field.Field>
-          <Field.Label>Email Domain</Field.Label>
+          <Field.Label>{$t('settings.auth.sso.setup.domain_label')}</Field.Label>
           <Input placeholder="yourcompany.com" bind:value={domain} class="w-full" disabled={!$isEnterprisePlan} />
           {#if ssoApi.errors.domain}
             <Field.Error>{ssoApi.errors.domain}</Field.Error>
@@ -314,18 +318,23 @@
         </Field.Field>
 
         <Field.Field>
-          <Field.Label>Client ID</Field.Label>
-          <Input placeholder="From your IdP" bind:value={clientId} class="w-full" disabled={!$isEnterprisePlan} />
+          <Field.Label>{$t('settings.auth.sso.setup.client_id_label')}</Field.Label>
+          <Input
+            placeholder={$t('settings.auth.sso.setup.client_secret_placeholder')}
+            bind:value={clientId}
+            class="w-full"
+            disabled={!$isEnterprisePlan}
+          />
           {#if ssoApi.errors.clientId}
             <Field.Error>{ssoApi.errors.clientId}</Field.Error>
           {/if}
         </Field.Field>
 
         <Field.Field>
-          <Field.Label>Client Secret</Field.Label>
+          <Field.Label>{$t('settings.auth.sso.setup.client_secret_label')}</Field.Label>
           <Input
             type="password"
-            placeholder="From your IdP"
+            placeholder={$t('settings.auth.sso.setup.client_secret_placeholder')}
             bind:value={clientSecret}
             class="w-full"
             disabled={!$isEnterprisePlan}
@@ -341,7 +350,7 @@
           loading={ssoApi.isLoading}
           disabled={ssoApi.isLoading || !$isEnterprisePlan}
         >
-          Create Connection
+          {$t('settings.auth.sso.setup.create_button')}
         </Button>
       </Field.Group>
     </Field.Set>

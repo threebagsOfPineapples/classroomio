@@ -188,9 +188,10 @@
         </button>
       {/if}
       <p class="ui:text-muted-foreground text-xs">
-        {editablePlan.sections.length} sections, {totalLessons} lessons{totalExercises > 0
-          ? `, ${totalExercises} exercises`
-          : ''}
+        {editablePlan.sections.length}
+        {$t('interface_copy.sections')}
+        {totalLessons}
+        {$t('course.navItem.landing_page.lessons')}{totalExercises > 0 ? `, ${totalExercises} exercises` : ''}
       </p>
     </div>
   </div>
@@ -223,7 +224,8 @@
                 onclick={() => startEditing(`section-${sectionIndex}-title`)}
                 class="group ui:hover:text-primary flex items-center gap-1 text-left"
               >
-                Section {section.order}: {section.title}
+                {$t('ai_assistant.mention_section')}
+                {section.order}: {section.title}
                 <PencilIcon size={9} class="opacity-0 group-hover:opacity-50" />
               </button>
             {/if}
@@ -284,7 +286,7 @@
                     {#if item.type === 'lesson' && item.hasExercise}
                       <div class="ui:text-muted-foreground mt-0.5 flex items-center gap-1">
                         <FileQuestionIcon size={10} />
-                        <span>Exercise included</span>
+                        <span>{$t('interface_copy.exercise_included')}</span>
                       </div>
                     {/if}
                   </div>
@@ -300,9 +302,10 @@
     <div class="space-y-2 border-t px-3 py-2">
       {#if estimatedTokens > 0}
         <p class="text-xs {isHighCost ? 'text-amber-600 dark:text-amber-400' : 'ui:text-muted-foreground'}">
-          Estimated cost: ~{estimatedTokens.toLocaleString()} tokens
+          {$t('interface_copy.estimated_cost')}{estimatedTokens.toLocaleString()}
+          {$t('ai_assistant.tokens_label')}
           {#if costPercentage !== null}
-            ({costPercentage}% of remaining)
+            ({costPercentage}{$t('interface_copy.of_remaining')}
           {/if}
         </p>
       {/if}

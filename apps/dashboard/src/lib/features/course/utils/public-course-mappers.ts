@@ -1,3 +1,4 @@
+import { t } from '$lib/utils/functions/translations';
 import type {
   PublicCourseSidebarSection,
   PublicExerciseViewData,
@@ -37,7 +38,7 @@ export function toPublicSidebarSections(tree: PublicCourseTree): PublicCourseSid
 
   const orphanSection: PublicCourseSidebarSection = {
     id: '__unsectioned',
-    title: 'Lessons',
+    title: t.get('course.navItem.lessons.heading'),
     items: []
   };
 

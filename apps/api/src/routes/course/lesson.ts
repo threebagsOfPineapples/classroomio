@@ -4,6 +4,7 @@ import {
   ZLessonCommentUpdate,
   ZLessonCommentsQuery,
   ZLessonCompletionUpdate,
+  ZLessonReadingProgress,
   ZLessonCreate,
   ZLessonGetParam,
   ZLessonHistoryParam,
@@ -31,12 +32,14 @@ import {
 import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { syncAssessmentsForCourse } from '@api/services/assessment';
+import { recordLessonReadingProgress } from '@api/services/lesson-reading';
 import { ContentType } from '@cio/utils/constants';
 
 import { Hono } from '@api/utils/hono';
 import { ZLessonDownloadContent } from '@cio/utils/validation/course';
 import { authMiddleware } from '@api/middlewares/auth';
 import { courseMemberMiddleware } from '@api/middlewares/course-member';
+import { lessonCourseMiddleware } from '@api/middlewares/lesson-course';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { notifyCourseSessionUpdateService } from '@api/services/course/notify-session';
 import { generateLessonPdf } from '@api/utils/lesson';
@@ -46,10 +49,40 @@ import { lessonLanguageRouter } from '@api/routes/course/lesson-language';
 import { zValidator } from '@hono/zod-validator';
 
 export const lessonRouter = new Hono()
+  .post(
+    '/:lessonId/reading-progress',
+    authMiddleware,
+    courseMemberMiddleware,
+    lessonCourseMiddleware,
+    zValidator('param', ZLessonGetParam),
+    zValidator('json', ZLessonReadingProgress),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { lessonId } = c.req.valid('param');
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: lessonId,
+          type: ContentType.Lesson
+        });
+        const data = await recordLessonReadingProgress(courseId, lessonId, user.id, c.req.valid('json'));
+        if (data.isComplete) {
+          await syncAssessmentsForCourse(courseId, user.id);
+          await evaluateCourseCertification(courseId, user.id);
+        }
+        return c.json({ success: true, data });
+      } catch (error) {
+        return handleError(c, error, '无法记录阅读进度');
+      }
+    }
+  )
   // Lesson CRUD routes
   .get('/', authMiddleware, courseMemberMiddleware, zValidator('query', ZLessonListQuery), async (c) => {
     try {
-      const { courseId, sectionId } = c.req.valid('query');
+      const { sectionId } = c.req.valid('query');
+      const courseId = c.req.param('courseId')!;
       const lessons = await listLessons(courseId, sectionId);
 
       return c.json({ success: true, data: lessons }, 200);
@@ -57,30 +90,37 @@ export const lessonRouter = new Hono()
       return handleError(c, error, 'Failed to list lessons');
     }
   })
-  .get('/:lessonId', authMiddleware, courseMemberMiddleware, zValidator('param', ZLessonGetParam), async (c) => {
-    try {
-      const user = c.get('user')!;
-      const courseId = c.req.param('courseId')!;
-      const { lessonId } = c.req.valid('param');
+  .get(
+    '/:lessonId',
+    authMiddleware,
+    courseMemberMiddleware,
+    lessonCourseMiddleware,
+    zValidator('param', ZLessonGetParam),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { lessonId } = c.req.valid('param');
 
-      await assertEnrolledStudentContentAccess({
-        courseId,
-        profileId: user.id,
-        contentId: lessonId,
-        type: ContentType.Lesson
-      });
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: lessonId,
+          type: ContentType.Lesson
+        });
 
-      const [lesson, watchProgress] = await Promise.all([
-        getLesson(lessonId),
-        getLessonWatchProgressService(lessonId, user.id)
-      ]);
+        const [lesson, watchProgress] = await Promise.all([
+          getLesson(lessonId),
+          getLessonWatchProgressService(lessonId, user.id)
+        ]);
 
-      return c.json({ success: true, data: { ...lesson, watchProgress } }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch lesson');
+        return c.json({ success: true, data: { ...lesson, watchProgress } }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch lesson');
+      }
     }
-  })
-  .post('/', authMiddleware, courseMemberMiddleware, zValidator('json', ZLessonCreate), async (c) => {
+  )
+  .post('/', authMiddleware, courseTeamMemberMiddleware, zValidator('json', ZLessonCreate), async (c) => {
     try {
       const courseId = c.req.param('courseId')!;
       const data = c.req.valid('json');
@@ -95,7 +135,8 @@ export const lessonRouter = new Hono()
   .put(
     '/:lessonId',
     authMiddleware,
-    courseMemberMiddleware,
+    courseTeamMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     zValidator('json', ZLessonUpdate),
     async (c) => {
@@ -115,6 +156,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/notify-session-update',
     authMiddleware,
     courseTeamMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     async (c) => {
       try {
@@ -128,21 +170,29 @@ export const lessonRouter = new Hono()
       }
     }
   )
-  .delete('/:lessonId', authMiddleware, courseMemberMiddleware, zValidator('param', ZLessonGetParam), async (c) => {
-    try {
-      const { lessonId } = c.req.valid('param');
-      const lesson = await deleteLessonService(lessonId);
+  .delete(
+    '/:lessonId',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    lessonCourseMiddleware,
+    zValidator('param', ZLessonGetParam),
+    async (c) => {
+      try {
+        const { lessonId } = c.req.valid('param');
+        const lesson = await deleteLessonService(lessonId);
 
-      return c.json({ success: true, data: lesson }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to delete lesson');
+        return c.json({ success: true, data: lesson }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to delete lesson');
+      }
     }
-  })
+  )
   // Lesson Comment routes
   .get(
     '/:lessonId/comment',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     zValidator('query', ZLessonCommentsQuery),
     async (c) => {
@@ -162,6 +212,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/comment',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     zValidator('json', ZLessonCommentCreate),
     async (c) => {
@@ -223,6 +274,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/completion',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     async (c) => {
       try {
@@ -241,6 +293,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/completion',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     zValidator('json', ZLessonCompletionUpdate),
     async (c) => {
@@ -279,6 +332,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/watch-progress',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     async (c) => {
       try {
@@ -305,6 +359,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/watch-progress',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonGetParam),
     zValidator('json', ZUpdateLessonWatchProgress),
     async (c) => {
@@ -349,6 +404,7 @@ export const lessonRouter = new Hono()
     '/:lessonId/history',
     authMiddleware,
     courseMemberMiddleware,
+    lessonCourseMiddleware,
     zValidator('param', ZLessonHistoryParam),
     zValidator('query', ZLessonHistoryQuery),
     async (c) => {

@@ -92,7 +92,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('components.quiz.title')} - ClassroomIO</title>
+  <title>{$t('components.quiz.title')} {$t('interface_copy.classroomio')}</title>
 </svelte:head>
 
 <Dialog.Root

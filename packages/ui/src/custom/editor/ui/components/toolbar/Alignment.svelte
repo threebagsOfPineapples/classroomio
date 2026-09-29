@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../../translation';
+  const translate = getEditorTranslation();
   import * as DropdownMenu from '$src/base/dropdown-menu';
   import commands from '../../../commands/toolbar-commands';
   import type { Editor } from '@tiptap/core';
@@ -47,7 +49,7 @@
       {@const Icon = alignment.icon}
       <DropdownMenu.Item onclick={() => alignment.onClick?.(editor)}>
         <Icon />
-        <span>{alignment.tooltip}</span>
+        <span>{translate(alignment.tooltip ?? '')}</span>
         <DropdownMenu.Shortcut>
           {alignment.shortCut}
         </DropdownMenu.Shortcut>

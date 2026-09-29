@@ -147,16 +147,6 @@ function mapSearchResults(data: SearchOrgData, currentOrgPath: string): GroupedS
     })
   );
 
-  results.widget = data.widgets.map(
-    (widget): SearchResultItem => ({
-      kind: 'widget',
-      id: widget.id,
-      title: widget.name,
-      subtitle: widget.status,
-      url: `/widgets/${widget.id}`
-    })
-  );
-
   results.tag = data.tags.map(
     (tag): SearchResultItem => ({
       kind: 'tag',

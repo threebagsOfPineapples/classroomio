@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../translation';
+  const translate = getEditorTranslation();
   import * as Tooltip from '$src/base/tooltip';
   import type { Snippet } from 'svelte';
   interface Props {
@@ -16,7 +18,7 @@
       {@render children()}
     </Tooltip.Trigger>
     <Tooltip.Content>
-      <span>{tooltip}</span>
+      <span>{translate(tooltip)}</span>
       <span class="ui:bg-background ui:text-primary ui:rounded ui:font-semibold">{shortCut}</span>
     </Tooltip.Content>
   </Tooltip.Root>

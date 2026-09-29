@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getEditorTranslation } from '../../../translation';
+  const translate = getEditorTranslation();
   import type { Editor } from '@tiptap/core';
   import * as DropdownMenu from '$src/base/dropdown-menu';
   import Heading from '@lucide/svelte/icons/heading';
@@ -46,13 +48,13 @@
   <DropdownMenu.Content portalProps={{ to: undefined, disabled: true }}>
     <DropdownMenu.Item onclick={() => editor.chain().focus().setParagraph().run()}>
       <Paragraph />
-      <span>Paragraph</span>
+      <span>{translate('Paragraph')}</span>
     </DropdownMenu.Item>
     {#each headings as heading (heading)}
       {@const Icon = heading.icon}
       <DropdownMenu.Item onclick={() => heading.onClick?.(editor)}>
         <Icon />
-        <span>{heading.tooltip}</span>
+        <span>{translate(heading.tooltip ?? '')}</span>
       </DropdownMenu.Item>
     {/each}
   </DropdownMenu.Content>

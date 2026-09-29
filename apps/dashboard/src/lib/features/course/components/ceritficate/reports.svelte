@@ -1,4 +1,5 @@
 <script>
+  import { t } from '$lib/utils/functions/translations';
   import SearchIcon from '@lucide/svelte/icons/search';
   import * as Pagination from '@cio/ui/base/pagination';
 
@@ -52,10 +53,10 @@
 
 <section>
   <div class="flex flex-row items-center justify-between gap-4">
-    <p class="w-full text-base font-semibold">Certificate issued</p>
+    <p class="w-full text-base font-semibold">{$t('interface_copy.certificate_issued')}</p>
     <div class="relative w-full max-w-sm">
       <SearchIcon class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-      <Input type="search" placeholder="Search students" bind:value={searchValue} class="pl-10" />
+      <Input type="search" placeholder={$t('interface_copy.search_students')} bind:value={searchValue} class="pl-10" />
     </div>
   </div>
 </section>
@@ -68,8 +69,8 @@
           <Table.Head class="w-[50px]">
             <Checkbox checked={selectAll} onCheckedChange={toggleSelectAll} />
           </Table.Head>
-          <Table.Head>Name of student</Table.Head>
-          <Table.Head>Date issued</Table.Head>
+          <Table.Head>{$t('interface_copy.name_of_student')}</Table.Head>
+          <Table.Head>{$t('interface_copy.date_issued')}</Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -83,7 +84,9 @@
               <div class="flex items-center gap-4">
                 <span class="text-sm">{student.issued}</span>
                 {#if student.peronalized}
-                  <Badge variant="secondary" class="bg-primary-100 ui:text-primary">personalized</Badge>
+                  <Badge variant="secondary" class="bg-primary-100 ui:text-primary"
+                    >{$t('interface_copy.personalized')}</Badge
+                  >
                 {/if}
               </div>
             </Table.Cell>

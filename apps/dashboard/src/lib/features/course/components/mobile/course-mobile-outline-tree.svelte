@@ -17,7 +17,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { RadioIcon } from '@cio/ui/custom/moving-icons';
   import CourseContentIcon from '$features/course/components/course-content-icon.svelte';
-  import { isCourseLearnerView } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
@@ -117,7 +117,8 @@
 
 {#snippet contentItemRow(contentItem: (typeof contentData.items)[number])}
   {@const isContentLocked = (contentItem.isUnlocked ?? true) === false}
-  {@const isLockedForStudent = $isCourseLearnerView && (isContentLocked || contentItem.accessible === false)}
+  {@const isLockedForStudent =
+    $isCourseLearnerView && !$isCoursePreview && (isContentLocked || contentItem.accessible === false)}
   {@const isActive = isContentItemInPath(contentItem.id, currentPath)}
   {@const rowClass =
     'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ' +

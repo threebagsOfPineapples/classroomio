@@ -60,7 +60,7 @@
       <button
         class="mobile-menu-btn ui:hover:text-primary rounded-md p-2 text-gray-700 transition-colors duration-200 hover:bg-gray-100 lg:hidden"
         onclick={toggleMobileMenu}
-        aria-label="Toggle mobile menu"
+        aria-label={$t('interface_copy.toggle_mobile_menu')}
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>

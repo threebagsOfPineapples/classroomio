@@ -55,7 +55,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to list course members');
+          snackbar.error('interface_feedback.failed_to_list_course_members');
         }
       }
     });
@@ -85,7 +85,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to add course members');
+          snackbar.error('interface_feedback.failed_to_add_course_members');
         }
       }
     });
@@ -111,7 +111,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to create student invite');
+          snackbar.error('interface_feedback.failed_to_create_student_invite');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -142,7 +142,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to list invites');
+          snackbar.error('interface_feedback.failed_to_list_invites');
         }
       }
     });
@@ -168,7 +168,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to revoke invite');
+          snackbar.error('interface_feedback.failed_to_revoke_invite');
         }
       }
     });
@@ -194,7 +194,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to load invite audit');
+          snackbar.error('interface_feedback.failed_to_load_invite_audit');
         }
       }
     });
@@ -279,14 +279,14 @@ export class PeopleApi extends BaseApiWithErrors {
       logContext: 'updating course member',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Member updated successfully');
+          snackbar.success('interface_feedback.member_updated_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to update course member');
+          snackbar.error('interface_feedback.failed_to_update_course_member');
           return;
         }
         if ('error' in result && 'field' in result && result.field) {
@@ -315,14 +315,14 @@ export class PeopleApi extends BaseApiWithErrors {
       logContext: 'deleting course member',
       onSuccess: (response) => {
         if (response.data) {
-          snackbar.success('Member removed successfully');
+          snackbar.success('interface_feedback.member_removed_successfully');
           this.success = true;
           this.errors = {};
         }
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to delete course member');
+          snackbar.error('interface_feedback.failed_to_delete_course_member');
         }
       }
     });
@@ -349,7 +349,7 @@ export class PeopleApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error('Failed to fetch user course analytics');
+          snackbar.error('interface_feedback.failed_to_fetch_user_course_analytics');
         }
       }
     });

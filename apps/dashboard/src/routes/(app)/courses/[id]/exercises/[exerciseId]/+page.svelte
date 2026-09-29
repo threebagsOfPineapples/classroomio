@@ -7,7 +7,8 @@
   import { ExercisePage } from '$features/course/pages';
   import { questionnaireMetaData, reset } from '$features/course/components/exercise/store';
   import { courseApi } from '$features/course/api';
-  import { isOrgStudent } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview, isOrgStudent } from '$lib/utils/store/app';
+  import { currentOrg } from '$lib/utils/store/org';
   import { hydrateExercisePageData } from '$features/course/utils/exercise-page-utils';
   import { restoreExerciseDraft } from '$features/course/utils/exercise-draft';
   import { getStudentContentLockReason } from '$features/ai-assistant/utils/content-ask-ai-bar';
@@ -52,8 +53,12 @@
 
     hydrateExercisePageData(data.exercise, currentExerciseId);
 
-    // Puts back work stashed before an upgrade checkout redirect.
-    if (restoreExerciseDraft(data.courseId, currentExerciseId)) {
+    if (
+      $currentOrg.roleId > 0 &&
+      !$isCourseLearnerView &&
+      !$isCoursePreview &&
+      restoreExerciseDraft(data.courseId, currentExerciseId)
+    ) {
       snackbar.success('snackbar.exercise.draft_restored');
     }
   });

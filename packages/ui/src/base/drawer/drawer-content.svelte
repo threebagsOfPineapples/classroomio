@@ -28,6 +28,7 @@
       className
     )}
     {...restProps}
+    interactOutsideBehavior="ignore"
   >
     <div
       class="ui:bg-muted ui:mx-auto ui:mt-4 ui:hidden ui:h-2 ui:w-[100px] ui:shrink-0 ui:rounded-full ui:group-data-[vaul-drawer-direction=bottom]/drawer-content:block"

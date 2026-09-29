@@ -420,7 +420,7 @@
   {/if}
 {:else if formRes?.type === 'FILE_TOO_LARGE'}
   <div class="flex h-full w-full flex-col items-center justify-center rounded-xl">
-    <img src="/video-upload-error.svg" alt="upload error" />
+    <img src="/video-upload-error.svg" alt={$t('interface_copy.upload_error')} />
     <span class="pt-3 pb-2">
       <h3 class="text-center text-base font-normal dark:text-white">
         {$t(`${ADD_VIDEO}.oops`)}
@@ -436,7 +436,7 @@
   </div>
 {:else if formRes?.status !== 200}
   <div class="flex h-full w-full flex-col items-center justify-center rounded-xl">
-    <img src="/video-upload-error.svg" alt="upload error" />
+    <img src="/video-upload-error.svg" alt={$t('interface_copy.upload_error')} />
     <span class="pt-3 pb-2">
       <h3 class="text-center text-base font-normal dark:text-white">
         {$t(`${ADD_VIDEO}.oops`)}

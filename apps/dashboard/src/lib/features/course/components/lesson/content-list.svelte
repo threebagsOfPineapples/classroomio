@@ -13,7 +13,7 @@
   import { Button } from '@cio/ui/base/button';
   import { Chip } from '@cio/ui/custom/chip';
   import { lessonApi, exerciseApi, courseApi, contentApi } from '$features/course/api';
-  import { isOrgStudent } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import formatDate from '$lib/utils/functions/formatDate';
   import { t } from '$lib/utils/functions/translations';
   import type { CourseContentItem } from '$features/course/utils/types';
@@ -44,7 +44,7 @@
   let courseId = $derived(courseApi.course?.id || '');
   const profileId = $derived($profile?.id || '');
   const contentData = $derived(getCourseContent(courseApi.course));
-  const isStudentView = $derived($isOrgStudent === true);
+  const isStudentView = $derived($isCourseLearnerView === true);
   const isLiveCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
   const isSelfPacedCourse = $derived(isSelfPacedLikeCourse(courseApi.course?.type));
   const metaChipClass =
@@ -200,7 +200,7 @@
   }
 
   function isLockedForStudent(item: ContentDndItem, isStudent: boolean) {
-    if (!isStudent) return false;
+    if ($isCoursePreview || !isStudent) return false;
     if ((item.isUnlocked ?? true) === false) return true;
 
     return item.accessible === false;
@@ -436,8 +436,8 @@
           </a>
         {/if}
 
-        {#if isStudentView && canRenderContinueButton && !isEditingItem}
-          {#if canRenderJoinButton}
+        {#if !$isCoursePreview && isStudentView && canRenderContinueButton && !isEditingItem}
+          {#if !$isCoursePreview && canRenderJoinButton}
             <a href={item.callUrl!} target="_blank" rel="noreferrer">
               <Button size="sm">{$t('schedule.join')}</Button>
             </a>

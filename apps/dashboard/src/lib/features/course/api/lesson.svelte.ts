@@ -28,6 +28,7 @@ import type {
   CreateCourseSectionData
 } from '../utils/types';
 import type { LessonWatchProgress, LessonWatchProgressUpdate } from '../utils/types';
+import type { ReadingProgress, ReadingProgressRequest } from '../utils/types';
 import type { TUpdateLessonWatchProgress } from '@cio/utils/validation/lesson';
 import type {
   TCourseSectionCreate,
@@ -56,6 +57,34 @@ import { snackbar } from '$features/ui/snackbar/store';
  * API class for lesson operations
  */
 export class LessonApi extends BaseApiWithErrors {
+  readingProgress = $state<ReadingProgress | null>(null);
+  readingError = $state(false);
+
+  async recordReading(courseId: string, lessonId: string, active: boolean, resources: string[]) {
+    return this.execute<ReadingProgressRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].lesson[':lessonId']['reading-progress'].$post({
+          param: { courseId, lessonId },
+          json: { active, resources }
+        }),
+      logContext: 'recording reading progress',
+      onSuccess: (response) => {
+        if (this.lesson?.id !== lessonId) return;
+
+        this.readingError = false;
+        this.readingProgress = response.data;
+        if (response.data.isComplete) {
+          this.lesson = { ...this.lesson, isComplete: true };
+          if (courseApi.course?.id === courseId) {
+            courseApi.course = updateLessonCompletionInCourseContent(courseApi.course, lessonId, true);
+          }
+        }
+      },
+      onError: () => {
+        this.readingError = true;
+      }
+    });
+  }
   lesson = $state<Lesson | null>(null);
   sections = $state<CourseSectionWithLessons[]>([]);
   commentsByLessonId = $state<
@@ -70,7 +99,7 @@ export class LessonApi extends BaseApiWithErrors {
       }
     >
   >({});
-  currentLocale = $state<TLocale>('en');
+  currentLocale = $state<TLocale>('zh');
   isSaving = $state(false);
   isDirty = $state(false);
   isCommenting = $state(false);
@@ -722,6 +751,8 @@ export class LessonApi extends BaseApiWithErrors {
       },
       {} as Record<TLocale, string>
     );
+
+    this.currentLocale = translations.zh !== undefined ? 'zh' : (this.lesson.lessonLanguages?.[0]?.locale ?? 'zh');
 
     this.translations = {
       ...this.translations,

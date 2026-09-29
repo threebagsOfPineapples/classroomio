@@ -1,4 +1,5 @@
 <script lang="ts">
+  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { t } from '$lib/utils/functions/translations';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
@@ -22,5 +23,6 @@
     </div>
 
     <span class="grow"></span>
+    <InterfaceLanguage />
   </div>
 </header>

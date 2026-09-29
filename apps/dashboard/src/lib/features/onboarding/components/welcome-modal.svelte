@@ -22,15 +22,17 @@
 >
   <Dialog.Content class="w-[700px]! max-w-none!">
     <Dialog.Header>
-      <Dialog.Title>Welcome</Dialog.Title>
+      <Dialog.Title>{$t('interface_copy.welcome')}</Dialog.Title>
     </Dialog.Header>
     <p class="text-md text-black dark:text-white">
       {$t('welcome_modal.we_at')}
-      <a href="https://app.classroomio.com/" class="ui:text-primary no-underline hover:no-underline">ClassroomIO</a>
+      <a href="https://app.classroomio.com/" class="ui:text-primary no-underline hover:no-underline"
+        >{$t('public_course.powered_by.brand')}</a
+      >
       {$t('welcome_modal.small_team')}
       <span class="ui:text-primary">{$t('welcome_modal.thank_you')};</span>
       {$t('welcome_modal.deeply_appreciate')}
     </p>
-    <img src="/images/welcome-img.svg" alt="A welcome banner" class="my-6 w-full" />
+    <img src="/images/welcome-img.svg" alt={$t('interface_copy.a_welcome_banner')} class="my-6 w-full" />
   </Dialog.Content>
 </Dialog.Root>

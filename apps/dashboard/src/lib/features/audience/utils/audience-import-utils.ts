@@ -1,4 +1,6 @@
 import type { ParsedImportRow, TAudienceImportRowStatus } from '@cio/utils/validation/organization';
+import { t } from '$lib/utils/functions/translations';
+import { downloadCsv } from '$lib/features/ui/export/export-renderers';
 
 /** Translation key per row status, so the copy stays out of the parser. */
 export const IMPORT_ROW_STATUS_LABEL: Record<TAudienceImportRowStatus, string> = {
@@ -38,7 +40,7 @@ function download(contents: string, filename: string, type: string): void {
 }
 
 export function downloadImportTemplate(template: string): void {
-  download(template, 'audience-template.csv', 'text/csv;charset=utf-8;');
+  download(`\uFEFF${template}`, 'audience-template.csv', 'text/csv;charset=utf-8;');
 }
 
 /**
@@ -47,11 +49,24 @@ export function downloadImportTemplate(template: string): void {
  */
 export function downloadImportErrorRows(rows: { email: string; name?: string; status: string }[]): void {
   const failed = rows.filter((row) => row.status !== 'ready');
-  const body = failed
-    .map((row) =>
-      [row.email, row.name ?? '', row.status].map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    )
-    .join('\r\n');
-
-  download(`email,name,reason\r\n${body}\r\n`, 'audience-import-errors.csv', 'text/csv;charset=utf-8;');
+  const emailHeader = t.get('audience.email');
+  const nameHeader = t.get('audience.name');
+  const statusHeader = t.get('audience.status');
+  downloadCsv({
+    filename: 'audience-import-errors',
+    title: statusHeader,
+    columns: [
+      { key: 'email', header: emailHeader, value: (row) => row.email },
+      { key: 'name', header: nameHeader, value: (row) => row.name ?? null },
+      {
+        key: 'status',
+        header: statusHeader,
+        value: (row) => {
+          const key = IMPORT_ROW_STATUS_LABEL[row.status as TAudienceImportRowStatus];
+          return key ? t.get(key) : row.status;
+        }
+      }
+    ],
+    rows: failed
+  });
 }

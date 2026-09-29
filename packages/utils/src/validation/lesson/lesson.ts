@@ -1,5 +1,12 @@
 import * as z from 'zod';
 
+export const ZLessonReadingProgress = z
+  .object({
+    active: z.boolean(),
+    resources: z.array(z.string().min(1).max(1024)).max(100)
+  })
+  .strict();
+
 import { getSlidePlatformByHost, isAllowedSlideEmbedSrc, SLIDE_PLATFORM_IDS } from '../../functions/slide-embed';
 import { ZSlug } from '../shared/slug';
 

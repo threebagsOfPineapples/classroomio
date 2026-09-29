@@ -50,6 +50,7 @@
     data-slot="sheet-content"
     class={cn(sheetVariants({ side }), className)}
     {...restProps}
+    interactOutsideBehavior="ignore"
   >
     {@render children?.()}
     <HoverableItem>

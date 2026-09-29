@@ -185,7 +185,7 @@
         <path d="m22 6-10 7L2 6" />
       </svg> -->
 
-      <img src="/verify-email.svg" alt="email verification" />
+      <img src="/verify-email.svg" alt={$t('interface_copy.email_verification')} />
 
       <h2 class="mb-3 text-lg font-bold text-gray-900 dark:text-gray-50">
         {$t('verify_email_modal.heading')}

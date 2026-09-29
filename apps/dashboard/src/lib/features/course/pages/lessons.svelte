@@ -8,7 +8,7 @@
   import CourseContentIcon from '$features/course/components/course-content-icon.svelte';
   import { courseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgStudent } from '$lib/utils/store/app';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { getCourseContent } from '$features/course/utils/content';
   import { getFirstIncompleteNavigableContent } from '$features/course/utils/content-navigation';
   import { ContentType } from '@cio/utils/constants/content';
@@ -65,7 +65,7 @@
 {#if shouldShowNextPlaceholder}
   <Empty
     title={$t('course.navItem.lessons.no_lesson')}
-    description={$isOrgStudent
+    description={$isCourseLearnerView
       ? $t('course.navItem.lessons.student_share_your_knowledge')
       : $t('course.navItem.lessons.share_your_knowledge')}
     icon={BookOpenIcon}
@@ -114,7 +114,7 @@
 {:else}
   <Empty
     title={$t('course.navItem.lessons.body_header')}
-    description={$isOrgStudent
+    description={$isCourseLearnerView
       ? $t('course.navItem.lessons.student_body_content')
       : $t('course.navItem.lessons.body_content')}
     icon={BookOpenIcon}

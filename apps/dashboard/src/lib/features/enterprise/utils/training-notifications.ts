@@ -4,7 +4,7 @@ import { getTrainingCourseProgress } from './my-training-utils';
 import type { MyTrainingAssignment, TrainingArchiveSummary } from './types';
 
 export function toTrainingNotifications(
-  assignments: Pick<
+  assignments: (Pick<
     MyTrainingAssignment,
     | 'enrollmentId'
     | 'name'
@@ -16,7 +16,8 @@ export function toTrainingNotifications(
     | 'finalScore'
     | 'result'
     | 'scoreCalculatedAt'
-  >[],
+  > &
+    Partial<Pick<MyTrainingAssignment, 'remindedAt'>>)[],
   readIds: ReadonlySet<string>,
   now = Date.now()
 ): NotificationItem[] {
@@ -35,6 +36,26 @@ export function toTrainingNotifications(
         sourceId: assignment.enrollmentId
       }
     ];
+    if (
+      assignment.remindedAt &&
+      assignment.planStatus === 'PUBLISHED' &&
+      assignment.enrollmentStatus !== 'COMPLETED' &&
+      assignment.enrollmentStatus !== 'CANCELLED'
+    ) {
+      const reminderId = `training_reminder:${assignment.enrollmentId}:${assignment.remindedAt}`;
+      notifications.push({
+        id: reminderId,
+        kind: 'training_reminder',
+        createdAt: assignment.remindedAt,
+        title: { key: 'enterprise.reminder.action' },
+        body: { key: 'enterprise.reminder.body', params: { planName: assignment.name } },
+        avatarUrl: null,
+        avatarName: assignment.name,
+        unread: !readIds.has(reminderId),
+        sourceId: assignment.enrollmentId,
+        href: `/lms/training/${assignment.enrollmentId}`
+      });
+    }
     const start = Date.parse(assignment.startAt);
     if (
       assignment.planStatus === 'PUBLISHED' &&
@@ -188,7 +209,7 @@ export function toExamNotifications(
   return assignments.flatMap((assignment) =>
     assignment.exams.flatMap((exam) => {
       const opensAt = Date.parse(exam.opensAt);
-      if (opensAt <= now || opensAt > now + 3 * 86400000) return [];
+      if (Date.parse(exam.closesAt) <= now || opensAt > now + 3 * 86400000) return [];
 
       const id = `training_exam:${assignment.enrollmentId}:${exam.id}:${exam.opensAt}`;
       return [

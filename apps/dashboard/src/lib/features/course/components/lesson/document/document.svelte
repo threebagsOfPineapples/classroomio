@@ -9,7 +9,9 @@
   import ZoomInIcon from '@lucide/svelte/icons/zoom-in';
   import ZoomOutIcon from '@lucide/svelte/icons/zoom-out';
   import { onMount } from 'svelte';
+  import { isPdfDocument } from '@cio/utils/functions/lesson-document';
   import DocumentList from './document-list.svelte';
+  import { isPdfPageEndVisible } from './document-utils';
   import { t } from '$lib/utils/functions/translations';
   import type { LessonDocument } from '$features/course/utils/types';
   import { snackbar } from '$features/ui/snackbar/store';
@@ -25,6 +27,8 @@
   let viewingPDF: any = $state(null);
   let pdfViewerOpen = $state(false);
   let pdfCanvas: HTMLCanvasElement | undefined = $state();
+  let pdfViewport: HTMLDivElement | undefined = $state();
+  let renderedPage = 0;
   let pdfDoc: any = null;
   let pageNum = $state(1);
   let pageCount = $state(0);
@@ -34,6 +38,9 @@
   let pdfjsLib: any = null;
   let renderTimeout: any = null;
   let currentRenderTask: any = null;
+  const viewedPages = new Set<number>();
+  let viewerVersion = 0;
+  let renderVersion = 0;
 
   onMount(() => {
     // Load PDF.js dynamically
@@ -44,8 +51,15 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.js/pdf.worker.min.js';
     };
     document.head.appendChild(script);
+    window.addEventListener('scroll', recordVisiblePage, true);
+    window.addEventListener('resize', recordVisiblePage);
+    window.addEventListener('focus', recordVisiblePage);
 
     return () => {
+      closePDFViewer();
+      window.removeEventListener('scroll', recordVisiblePage, true);
+      window.removeEventListener('resize', recordVisiblePage);
+      window.removeEventListener('focus', recordVisiblePage);
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
@@ -83,7 +97,7 @@
 
   async function downloadDocument(doc: LessonDocument) {
     if (!doc.key) {
-      snackbar.error('Document not loaded correctly');
+      snackbar.error('interface_feedback.document_not_loaded_correctly');
       return;
     }
 
@@ -109,6 +123,7 @@
   }
 
   function debouncedRender() {
+    renderedPage = 0;
     if (renderTimeout) {
       clearTimeout(renderTimeout);
     }
@@ -117,61 +132,45 @@
       renderTimeout = null;
     }, 150); // 150ms debounce
   }
-  // Wait for PDF.js to load
-  const checkPDFJS = () => {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (pdfjsLib) {
-          resolve(true);
-        } else {
-          setTimeout(check, 100);
-        }
-      };
-      check();
-    });
-  };
-
-  async function viewPDF(document: LessonDocument) {
-    // Wait for PDF.js to be fully loaded
-    if (!pdfjsLib) {
-      // Show loading state while waiting for PDF.js
-      viewingPDF = document;
-      pdfViewerOpen = true;
-      isLoading = true;
-      error = 'Loading PDF viewer...';
-
-      await checkPDFJS();
-    }
-
-    viewingPDF = document;
+  async function viewPDF(attachment: LessonDocument) {
+    closePDFViewer();
+    const openingVersion = viewerVersion;
+    viewedPages.clear();
+    viewingPDF = attachment;
     pdfViewerOpen = true;
     isLoading = true;
     error = null;
 
     try {
-      if (!document.key) {
-        snackbar.error('Document not loaded correctly');
+      if (!attachment.key) throw new Error('Missing PDF key');
+
+      for (let attempt = 0; !pdfjsLib && attempt < 100; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        if (openingVersion !== viewerVersion) return;
+      }
+      if (!pdfjsLib) throw new Error('PDF reader unavailable');
+
+      const response = await fetch(attachment.link);
+      if (!response.ok) throw new Error('Failed to fetch PDF');
+
+      const arrayBuffer = await response.arrayBuffer();
+      if (openingVersion !== viewerVersion) return;
+
+      const loadedPdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      if (openingVersion !== viewerVersion) {
+        void loadedPdf.destroy();
         return;
       }
 
-      const response = await fetch(document.link);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch PDF');
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
+      pdfDoc = loadedPdf;
       pageCount = pdfDoc.numPages;
       pageNum = 1;
       scale = 1.0;
       isLoading = false;
-
-      // Wait for the canvas to be available in the DOM
-      await new Promise((resolve) => setTimeout(resolve, 100));
       await renderPage();
     } catch (err) {
+      if (openingVersion !== viewerVersion) return;
+
       console.error('Error loading PDF:', err);
       error = 'course.navItem.lessons.materials.tabs.document.failed_to_load_pdf';
       isLoading = false;
@@ -179,7 +178,14 @@
   }
 
   async function renderPage() {
-    if (!pdfDoc) return;
+    if (!pdfDoc || !viewingPDF || !pdfViewerOpen) return;
+
+    const renderingVersion = ++renderVersion;
+    const renderingViewer = viewerVersion;
+    const renderingDocument = pdfDoc;
+    const renderingPage = pageNum;
+    const renderingScale = scale;
+    renderedPage = 0;
 
     // Wait for canvas to be available
     let attempts = 0;
@@ -187,6 +193,8 @@
       await new Promise((resolve) => setTimeout(resolve, 100));
       attempts++;
     }
+
+    if (renderingVersion !== renderVersion || renderingViewer !== viewerVersion) return;
 
     if (!pdfCanvas) {
       console.error('Canvas not available after waiting');
@@ -199,8 +207,10 @@
         currentRenderTask.cancel();
       }
 
-      const page = await pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({ scale });
+      const page = await renderingDocument.getPage(renderingPage);
+      if (renderingVersion !== renderVersion || renderingViewer !== viewerVersion) return;
+
+      const viewport = page.getViewport({ scale: renderingScale });
 
       pdfCanvas.height = viewport.height;
       pdfCanvas.width = viewport.width;
@@ -213,11 +223,38 @@
 
       currentRenderTask = page.render(renderContext);
       await currentRenderTask.promise;
+      if (renderingVersion !== renderVersion || renderingViewer !== viewerVersion) return;
+
       currentRenderTask = null;
+      if (renderingPage !== pageNum) return;
+
+      renderedPage = renderingPage;
+      recordVisiblePage();
     } catch (err) {
+      if (renderingVersion !== renderVersion || renderingViewer !== viewerVersion) return;
+      if (err instanceof Error && err.name === 'RenderingCancelledException') return;
+
       console.error('Error rendering page:', err);
       error = 'course.navItem.lessons.materials.tabs.document.failed_to_render_pdf';
       currentRenderTask = null;
+    }
+  }
+
+  function recordVisiblePage() {
+    if (!pdfViewerOpen || !pdfCanvas || !pdfViewport || !viewingPDF || renderedPage !== pageNum) return;
+    if (document.visibilityState !== 'visible' || !document.hasFocus()) return;
+
+    const canvasBottom = pdfCanvas.getBoundingClientRect().bottom;
+    const viewportBounds = pdfViewport.getBoundingClientRect();
+    if (!isPdfPageEndVisible(canvasBottom, viewportBounds, window.innerHeight)) return;
+
+    viewedPages.add(renderedPage);
+    if (viewedPages.size === pageCount && renderedPage === pageCount) {
+      window.dispatchEvent(
+        new CustomEvent('lesson-reading-resource', {
+          detail: { lessonId: lessonApi.lesson?.id, resource: `pdf:${viewingPDF.key}` }
+        })
+      );
     }
   }
 
@@ -250,7 +287,7 @@
   }
 
   function handleViewDocument(doc: LessonDocument) {
-    if (doc.type === 'pdf') {
+    if (isPdfDocument(doc)) {
       handleViewPDF(doc);
       return;
     }
@@ -263,6 +300,9 @@
   }
 
   function closePDFViewer() {
+    renderedPage = 0;
+    viewerVersion++;
+    renderVersion++;
     // Cancel any ongoing render task
     if (currentRenderTask) {
       currentRenderTask.cancel();
@@ -302,6 +342,9 @@
         break;
       case 'Escape':
         closePDFViewer();
+        window.removeEventListener('scroll', recordVisiblePage, true);
+        window.removeEventListener('resize', recordVisiblePage);
+        window.removeEventListener('focus', recordVisiblePage);
         break;
     }
   }
@@ -360,18 +403,18 @@
         <!-- Navigation Controls -->
         {#if !isLoading && !error}
           <div class="flex items-center space-x-1">
-            <IconButton onclick={prevPage} disabled={pageNum <= 1} tooltip="Previous page (←)">
+            <IconButton onclick={prevPage} disabled={pageNum <= 1} tooltip={$t('pdf_reader.previous')}>
               <ChevronLeftIcon size={16} />
             </IconButton>
 
-            <IconButton onclick={nextPage} disabled={pageNum >= pageCount} tooltip="Next page (→)">
+            <IconButton onclick={nextPage} disabled={pageNum >= pageCount} tooltip={$t('pdf_reader.next')}>
               <ChevronRightIcon size={16} />
             </IconButton>
           </div>
 
           <!-- Zoom Controls -->
           <div class="flex items-center space-x-1">
-            <IconButton onclick={zoomOut} disabled={scale <= 0.5} tooltip="Zoom out (-)">
+            <IconButton onclick={zoomOut} disabled={scale <= 0.5} tooltip={$t('pdf_reader.zoom_out')}>
               <ZoomOutIcon size={16} />
             </IconButton>
 
@@ -379,18 +422,18 @@
               {Math.round(scale * 100)}%
             </span>
 
-            <IconButton onclick={zoomIn} disabled={scale >= 3.0} tooltip="Zoom in (+)">
+            <IconButton onclick={zoomIn} disabled={scale >= 3.0} tooltip={$t('pdf_reader.zoom_in')}>
               <ZoomInIcon size={16} />
             </IconButton>
           </div>
         {/if}
 
-        <CloseButton onClick={closePDFViewer} tooltip="Close (Esc)" />
+        <CloseButton onClick={closePDFViewer} tooltip={$t('pdf_reader.close')} />
       </div>
     </div>
 
     <!-- PDF Content -->
-    <div class="flex-1 overflow-auto bg-gray-100 p-4">
+    <div bind:this={pdfViewport} class="flex-1 overflow-auto bg-gray-100 p-4">
       {#if isLoading}
         <div class="flex h-full items-center justify-center">
           <div class="text-center">

@@ -4,6 +4,7 @@
   import { isHtmlValueEmpty } from '$lib/utils/functions/toHtml';
   import { lessonApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
+  import { isCoursePreview } from '$lib/utils/store/app';
   import MODES from '$lib/utils/constants/mode';
   import type { Content, TiptapEditor } from '@cio/ui/custom/editor';
   import type { TLocale } from '@cio/db/types';
@@ -79,7 +80,8 @@
       <HTMLRender>
         <SafeHtmlContent {content} />
       </HTMLRender>
-      <QuoteSelection root={noteRoot} enabled />
+      <div data-reading-note-end aria-hidden="true" class="h-px"></div>
+      <QuoteSelection root={noteRoot} enabled={!$isCoursePreview} />
     </div>
   {:else if hasAtLeastOneTranslation}
     <p class="text-md py-2 font-normal italic dark:text-white">

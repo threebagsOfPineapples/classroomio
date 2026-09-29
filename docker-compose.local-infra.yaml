@@ -1,0 +1,42 @@
+name: enterprise-training-fresh
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '127.0.0.1:55432:5432'
+    environment:
+      POSTGRES_DB: enterprise_training
+      POSTGRES_USER: training
+      POSTGRES_PASSWORD: ${TRAINING_DB_PASSWORD:?Set TRAINING_DB_PASSWORD}
+    command: ['postgres', '-c', 'shared_buffers=128MB', '-c', 'max_connections=40']
+    mem_limit: 768m
+    cpus: 1.0
+    volumes:
+      - postgres-fresh:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U training -d enterprise_training']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '127.0.0.1:56379:6379'
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory', '128mb', '--maxmemory-policy', 'noeviction']
+    mem_limit: 256m
+    cpus: 0.5
+    volumes:
+      - redis-fresh:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-fresh:
+  redis-fresh:

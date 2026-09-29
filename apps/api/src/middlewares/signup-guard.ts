@@ -87,11 +87,12 @@ async function canProceedWithoutOrgContext(c: Context) {
     return false;
   }
 
-  return checkEmailExistsInOrg(firstOrg.id, email);
+  const isMember = await checkEmailExistsInOrg(firstOrg.id, email);
+  return isMember || hasActiveOrganizationInviteForEmail(firstOrg.id, email);
 }
 
 function isInviteOnlySignup(settings: OrgSettings | null) {
-  return settings?.signup?.inviteOnly ?? false;
+  return isSelfHosted || (settings?.signup?.inviteOnly ?? false);
 }
 
 async function handleInviteOnlySignup(c: Context, next: Next, orgId: string) {
@@ -105,7 +106,8 @@ async function handleInviteOnlySignup(c: Context, next: Next, orgId: string) {
     return c.json(EMAIL_REQUIRED, 400);
   }
 
-  const hasInvite = await hasActiveOrganizationInviteForEmail(orgId, email);
+  const isMember = await checkEmailExistsInOrg(orgId, email);
+  const hasInvite = isMember || (await hasActiveOrganizationInviteForEmail(orgId, email));
   if (!hasInvite) {
     return c.json(INVITE_REQUIRED, 403);
   }
@@ -113,19 +115,7 @@ async function handleInviteOnlySignup(c: Context, next: Next, orgId: string) {
   await next();
 }
 
-/**
- * Enforces organization-level signup restrictions server-side.
- *
- * When the `cio-org-id` header is present the middleware looks up the org and
- * rejects the request when:
- *   - `disableSignup` is true, or
- *   - `settings.signup.inviteOnly` is true and the email has no active invite.
- *
- * When the `cio-org-id` header is absent:
- *   - Non-self-hosted: pass through (header optional).
- *   - Self-hosted: require the header unless no orgs exist yet (bootstrap), or the
- *     signup email is already an organization member (e.g. invited, profile_id null).
- */
+/** Requires membership or an invitation on self-hosted instances after initial setup. */
 export const signupGuard: MiddlewareHandler = async (c, next) => {
   const orgId = c.req.header('cio-org-id');
 
@@ -141,8 +131,7 @@ export const signupGuard: MiddlewareHandler = async (c, next) => {
 
   const org = await getOrganizationSafely(orgId);
   if (!org) {
-    await next();
-    return;
+    return c.json(SELF_HOSTED_ORG_CONTEXT_REQUIRED, 400);
   }
 
   if (org.disableSignup) {

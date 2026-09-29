@@ -11,6 +11,7 @@
   import { preventDefault } from '$lib/utils/functions/svelte';
   import { ROUTE } from '$lib/utils/constants/routes';
   import { DotPattern } from '@cio/ui/custom/animation/dot-pattern';
+  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
   interface Props {
     isLogin?: boolean;
@@ -42,7 +43,7 @@
       <div class="absolute inset-0 bg-black/45" aria-hidden="true"></div>
     </div>
   {:else}
-    <DotPattern fillColor="rgb(2 51 189 / 0.25)" class="absolute inset-0 z-0 h-full w-full" />
+    <DotPattern fillColor="rgb(232 90 12 / 0.12)" class="absolute inset-0 z-0 h-full w-full" />
   {/if}
   <Card.Root class="relative z-10 w-full max-w-[400px] shadow-sm">
     {#if !showOnlyContent || showLogo}
@@ -53,10 +54,7 @@
           aria-label={$currentOrg.name || $t('enterprise.company_name')}
         >
           <Avatar.Root>
-            <Avatar.Image
-              src={$currentOrg.avatarUrl || '/enterprise-training-icon.png'}
-              alt={$currentOrg.name || $t('enterprise.company_name')}
-            />
+            <Avatar.Image src="/enterprise-training-icon.png" alt={$currentOrg.name || $t('enterprise.company_name')} />
             <Avatar.Fallback>{$currentOrg.name || $t('enterprise.company_name')}</Avatar.Fallback>
           </Avatar.Root>
         </a>
@@ -95,8 +93,12 @@
       <Card.Footer class="flex-col gap-2 border-t pt-6">
         <p class="ui:text-muted-foreground text-center text-sm">
           {#if isLogin}
-            {$t('login.not_registered_yet')}
-            <a class="ui:text-primary hover:underline" href="/signup{page.url.search}">{$t('login.signup')}</a>
+            {#if PUBLIC_IS_SELFHOSTED === 'true'}
+              {$t('enterprise.platform_description')}
+            {:else}
+              {$t('login.not_registered_yet')}
+              <a class="ui:text-primary hover:underline" href="/signup{page.url.search}">{$t('login.signup')}</a>
+            {/if}
           {:else}
             {$t('login.already_have_account')}
             <a class="ui:text-primary hover:underline" href="/login{page.url.search}">{$t('login.login')}</a>

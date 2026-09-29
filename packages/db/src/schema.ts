@@ -1740,6 +1740,10 @@ export const lessonCompletion = pgTable(
     lessonId: uuid('lesson_id'),
     profileId: uuid('profile_id'),
     isComplete: boolean('is_complete').default(false),
+    readingSeconds: integer('reading_seconds').default(0).notNull(),
+    readingLastAt: timestamp('reading_last_at', { withTimezone: true, mode: 'string' }),
+    readingActive: boolean('reading_active').default(false).notNull(),
+    readingResources: jsonb('reading_resources').$type<string[]>().default([]).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow()
   },
   (table) => [
@@ -2346,6 +2350,9 @@ export const trainingEnrollment = pgTable(
     memberId: bigint('member_id', { mode: 'number' }).notNull(),
     status: trainingEnrollmentStatus().default('NOT_STARTED').notNull(),
     result: trainingResult().default('PENDING').notNull(),
+    remindedAt: timestamp('reminded_at', { withTimezone: true, mode: 'string' }),
+    remindedByProfileId: uuid('reminded_by_profile_id'),
+    reminderCount: integer('reminder_count').default(0).notNull(),
     assignedAt: timestamp('assigned_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }),
     completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
@@ -4801,4 +4808,23 @@ export const contentReport = pgTable(
       .on(table.organizationId, table.reporterId, table.targetType, table.targetId)
       .where(sql`${table.reporterId} IS NOT NULL AND ${table.status} IN ('open', 'in_review')`)
   ]
+);
+
+export const examMakeup = pgTable(
+  'exam_makeup',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    exerciseId: uuid('exercise_id')
+      .notNull()
+      .references(() => exercise.id, { onDelete: 'cascade' }),
+    groupMemberId: uuid('group_member_id')
+      .notNull()
+      .references(() => groupmember.id, { onDelete: 'cascade' }),
+    opensAt: timestamp('opens_at', { withTimezone: true, mode: 'string' }).notNull(),
+    closesAt: timestamp('closes_at', { withTimezone: true, mode: 'string' }).notNull(),
+    maxAttempts: integer('max_attempts').notNull(),
+    grantedBy: uuid('granted_by').notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [unique('exam_makeup_member_unique').on(table.exerciseId, table.groupMemberId)]
 );

@@ -49,7 +49,7 @@ export function getLessonCompletionState(input: {
     isLessonComplete: input.contentItem?.isComplete ?? false,
     isLessonLocked,
     isVideoWatchLesson,
-    canToggleCompletion: Boolean(isLesson && !isLessonLocked && !isVideoWatchLesson)
+    canToggleCompletion: false
   };
 }
 

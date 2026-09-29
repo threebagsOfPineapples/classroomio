@@ -34,7 +34,25 @@ export const ZTrainingPlanSupplement = z.object({
   memberIds: z.array(z.number().int().positive()).min(1).max(100)
 });
 
+export const ZTrainingPlanExtension = z.object({
+  previousEndAt: z.string().datetime({ offset: true }),
+  endAt: z.string().datetime({ offset: true })
+});
+
 export const ZLearningHeartbeat = z.object({ courseId: z.uuid() });
 
 export type TTrainingPlanDraft = z.infer<typeof ZTrainingPlanDraft>;
 export type TTrainingPlanTarget = z.infer<typeof ZTrainingPlanTarget>;
+
+export const ZTrainingMakeup = z
+  .object({
+    exerciseId: z.uuid(),
+    memberIds: z.array(z.number().int().positive()).min(1).max(100),
+    opensAt: z.string().datetime({ offset: true }),
+    closesAt: z.string().datetime({ offset: true })
+  })
+  .refine((value) => Date.parse(value.closesAt) > Date.parse(value.opensAt), {
+    path: ['closesAt'],
+    message: '补考截止时间必须晚于开始时间'
+  });
+export type TTrainingMakeup = z.infer<typeof ZTrainingMakeup>;

@@ -553,7 +553,10 @@ export const ZCourseUpdate = ZCourseUpdateBase.refine(
     message: 'Compliance settings are required when changing a course to COMPLIANCE',
     path: ['compliance']
   }
-).superRefine(superRefinePaidCourse);
+).refine((data) => !data.metadata?.paymentLink || ZPaymentLink.safeParse(data.metadata.paymentLink).success, {
+  message: 'Payment link must be a valid http(s) URL',
+  path: ['metadata', 'paymentLink']
+});
 export type TCourseUpdate = z.infer<typeof ZCourseUpdate>;
 
 export const ZCourseUpdateParam = z.object({

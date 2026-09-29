@@ -18,7 +18,7 @@
   {#if isLoading}
     <div class="flex w-full px-2 py-4">
       <div class="flex w-full flex-row items-start space-x-4">
-        <img src="/ai.svg" alt="alt" class="animate-pulse" />
+        <img src="/ai.svg" alt={$t('interface_copy.alt')} class="animate-pulse" />
         <div class="w-full">
           <Skeleton class="h-4 w-full" />
           <Skeleton class="h-4 w-full" />
@@ -32,7 +32,7 @@
   {:else}
     <div class="flex items-start justify-between px-2 py-4">
       <div class="flex items-center space-x-4">
-        <img src="/ai.svg" alt="alt" />
+        <img src="/ai.svg" alt={$t('interface_copy.alt')} />
         <p class="text-sm font-normal">
           {reason}
         </p>
