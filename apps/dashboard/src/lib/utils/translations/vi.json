@@ -19,7 +19,11 @@
     "restricted_title": "Quyền truy cập bị hạn chế",
     "restricted_description": "Quyền truy cập vào tổ chức này bị hạn chế. Vui lòng liên hệ quản trị viên công ty.",
     "toggle_sidebar": "Hiện hoặc ẩn thanh bên",
-    "delete": "Delete"
+    "delete": "Delete",
+    "notifications": "Thông báo",
+    "close_notification": "Đóng thông báo",
+    "grid_view": "Chế độ thẻ",
+    "list_view": "Chế độ danh sách"
   },
   "validations": {
     "generic": {
@@ -821,7 +825,26 @@
         "activity": "Hoạt động"
       },
       "activity_empty_title": "Lịch trình hoạt động Sắp ra mắt",
-      "activity_empty_description": "Lịch trình hoàn thành bài học và nộp bài tập trong các khóa học sẽ có trong bản phát hành tiếp theo."
+      "activity_empty_description": "Lịch trình hoàn thành bài học và nộp bài tập trong các khóa học sẽ có trong bản phát hành tiếp theo.",
+      "lesson_learning": {
+        "title": "Lịch sử học theo bài",
+        "description": "Dựa trên thời gian đọc thực tế và xem video đã được lưu. Không tính thời gian trên trang bên ngoài.",
+        "total_effective": "Thời gian học hiệu quả",
+        "video_time": "Thời gian xem video",
+        "reading_time": "Thời gian đọc thực tế",
+        "lesson": "Bài học",
+        "duration": "Thời lượng video",
+        "status": "Trạng thái học",
+        "first_entered": "Lần truy cập đầu tiên",
+        "last_recorded": "Lần ghi nhận gần nhất",
+        "completed_at": "Hoàn thành lúc",
+        "position": "Vị trí tiếp tục",
+        "not_started": "Chưa bắt đầu",
+        "in_progress": "Đang học",
+        "completed": "Đã hoàn thành",
+        "no_lessons": "Chưa có lịch sử học theo bài",
+        "first_entered_help": "Thời điểm truy cập đầu tiên hiển thị sau khi hệ thống ghi nhận thời gian học hiệu quả."
+      }
     },
     "delete": {
       "action": "Xóa",
@@ -974,7 +997,7 @@
       "settings": {
         "heading": "Cài đặt",
         "cover_image": "Ảnh bìa",
-        "optional_image": "Hình ảnh tùy chọn này sẽ hiển thị trên trang chào mừng của bạn. Nếu bạn bao gồm một cái, nó phải có kích thước tối thiểu là 280 x 200",
+        "optional_image": "Ảnh bìa xuất hiện trong danh sách khóa học. Hãy dùng ảnh có kích thước tối thiểu 280 × 200 pixel.",
         "replace": "Thay thế",
         "remove": "Xóa",
         "del": "Xóa",
@@ -991,12 +1014,12 @@
         "reports": "Cung cấp báo cáo chấm điểm cho bài học",
         "disabled": "Đã tắt",
         "enabled": "Đã bật",
-        "order": "Đặt hàng tab bài học",
+        "order": "Sắp xếp lại các thẻ tài liệu khóa học",
         "drag": "Kéo và thả nhãn để sắp xếp lại các tab tài liệu của bạn",
         "content_grouping_title": "Nhóm nội dung",
         "content_grouping_description": "Nhóm các bài học, bài tập theo từng phần trong danh sách nội dung.",
         "progression_mode_title": "Tiến trình học viên",
-        "progression_mode_free": "Tự do — nội dung đã mở khóa có thể truy cập",
+        "progression_mode_free": "Học linh hoạt — học viên có thể mở nội dung đã được mở khóa",
         "progression_mode_sequential": "Tuần tự — hoàn thành mục trước để mở mục tiếp theo",
         "comments": {
           "title": "Bình luận bài học",
@@ -1004,8 +1027,8 @@
           "enabled": "Đã bật bình luận cho khóa học này",
           "disabled": "Đã tắt bình luận cho khóa học này"
         },
-        "lesson_download": "Bài học Tải về",
-        "available": "Cung cấp Bài học để tải xuống dưới dạng pdf cho học viên đã đăng ký",
+        "lesson_download": "Cho phép nhân viên tải xuống tài liệu khóa học",
+        "available": "Kiểm soát việc tải xuống tất cả tệp đính kèm trong khóa học này. Nhân viên vẫn có thể đọc tài liệu khóa học trực tuyến khi chức năng tải xuống bị tắt.",
         "course_download": "Tải xuống khóa học",
         "course_avail": "Tải xuống một bản sao của khóa học này.",
         "download": "Tải xuống",
@@ -1013,7 +1036,7 @@
         "access": "Khi tắt, học viên chỉ có thể tham gia qua liên kết mời hoặc khi được thêm từ mục {people}.",
         "access_people": "Mọi người",
         "publish": "Xuất bản khóa học",
-        "determines": "Điều này xác định xem khóa học của bạn có hiển thị trên trang đích hay không",
+        "determines": "Khóa học đã xuất bản dành cho nhân viên đã tham gia khóa học đó.",
         "published": "Đã xuất bản",
         "unpublished": "Chưa được xuất bản",
         "type": "Loại khóa học",
@@ -1084,7 +1107,7 @@
           "required_description": "Đánh dấu khóa học này là bắt buộc cho các đợt phân công đào tạo sau."
         },
         "content_card_title": "Nội dung",
-        "access_card_title": "Truy cập",
+        "access_card_title": "Quyền truy cập",
         "locked_content": {
           "title": "{count} mục khóa học đã bị khóa",
           "description": "Học viên đã đăng ký sẽ không thể học các bài học hoặc bài tập bị khóa cho đến khi bạn mở khóa chúng.",
@@ -2346,7 +2369,9 @@
               "attachments_heading": "Tệp đính kèm",
               "file_count": "{count, plural, one {# tệp} other {# tệp}}",
               "view_file": "Xem tệp",
-              "reorder_file": "Sắp xếp lại tệp"
+              "reorder_file": "Sắp xếp lại tệp",
+              "download_disabled": "Khóa học này không cho phép tải xuống tài liệu. Tài liệu PDF vẫn có thể được đọc trực tuyến.",
+              "preview_unavailable": "Tệp này không hỗ trợ xem trước trực tuyến. Vui lòng sử dụng nút tải xuống."
             },
             "video": {
               "title": "Video",
@@ -2640,7 +2665,15 @@
           "status": "Đã xem {percent}% nội dung video",
           "videos_complete": "Đã xem {percent}% nội dung video bắt buộc ({complete}/{required} video)",
           "seek_blocked": "Bạn không thể tua vượt trong video này",
-          "complete_via_watch": "Bài học hoàn thành khi bạn xem đủ video"
+          "complete_via_watch": "Bài học hoàn thành khi bạn xem đủ video",
+          "title": "Lịch sử học qua video",
+          "saved_duration": "Thời gian xem đã lưu {watched} / thời lượng {duration}",
+          "resume_position": "Tiếp tục từ {position}",
+          "save_hint": "Tiến độ được lưu định kỳ khi phát video và khi tạm dừng hoặc rời trang. Thời gian không được tính khi trang ở chế độ nền.",
+          "completed": "Bài học đã hoàn thành",
+          "not_started": "Chưa bắt đầu",
+          "in_progress": "Đang học",
+          "threshold": "Để hoàn thành, bạn phải xem đủ {percent}% tổng thời lượng video."
         },
         "saving": "Đang lưu…",
         "saved": "Đã lưu",
@@ -3283,7 +3316,14 @@
         "ssl_pending_heading": "Chứng chỉ SSL đang được cấp",
         "ssl_pending_body": "Tên miền của bạn đang trỏ đến chúng tôi. Hiện chúng tôi đang chờ chứng chỉ SSL được cấp và triển khai. Quá trình này thường mất vài phút sau khi tất cả bản ghi DNS bên dưới đã sẵn sàng.",
         "validation_errors_heading": "Việc cấp chứng chỉ bị chặn",
-        "verified_snackbar": "Đã xác minh miền tùy chỉnh"
+        "verified_snackbar": "Đã xác minh miền tùy chỉnh",
+        "paid_plan_required": "Tên miền tùy chỉnh yêu cầu gói trả phí.",
+        "connect_failed": "Không thể kết nối tên miền.",
+        "reconnect_failed": "Không thể kết nối lại tên miền.",
+        "remove_failed": "Không thể xóa tên miền.",
+        "refresh_failed": "Không thể làm mới kết quả xác minh tên miền.",
+        "copy_field": "Sao chép {name}",
+        "custom_code_placeholder": "Nhập CSS tùy chỉnh hoặc URL biểu định kiểu, ví dụ: https://example.com/style.css"
       }
     },
     "quiz": {
@@ -3444,8 +3484,8 @@
   },
   "media_manager": {
     "page_title": "Trình quản lý phương tiện - ClassroomIO",
-    "heading": "Trình quản lý phương tiện",
-    "empty": "Không tìm thấy nội dung nào",
+    "heading": "Tài nguyên khóa học",
+    "empty": "Chưa có tài nguyên khóa học",
     "usage": {
       "title": "Nơi sử dụng",
       "description": "Tài liệu tham khảo sử dụng hiện tại cho",
@@ -3534,7 +3574,7 @@
     },
     "filters": {
       "search_placeholder": "Tìm kiếm nội dung",
-      "apply": "Áp dụng",
+      "apply": "Áp dụng bộ lọc",
       "status_options": {
         "all": "Tất cả trạng thái",
         "active": "Đang hoạt động",
@@ -3559,8 +3599,8 @@
     "common": {
       "not_available": "N/A"
     },
-    "empty_description": "Tài sản không tồn tại hoặc không có sẵn trong tổ chức này.",
-    "page_subtitle": "Giữ tệp, video và liên kết cho các khóa học của bạn trong một thư viện.",
+    "empty_description": "Mở một khóa học và thêm tệp hoặc video vào bài học. Chúng sẽ xuất hiện ở đây.",
+    "page_subtitle": "Tệp tải lên trong bài học sẽ xuất hiện ở đây để xem và quản lý.",
     "thumbnails": {
       "manage_title": "Quản lý hình thu nhỏ",
       "manage_description": "Xem trước video, chọn một trong các khung được tạo tự động hoặc tải lên khung của riêng bạn.",
@@ -4008,7 +4048,20 @@
           "heading": "chủ đề",
           "sub_heading": "Đặt màu thương hiệu của bạn",
           "custom_theme": "Chủ đề tùy chỉnh",
-          "add_theme": "Thêm chủ đề"
+          "add_theme": "Thêm chủ đề",
+          "color_picker": {
+            "title": "Bộ chọn màu",
+            "hue": "Sắc độ",
+            "saturation": "Độ bão hòa",
+            "brightness": "Độ sáng",
+            "red": "Kênh đỏ",
+            "green": "Kênh xanh lá",
+            "blue": "Kênh xanh dương",
+            "opacity": "Độ đục",
+            "hex": "Màu thập lục phân",
+            "without_color": "Không có màu",
+            "change_to": "Chuyển sang "
+          }
         }
       },
       "page_subtitle": "Đặt tên, logo và chủ đề mà học sinh thấy cho tổ chức này."
@@ -4032,7 +4085,10 @@
         "upload_image": "Tải hình ảnh lên",
         "file_size": "Kích thước tệp tối đa:",
         "accepted": "Đã chấp nhận:",
-        "validation_error": "Kích thước tệp vượt quá giới hạn tối đa:"
+        "validation_error": "Kích thước tệp vượt quá giới hạn tối đa:",
+        "too_large": "Kích thước tệp không được vượt quá {max} MB.",
+        "unsupported_type": "Loại tệp không được hỗ trợ: {type}",
+        "crop": "Cắt ảnh"
       },
       "page_subtitle": "Tên, email và cách bạn xuất hiện ở mọi nơi bạn làm việc trong ClassroomIO."
     },
@@ -5892,7 +5948,7 @@
       "training_count": "Training assignments",
       "course_count": "Courses",
       "certificate_count": "Certificates earned",
-      "learning_hours": "Actual learning hours",
+      "learning_hours": "Thời gian học hiệu quả (số giờ tích lũy)",
       "training_points": "Training points",
       "nearest_expiry": "Next certificate expiry",
       "learners": "Learners",
@@ -5910,7 +5966,8 @@
       "makeup_required": "Makeup required",
       "matrix": "Training matrix",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "effective_time": "Thời gian học hiệu quả (tích lũy)"
     },
     "workbench": {
       "active_plans": "Đào tạo đang diễn ra",
@@ -6074,7 +6131,7 @@
       "optional": "Optional courses",
       "total_time": "Total study time",
       "progress_hint": "Completed {completed} / {total} courses; courses without a requirement setting are included only in the total.",
-      "time_hint": "Based on recorded study activity. Missing records are shown as —."
+      "time_hint": "Thời gian đọc thực tế và xem video đã lưu cho các khóa đào tạo được giao, hiển thị theo phút:giây hoặc giờ:phút:giây."
     },
     "plan_extension": {
       "action": "Gia hạn đào tạo",
@@ -6099,7 +6156,87 @@
       "exit_preview": "Quay lại quản lý khóa học",
       "internal_link": "Liên kết khóa học nội bộ",
       "internal_link_description": "Nhân viên phải đăng nhập và đủ điều kiện học khóa này. Mở liên kết không tự đăng ký học.",
-      "legacy_public": "Khóa học công khai cũ (giữ nguyên loại ban đầu)"
+      "legacy_public": "Khóa học công khai cũ (giữ nguyên loại ban đầu)",
+      "student_progress": "Tiến độ học viên"
+    },
+    "media": {
+      "add_from_course": "Thêm tài nguyên từ khóa học",
+      "no_results_title": "Không có tài nguyên phù hợp",
+      "no_results_description": "Hãy thử từ khóa tìm kiếm hoặc bộ lọc khác."
+    },
+    "admin_workflow": {
+      "all_statuses": "Tất cả trạng thái",
+      "tab_grading": "Chấm điểm",
+      "save_before_publish": "Hãy lưu các thay đổi trước khi công bố phương án đánh giá này.",
+      "assessment_steps": "Chuẩn bị phương án đánh giá, công bố kế hoạch đào tạo, rồi công bố phương án đã lưu. Dùng mục Chấm điểm để nhập điểm cho nhân viên.",
+      "search_plans": "Tìm kế hoạch theo tên hoặc mã",
+      "search_employees": "Tìm tên, mã nhân viên, phòng ban hoặc email",
+      "search_courses": "Tìm tên khóa học",
+      "tab_setup": "Thiết lập đánh giá",
+      "tab_results": "Kết quả",
+      "apply_filters": "Áp dụng bộ lọc",
+      "no_matches": "Không có bản ghi phù hợp. Hãy thử từ khóa tìm kiếm hoặc bộ lọc khác.",
+      "score_unsaved": "Nhân viên này có điểm chưa lưu. Hãy lưu hoặc bỏ từng mục trước khi chuyển sang nhân viên khác.",
+      "step_basics": "Thông tin cơ bản",
+      "step_targets": "Khóa học và người tham gia",
+      "step_assessment": "Lưu và chuẩn bị đánh giá",
+      "step_publish": "Kiểm tra người tham gia và công bố",
+      "invite_employee": "Mời nhân viên",
+      "invite_help": "Mời một nhân viên qua email bằng quy trình mời hiện có của tổ chức. Sau khi họ tham gia, hãy bổ sung phòng ban, vị trí và mã nhân viên tại đây.",
+      "send_invite": "Gửi lời mời",
+      "invite_invalid": "Nhập tên tối đa 200 ký tự và một địa chỉ email hợp lệ.",
+      "invite_email_failed": "Đã tạo hồ sơ nhân viên nhưng không thể đưa email mời vào hàng đợi gửi. Hãy kiểm tra cấu hình email rồi thử lại với cùng địa chỉ.",
+      "invite_sent": "Lời mời nhân viên đã được đưa vào hàng đợi gửi email.",
+      "invite_existing": "Nhân viên này đã thuộc tổ chức. Hãy cập nhật thông tin trong danh sách nhân viên."
+    },
+    "admin_fields": {
+      "name": "Họ tên",
+      "code": "Mã",
+      "year": "Năm",
+      "startAt": "Ngày bắt đầu",
+      "endAt": "Ngày kết thúc",
+      "passScore": "Điểm đạt",
+      "maxScore": "Maximum score",
+      "score": "Điểm",
+      "courseIds": "Khóa học",
+      "description": "Mô tả",
+      "ownerMemberId": "Người phụ trách",
+      "employeeNo": "Mã nhân viên",
+      "departmentId": "Phòng ban",
+      "position": "Chức vụ",
+      "managerMemberId": "Người quản lý",
+      "weight": "Trọng số",
+      "amount": "Điều chỉnh",
+      "reason": "Lý do điều chỉnh (3–2000 ký tự)",
+      "items": "Các mục đánh giá",
+      "targets": "Người tham gia",
+      "joinDate": "Ngày gia nhập"
+    },
+    "admin_errors": {
+      "invalid_field": "Kiểm tra định dạng hoặc phạm vi cho phép của {field}.",
+      "invalid_form": "Kiểm tra các trường bắt buộc và phạm vi số trước khi lưu.",
+      "weights": "Tổng trọng số đánh giá phải bằng 100%. Hãy điều chỉnh trọng số, lưu rồi công bố.",
+      "score_maximum": "Điểm không được vượt quá điểm tối đa của mục này.",
+      "publish_plan": "Hãy công bố kế hoạch đào tạo trước khi công bố phương án đánh giá của kế hoạch.",
+      "published_scheme": "Phương án đánh giá này đã được công bố và không thể chỉnh sửa.",
+      "select_exercise": "Chọn bài kiểm tra hoặc bài tập cho từng mục đánh giá tương ứng.",
+      "exercise_type": "Bài tập được chọn không khớp với loại mục đánh giá.",
+      "exercise_scope": "Chọn bài tập thuộc một khóa học trong kế hoạch đào tạo này.",
+      "exercise_maximum": "Điểm tối đa phải bằng tổng điểm các câu hỏi của bài tập được chọn. Hãy chọn lại bài tập để cập nhật giá trị.",
+      "select_courses": "Thêm khóa học vào kế hoạch đào tạo trước khi thiết lập đánh giá.",
+      "score_incomplete": "Hoàn tất mọi điểm bắt buộc và tính lại kết quả trước khi điều chỉnh điểm.",
+      "published_courses": "Kế hoạch có khóa học không khả dụng hoặc chưa được công bố. Hãy công bố khóa học hoặc xóa khỏi kế hoạch.",
+      "draft_only": "Kế hoạch này không còn là bản nháp. Hãy tải lại để xem trạng thái mới nhất.",
+      "courses_and_targets": "Chọn ít nhất một khóa học và một nhóm người tham gia.",
+      "no_recipients": "Không có nhân viên đang hoạt động nào khớp với đối tượng đã chọn. Hãy kiểm tra lựa chọn phòng ban, vị trí hoặc nhân viên.",
+      "active_owner": "Chọn một nhân viên đang hoạt động làm người phụ trách kế hoạch.",
+      "active_employee": "Một nhân viên đã chọn không còn hoạt động hoặc không thuộc tổ chức này. Hãy tải lại và chọn lại.",
+      "active_department": "Một phòng ban đã chọn không còn hoạt động hoặc không khả dụng. Hãy tải lại và chọn lại.",
+      "department_cycle": "Không thể đặt một phòng ban dưới chính nó hoặc dưới phòng ban con của nó.",
+      "department_in_use": "Hãy chuyển nhân viên đang hoạt động và các phòng ban con trước khi vô hiệu hóa phòng ban này.",
+      "manager_self": "Nhân viên không thể là quản lý trực tiếp của chính mình.",
+      "manager_cycle": "Lựa chọn quản lý này tạo ra vòng lặp trong tuyến báo cáo. Hãy chọn quản lý khác.",
+      "date_order": "Ngày kết thúc không được trước ngày bắt đầu."
     }
   },
   "interface_copy": {
@@ -6303,7 +6440,10 @@
     "enter_new_calculation": "Enter new calculation:",
     "image_exceeds_the_size_limit": "Image exceeds the size limit",
     "code_block": "Code Block",
-    "horizontal_rule": "Horizontal Rule"
+    "horizontal_rule": "Horizontal Rule",
+    "close": "Đóng",
+    "cancel": "Hủy",
+    "crop": "Cắt ảnh"
   },
   "interface_feedback": {
     "failed_to_generate_text_please_try_again": "Failed to generate text. Please try again.",
@@ -6392,6 +6532,92 @@
     "next": "Trang tiếp theo (→)",
     "zoom_out": "Thu nhỏ (-)",
     "zoom_in": "Phóng to (+)",
-    "close": "Đóng (Esc)"
+    "close": "Đóng (Esc)",
+    "fullscreen": "Toàn màn hình",
+    "exit_fullscreen": "Thoát toàn màn hình"
+  },
+  "learner_tasks": {
+    "exam": "Exam",
+    "assignment": "Assignment",
+    "due_at": "Hạn chót",
+    "score": "Điểm",
+    "state_in_progress": "In progress",
+    "state_submitted": "Đã gửi",
+    "state_graded": "Đã chấm điểm",
+    "action_start": "Bắt đầu",
+    "action_continue": "Tiếp tục",
+    "action_retake": "Thi lại",
+    "filter_upcoming": "Upcoming",
+    "filter_graded": "Đã chấm điểm",
+    "filter_all": "All",
+    "opens_at": "Thời gian mở",
+    "closes_at": "Hạn chót",
+    "duration": "Thời lượng: {minutes} phút",
+    "attempt_due": "Lượt làm hiện tại kết thúc",
+    "state_unknown": "Cần xác nhận quyền tham gia",
+    "state_upcoming": "Chưa mở",
+    "state_ended": "Đã hết hạn",
+    "state_unavailable": "Hiện chưa thể tham gia",
+    "state_open": "Có thể bắt đầu",
+    "action_result": "Xem bài đã nộp",
+    "checking": "Đang kiểm tra quyền tham gia…",
+    "access_unavailable": "Hiện không thể mở nhiệm vụ này",
+    "filter": "Trạng thái đánh giá",
+    "filter_pending": "Cần thực hiện",
+    "filter_submitted": "Chờ chấm điểm",
+    "search": "Tìm nhiệm vụ hoặc khóa học",
+    "refresh": "Làm mới trạng thái",
+    "load_failed": "Không tải được các nhiệm vụ đánh giá. Vui lòng thử lại.",
+    "certificates_load_failed": "Không tải được chứng chỉ. Vui lòng thử lại.",
+    "courses_load_failed": "Không tải được các khóa học và tiến độ. Vui lòng thử lại.",
+    "empty": "Không có nhiệm vụ trong mục này",
+    "empty_hint": "Thử trạng thái khác hoặc xem tất cả nhiệm vụ.",
+    "view_all": "Xem tất cả nhiệm vụ",
+    "training_courses": "Khóa đào tạo",
+    "training_assessments": "Đánh giá khóa học",
+    "training_assessments_empty": "Các khóa học này hiện chưa có nhiệm vụ đánh giá.",
+    "course_unavailable": "Bạn chưa có quyền truy cập khóa học. Hãy liên hệ quản trị viên đào tạo.",
+    "training_detail": "Chi tiết đào tạo"
+  },
+  "media_player": {
+    "play": "Phát",
+    "pause": "Tạm dừng",
+    "settings": "Cài đặt",
+    "speed": "Tốc độ",
+    "normal": "Bình thường",
+    "quality": "Chất lượng",
+    "mute": "Tắt tiếng",
+    "unmute": "Bật tiếng",
+    "enter_fullscreen": "Toàn màn hình",
+    "exit_fullscreen": "Thoát toàn màn hình",
+    "volume": "Âm lượng",
+    "seek": "Chuyển đến",
+    "current_time": "Thời gian hiện tại",
+    "duration": "Tổng thời lượng",
+    "captions": "Phụ đề",
+    "enable_captions": "Bật phụ đề",
+    "disable_captions": "Tắt phụ đề",
+    "auto": "Tự động",
+    "disabled": "Đã tắt",
+    "enabled": "Đã bật",
+    "menu_back": "Quay lại menu trước",
+    "restart": "Phát lại",
+    "rewind": "Tua lùi {seektime} giây",
+    "fast_forward": "Tua tới {seektime} giây",
+    "seek_label": "{currentTime} trên {duration}",
+    "played": "Đã phát",
+    "buffered": "Đã tải vào bộ đệm",
+    "download": "Tải xuống",
+    "frame_title": "Trình phát cho {title}",
+    "pip": "Hình trong hình",
+    "loop": "Lặp lại",
+    "start": "Bắt đầu",
+    "end": "Kết thúc",
+    "all": "Tất cả",
+    "reset": "Đặt lại",
+    "advertisement": "Quảng cáo",
+    "quality_hd": "HD",
+    "quality_sd": "SD",
+    "airplay": "AirPlay"
   }
 }

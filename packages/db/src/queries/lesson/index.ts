@@ -3,3 +3,4 @@ export * from './language';
 export * from './version';
 export * from './video-progress';
 export * from './reading-progress';
+export * from './document-download';

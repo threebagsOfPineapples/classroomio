@@ -1,5 +1,4 @@
 <script lang="ts">
-  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import * as ButtonGroup from '@cio/ui/base/button-group';
@@ -56,7 +55,7 @@
 </script>
 
 <header
-  class="ui:border-border ui:bg-background ui:z-app-bar sticky top-0 flex h-12 w-full shrink-0 items-center gap-2 border-b backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
+  class="ui:border-border ui:bg-background ui:z-app-bar sticky top-0 flex h-14 w-full shrink-0 items-center gap-2 border-b"
 >
   <div class="flex w-full items-center gap-2 px-4">
     <Sidebar.Trigger aria-label={$t('common.toggle_sidebar')} title={$t('common.toggle_sidebar')} variant="secondary" />
@@ -78,7 +77,6 @@
     </div>
 
     <span class="grow"></span>
-    <InterfaceLanguage />
 
     {#if $isOrgTeamMember}
       <Button href={$isCourseLearnerView ? '/admin' : '/lms'} variant="outline" size="sm">
@@ -127,12 +125,12 @@
             {#snippet child({ props })}
               <Button
                 {...props}
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 aria-label={$t('courses.course_card.actions_menu_aria')}
                 disabled={!courseApi.course?.id}
               >
-                <EllipsisVerticalIcon size={14} />
+                <EllipsisVerticalIcon size={14} aria-hidden="true" />
               </Button>
             {/snippet}
           </DropdownMenu.Trigger>

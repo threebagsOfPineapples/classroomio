@@ -4,7 +4,8 @@
   --ring: #b8460a;
 }
 
-body:has(.training-shell) {
+body:has(.training-shell),
+body[data-theme]:has(.training-shell) {
   --font-sans: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   --ui-font-cio: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   --ui-font-sans: 'Microsoft YaHei', 'PingFang SC', sans-serif;
@@ -25,11 +26,24 @@ body:has(.training-shell) {
   --accent-foreground: #b8460a;
   --border: #e0e0e0;
   --input: #d4d4d4;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #b8460a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fff4eb;
+  --sidebar-accent-foreground: #b8460a;
+  --sidebar-border: #e0e0e0;
+  --sidebar-ring: #b8460a;
   --radius: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .dark body:has(.training-shell),
-body.dark:has(.training-shell) {
+body.dark:has(.training-shell),
+.dark body[data-theme]:has(.training-shell),
+body.dark[data-theme]:has(.training-shell) {
   --primary: #ff8c42;
   --primary-foreground: #1a1a1a;
   --ring: #ff8c42;
@@ -47,6 +61,14 @@ body.dark:has(.training-shell) {
   --accent-foreground: #ff8c42;
   --border: #404040;
   --input: #525252;
+  --sidebar: #18181b;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #ff8c42;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #38271c;
+  --sidebar-accent-foreground: #ff8c42;
+  --sidebar-border: #404040;
+  --sidebar-ring: #ff8c42;
 }
 
 .training-shell {
@@ -121,6 +143,43 @@ body.dark:has(.training-shell) {
 
 .training-shell [data-slot='page-body'] {
   overflow-x: visible;
+}
+
+.training-shell .training-course-list {
+  background: var(--training-paper);
+}
+
+.training-shell .training-course-list-header[data-slot='page-header'] > div {
+  flex-direction: row;
+  align-items: center;
+}
+
+.training-shell--course [data-sidebar='menu-button'] {
+  min-height: 40px;
+  font-size: 14px;
+}
+
+.training-shell--course [data-sidebar='menu-button'][data-active='true'] {
+  background: var(--training-accent);
+  color: var(--primary);
+}
+
+body:has(.training-shell) [data-sidebar='sidebar'][data-mobile='true'] [data-sidebar='menu-button'] {
+  min-height: 44px;
+  font-size: 14px;
+}
+
+body:has(.training-shell)
+  [data-sidebar='sidebar'][data-mobile='true']
+  [data-sidebar='menu-button'][data-active='true'] {
+  color: var(--sidebar-accent-foreground);
+  background: var(--sidebar-accent);
+  box-shadow: inset 3px 0 0 var(--sidebar-primary);
+  font-weight: 600;
+}
+
+.training-shell :is([data-slot='button'], [data-slot='input-group'], [data-slot='select-trigger']) {
+  font-family: inherit;
 }
 
 .training-shell :is([data-slot='table-container'], .workbench-table-scroll) {

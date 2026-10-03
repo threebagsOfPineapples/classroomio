@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { isPdfDocument } from '@cio/utils/functions/lesson-document';
-import { isPdfPageEndVisible } from '../components/lesson/document/document-utils';
+import {
+  getDocumentAttachmentId,
+  getInlinePdfDocument,
+  isPdfPageEndVisible
+} from '../components/lesson/document/document-utils';
 
 describe('PDF 阅读器文件识别', () => {
   it.each([
@@ -12,6 +16,31 @@ describe('PDF 阅读器文件识别', () => {
     ['not-pdf', '培训.txt', false]
   ])('%s / %s', (type, name, expected) => {
     expect(isPdfDocument({ type, name })).toBe(expected);
+  });
+});
+
+describe('主 PDF 课件识别', () => {
+  const document = {
+    type: 'application/pdf',
+    name: '公司介绍.pdf',
+    key: '',
+    assetId: 'asset-1',
+    link: 'https://training.example.com/company.pdf'
+  };
+
+  it('唯一可核验 PDF 自动显示，附件身份不随排序改变', () => {
+    expect(getInlinePdfDocument({ completionPolicy: 'manual', documents: [document] })).toEqual(document);
+    expect(getDocumentAttachmentId(document, 0)).toBe('asset:asset-1');
+    expect(getDocumentAttachmentId(document, 3)).toBe('asset:asset-1');
+  });
+
+  it('视频课、多个附件和无身份 PDF 保持附件展示', () => {
+    expect(getInlinePdfDocument({ completionPolicy: 'video_watch', videos: [{}], documents: [document] })).toBeNull();
+    expect(getInlinePdfDocument({ completionPolicy: 'manual', videos: [{}], documents: [document] })).toBeNull();
+    expect(getInlinePdfDocument({ completionPolicy: 'manual', documents: [document, document] })).toBeNull();
+    expect(
+      getInlinePdfDocument({ completionPolicy: 'manual', documents: [{ ...document, assetId: undefined }] })
+    ).toBeNull();
   });
 });
 

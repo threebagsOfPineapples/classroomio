@@ -257,14 +257,6 @@ iframe.iframe {
   }
 }
 
-:not([data-slot='button']) > svg.lucide-icon:not(.custom) {
-  color: #666666;
-}
-
-.dark :not([data-slot='button']) > svg.lucide-icon:not(.custom) {
-  color: #fff;
-}
-
 .shake {
   animation: shake 0.85s;
 }

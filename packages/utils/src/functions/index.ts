@@ -14,4 +14,6 @@ export * from './links';
 export * from './vimeo';
 export * from './youtube';
 export * from './video';
+export * from './lesson-video';
+export * from './course-learning';
 export * from './course-content';

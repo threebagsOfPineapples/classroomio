@@ -66,6 +66,7 @@ import { submissionRouter } from '@api/routes/course/submission';
 import { updateCourseLandingPageService } from '@cio/core/services/course/landing-page';
 import { zValidator } from '@hono/zod-validator';
 import { updateCourseWithTags } from '@api/services/course/update-course';
+import { assertCourseDocumentDownloadAllowed } from '@cio/core/services/lesson/document-download';
 
 function slugifyForFilename(value: string): string {
   return (
@@ -574,20 +575,23 @@ export const courseRouter = new Hono()
     zValidator('param', ZCourseDownloadParam),
     zValidator('json', ZCourseDownloadContent),
     async (c) => {
-      const validatedData = c.req.valid('json');
-
-      const pdfBuffer = await generateCoursePdf(validatedData);
-
-      c.header('Content-Type', 'application/pdf');
-
-      return c.body(
-        new ReadableStream({
-          start(controller) {
-            controller.enqueue(pdfBuffer);
-            controller.close();
-          }
-        })
-      );
+      try {
+        const courseId = c.req.valid('param').courseId;
+        await assertCourseDocumentDownloadAllowed(courseId, c.get('user')!.id);
+        const validatedData = c.req.valid('json');
+        const pdfBuffer = await generateCoursePdf(validatedData);
+        c.header('Content-Type', 'application/pdf');
+        return c.body(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(pdfBuffer);
+              controller.close();
+            }
+          })
+        );
+      } catch (error) {
+        return handleError(c, error, '无法导出课程内容');
+      }
     }
   )
   .post(

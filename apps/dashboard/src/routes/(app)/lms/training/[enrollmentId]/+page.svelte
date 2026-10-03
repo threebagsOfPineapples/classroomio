@@ -1,9 +1,15 @@
 <script lang="ts">
+  import { onMount, untrack } from 'svelte';
   import { page } from '$app/state';
   import { currentOrg } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { t } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
+  import { myTrainingApi } from '$features/enterprise/api/my-training.svelte';
+  import { CoursesApi } from '$features/course/api/courses.svelte';
+  import { LMSExercisesApi } from '$features/lms/api/exercises.svelte';
+  import { getAssessmentTasks } from '$features/lms/utils/assessment-tasks';
+  import TrainingLearningActions from '$features/lms/components/training-learning-actions.svelte';
   import type { TrainingEvaluationDraft } from '$lib/features/enterprise/utils/types';
   import { trainingResultKey } from '$lib/features/enterprise/utils/training-labels';
   import { Button } from '@cio/ui/base/button';
@@ -13,6 +19,12 @@
   import * as Page from '@cio/ui/base/page';
 
   const assessmentApi = new AssessmentApi();
+  const coursesApi = new CoursesApi();
+  const exercisesApi = new LMSExercisesApi();
+  let coursesFailed = $state(false);
+  let now = $state(Date.now());
+  const assignment = $derived(myTrainingApi.assignments.find((item) => item.enrollmentId === page.params.enrollmentId));
+  const tasks = $derived(getAssessmentTasks(exercisesApi.exercises, exercisesApi.examAccess, now));
 
   let lastLoadKey = '';
   let message = $state('');
@@ -45,7 +57,30 @@
 
     lastLoadKey = loadKey;
     assessmentApi.detail = null;
-    void loadEnrollment(organizationId, enrollmentId, loadKey);
+    untrack(() => {
+      void loadEnrollment(organizationId, enrollmentId, loadKey);
+      void myTrainingApi.load(organizationId, profileId);
+      void loadCourses();
+      void loadTasks();
+    });
+  });
+
+  async function loadCourses() {
+    coursesFailed = false;
+    const response = await coursesApi.getEnrolledCourses();
+    coursesFailed = !response;
+  }
+
+  function loadTasks() {
+    now = Date.now();
+    return exercisesApi.load($currentOrg.id);
+  }
+
+  onMount(() => {
+    const timer = window.setInterval(() => {
+      now = Date.now();
+    }, 30_000);
+    return () => window.clearInterval(timer);
   });
 
   async function submitEvaluation() {
@@ -67,13 +102,13 @@
 </script>
 
 <svelte:head>
-  <title>{$t('enterprise.assessment.details')}</title>
+  <title>{$t('learner_tasks.training_detail')}</title>
 </svelte:head>
 
 <Page.Root role="main" class="mx-auto max-w-4xl px-6">
   <Page.Header>
     <Page.HeaderContent>
-      <Page.Title>{$t('enterprise.assessment.details')}</Page.Title>
+      <Page.Title>{$t('learner_tasks.training_detail')}</Page.Title>
       <Page.Subtitle>{assessmentApi.detail?.plan.name ?? $t('enterprise.my_training.title')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
@@ -82,11 +117,44 @@
   </Page.Header>
   <Page.Body>
     {#snippet child()}
-      {#if assessmentApi.error}<p role="alert" class="rounded-md bg-red-50 p-3 text-red-700">
-          {assessmentApi.error}
-        </p>{/if}
+      {#if assessmentApi.error}<div role="alert" class="training-panel space-y-3">
+          <p>{assessmentApi.error}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            onclick={() => loadEnrollment($currentOrg.id, page.params.enrollmentId!, lastLoadKey)}
+          >
+            {$t('enterprise.ui_v2.retry')}
+          </Button>
+        </div>{/if}
       {#if message}<p role="status" class="rounded-md bg-green-50 p-3 text-green-700">{message}</p>{/if}
       {#if assessmentApi.loading}<p>{$t('enterprise.loading')}</p>{/if}
+      {#if myTrainingApi.loading}
+        <p role="status">{$t('enterprise.loading')}</p>
+      {:else if myTrainingApi.error}
+        <div role="alert" class="training-panel space-y-3">
+          <p>{myTrainingApi.error}</p>
+          <Button size="sm" variant="outline" onclick={() => myTrainingApi.load($currentOrg.id, $profile.id)}>
+            {$t('enterprise.ui_v2.retry')}
+          </Button>
+        </div>
+      {:else if assignment}
+        <section class="training-panel mb-6 space-y-3">
+          {#if assignment.description}<p class="ui:text-muted-foreground text-sm">{assignment.description}</p>{/if}
+          <TrainingLearningActions
+            {assignment}
+            courses={coursesApi.enrolledCourses}
+            {tasks}
+            coursesLoading={coursesApi.isLoading}
+            coursesError={coursesFailed}
+            tasksLoading={exercisesApi.isLoading}
+            tasksError={!!exercisesApi.error}
+            checkingAccess={exercisesApi.accessLoading}
+            onRetryCourses={loadCourses}
+            onRetryTasks={loadTasks}
+          />
+        </section>
+      {/if}
       {#if assessmentApi.detail}
         <div class="space-y-6 pb-8">
           <section class="space-y-3 rounded-lg border p-5">

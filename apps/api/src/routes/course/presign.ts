@@ -16,6 +16,8 @@ import { authMiddleware } from '@api/middlewares/auth';
 import { generateFileKey } from '@cio/core/utils/upload';
 import { AppError } from '@api/utils/errors';
 import { MAX_DOCUMENT_SIZE, MAX_FILE_SIZE } from '@api/constants/upload';
+import { assertCourseDocumentPresignAllowed } from '@api/services/course/document-download';
+import { handleError } from '@api/utils/errors';
 
 /**
  * Advisory check on client-reported `fileSize`. Upload bytes go directly to object storage
@@ -168,14 +170,17 @@ export const presignRouter = new Hono()
       const body = c.req.valid('json');
 
       const { keys } = body;
-
-      const signedUrls = await generateVideoDownloadPresignedUrls(keys);
-
-      return c.json({
-        success: true,
-        urls: signedUrls,
-        message: 'Video URLs retrieved successfully'
-      });
+      try {
+        await assertCourseDocumentPresignAllowed(keys, c.get('user')!.id);
+        const signedUrls = await generateVideoDownloadPresignedUrls(keys);
+        return c.json({
+          success: true,
+          urls: signedUrls,
+          message: 'Video URLs retrieved successfully'
+        });
+      } catch (error) {
+        return handleError(c, error, '无法获取课程文件链接');
+      }
     }
   )
   .post(
@@ -206,13 +211,16 @@ export const presignRouter = new Hono()
       const body = c.req.valid('json');
 
       const { keys } = body;
-
-      const signedUrls = await generateDocumentDownloadPresignedUrls(keys);
-
-      return c.json({
-        success: true,
-        urls: signedUrls,
-        message: 'Document URLs retrieved successfully'
-      });
+      try {
+        await assertCourseDocumentPresignAllowed(keys, c.get('user')!.id);
+        const signedUrls = await generateDocumentDownloadPresignedUrls(keys);
+        return c.json({
+          success: true,
+          urls: signedUrls,
+          message: 'Document URLs retrieved successfully'
+        });
+      } catch (error) {
+        return handleError(c, error, '无法获取课程文件链接');
+      }
     }
   );

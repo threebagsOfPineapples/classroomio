@@ -2,7 +2,7 @@
   import * as Kbd from '@cio/ui/base/kbd';
   import * as InputGroup from '@cio/ui/base/input-group';
   import SearchIcon from '@lucide/svelte/icons/search';
-  import type { ComponentProps } from 'svelte';
+  import { onMount, type ComponentProps } from 'svelte';
   import { t } from '$lib/utils/functions/translations';
   import { searchStore } from '$features/search/store/search-store.svelte';
   import type { SearchScope } from '$features/search/utils/types';
@@ -29,6 +29,12 @@
     scope = 'org',
     ...restProps
   }: Props & Omit<ComponentProps<typeof InputGroup.Root>, 'class' | 'children'> = $props();
+
+  let modifierKey = $state('Ctrl');
+
+  onMount(() => {
+    modifierKey = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
+  });
 
   function openCommandPalette() {
     searchStore.open(scope);
@@ -67,17 +73,18 @@
     bind:value
     readonly
     role="button"
+    aria-label={placeholder || $t('app.search.placeholder')}
     aria-haspopup="dialog"
     on:focus={handleFocus}
     on:blur={onBlur}
     on:keydown={handleKeydown}
   />
   <InputGroup.Addon>
-    <SearchIcon />
+    <SearchIcon aria-hidden="true" />
   </InputGroup.Addon>
   {#if !compact}
     <InputGroup.Addon align="inline-end">
-      <Kbd.Root>⌘</Kbd.Root>
+      <Kbd.Root>{modifierKey}</Kbd.Root>
       <Kbd.Root>K</Kbd.Root>
     </InputGroup.Addon>
   {/if}

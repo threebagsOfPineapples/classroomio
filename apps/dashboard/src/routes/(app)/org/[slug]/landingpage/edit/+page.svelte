@@ -141,7 +141,14 @@
   out:fly={{ y: 500, duration: 500 }}
 >
   <Sidebar.Provider bind:open={sidebarOpen} style="--sidebar-width: 360px; --sidebar-width-icon: 4rem">
-    <Sidebar.Root side="left" collapsible="icon" class="h-full">
+    <Sidebar.Root
+      side="left"
+      collapsible="icon"
+      class="h-full"
+      mobileTitle={$t('interface_copy.menu')}
+      mobileDescription={$t('common.toggle_sidebar')}
+      closeLabel={$t('interface_copy.close_menu')}
+    >
       <LandingpageEditor
         bind:settings={$landingPageSettings}
         onSave={async () => {

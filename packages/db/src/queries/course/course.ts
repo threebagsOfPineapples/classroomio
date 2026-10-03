@@ -14,6 +14,7 @@ import {
 import { and, asc, count, desc, eq, exists, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { ROLE } from '@cio/utils/constants';
+import type { TGetRecommendedCourses } from '@cio/utils/validation/course';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { getCourseContentItems, type CourseContentItemRow } from './content';
 import { isExerciseCompletedSql } from './progression';
@@ -43,6 +44,7 @@ export interface TAdminCourse extends TBaseCourse {
  */
 export interface TStudentCourse extends TBaseCourse {
   progressRate: number;
+  hasEffectiveLearning: boolean;
   exercisesCompleted: number;
   certificateEarnedAt: string | null;
   complianceStatus: string | null;
@@ -1072,6 +1074,27 @@ export const getEnrolledCourses = async ({
           AND lc.is_complete = true
           AND lc.profile_id = ${sql.raw(`'${profileId}'::uuid`)}
         )`.as('progress_rate'),
+        hasEffectiveLearning: sql<boolean>`(
+          EXISTS (
+            SELECT 1
+            FROM ${schema.lessonCompletion} AS learning_reading
+            JOIN ${schema.lesson} AS reading_lesson ON reading_lesson.id = learning_reading.lesson_id
+            WHERE reading_lesson.course_id = ${schema.course.id}
+              AND learning_reading.profile_id = ${profileId}
+              AND learning_reading.reading_seconds > 0
+          ) OR EXISTS (
+            SELECT 1
+            FROM ${schema.lessonVideoProgress} AS learning_video
+            JOIN ${schema.lesson} AS video_lesson ON video_lesson.id = learning_video.lesson_id
+            WHERE video_lesson.course_id = ${schema.course.id}
+              AND learning_video.profile_id = ${profileId}
+              AND learning_video.watched_seconds > 0
+              AND EXISTS (
+                SELECT 1 FROM jsonb_array_elements(coalesce(video_lesson.videos, '[]'::jsonb)) AS configured_video
+                WHERE configured_video->>'assetId' = learning_video.asset_id
+              )
+          )
+        )`.as('has_effective_learning'),
         exerciseCount: sql<number>`(
           SELECT COUNT(*)::bigint
           FROM ${schema.exercise} as ex
@@ -1142,6 +1165,7 @@ export const getEnrolledCourses = async ({
       ...row.course,
       lessonCount: Number(row.lessonCount),
       progressRate: Number(row.progressRate),
+      hasEffectiveLearning: row.hasEffectiveLearning,
       exerciseCount: Number(row.exerciseCount),
       exercisesCompleted: Number(row.exercisesCompleted),
       certificateEarnedAt: row.certificateEarnedAt ?? null,
@@ -1165,6 +1189,7 @@ interface GetExploreCoursesOptions {
   search?: string;
   tagSlug?: string;
   required?: boolean;
+  sort?: TGetRecommendedCourses['sort'];
 }
 
 export interface GetExploreCoursesResult {
@@ -1188,7 +1213,8 @@ export const getExploreCourses = async ({
   page = 1,
   search,
   tagSlug,
-  required
+  required,
+  sort = 'date_created'
 }: GetExploreCoursesOptions): Promise<GetExploreCoursesResult> => {
   try {
     const searchValue = search?.trim();
@@ -1254,6 +1280,14 @@ export const getExploreCourses = async ({
       )`.as('exercise_count')
     };
 
+    const sortColumn =
+      sort === 'last_updated_at'
+        ? sql`COALESCE(${schema.course.updatedAt}, ${schema.course.createdAt})`
+        : sort === 'lessons'
+          ? sql`COUNT(DISTINCT ${schema.lesson.id})`
+          : sort === 'published'
+            ? schema.course.isPublished
+            : schema.course.createdAt;
     const baseSelect = db
       .select(courseSelect)
       .from(schema.course)
@@ -1265,7 +1299,7 @@ export const getExploreCourses = async ({
       )
       .where(whereCondition)
       .groupBy(schema.course.id, schema.group.id)
-      .orderBy(desc(schema.course.createdAt));
+      .orderBy(desc(sortColumn), desc(schema.course.createdAt), desc(schema.course.id));
 
     const countSelect = db
       .select({ total: count(schema.course.id) })

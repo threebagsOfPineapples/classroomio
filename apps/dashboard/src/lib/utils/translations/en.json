@@ -339,7 +339,11 @@
     "restricted_title": "Access restricted",
     "restricted_description": "Access to this organization is restricted. Please contact your company administrator.",
     "toggle_sidebar": "Toggle sidebar",
-    "delete": "Delete"
+    "delete": "Delete",
+    "notifications": "Notifications",
+    "close_notification": "Close notification",
+    "grid_view": "Grid view",
+    "list_view": "List view"
   },
   "compliance": {
     "title": "Compliance",
@@ -502,7 +506,10 @@
         "upload_image": "Upload Image",
         "file_size": "Max file size:",
         "accepted": "Accepted:",
-        "validation_error": "File size exceeds the maximum limit:"
+        "validation_error": "File size exceeds the maximum limit:",
+        "too_large": "File size must not exceed {max} MB.",
+        "unsupported_type": "Unsupported file type: {type}",
+        "crop": "Crop"
       },
       "personal_information": {
         "heading": "Personal Information",
@@ -600,7 +607,20 @@
           "heading": "Theme",
           "sub_heading": "Set your brand color",
           "custom_theme": "Custom Theme",
-          "add_theme": "Add Theme"
+          "add_theme": "Add Theme",
+          "color_picker": {
+            "title": "Color picker",
+            "hue": "Hue",
+            "saturation": "Saturation",
+            "brightness": "Brightness",
+            "red": "Red channel",
+            "green": "Green channel",
+            "blue": "Blue channel",
+            "opacity": "Opacity",
+            "hex": "Hex color",
+            "without_color": "No color",
+            "change_to": "Change to "
+          }
         },
         "customize_lms": {
           "heading": "Customize LMS",
@@ -1196,10 +1216,10 @@
   },
   "media_manager": {
     "page_title": "Media Manager - ClassroomIO",
-    "heading": "Media Manager",
-    "page_subtitle": "Keep files, videos, and links for your courses in one library.",
-    "empty": "No assets found",
-    "empty_description": "The asset does not exist or is not available in this organization.",
+    "heading": "Course resources",
+    "page_subtitle": "Files uploaded to course lessons appear here for review and maintenance.",
+    "empty": "No course resources yet",
+    "empty_description": "Open a course and add files or videos to a lesson. They will appear here.",
     "common": {
       "not_available": "N/A"
     },
@@ -1211,7 +1231,7 @@
     },
     "filters": {
       "search_placeholder": "Search assets",
-      "apply": "Apply",
+      "apply": "Apply filters",
       "refresh": "Refresh",
       "kind_options": {
         "all": "All types",
@@ -1856,7 +1876,14 @@
         "custom_favicon_save": "Save favicon",
         "custom_favicon_remove": "Remove favicon",
         "custom_favicon_saved": "Favicon updated",
-        "custom_code": "Custom code"
+        "custom_code": "Custom code",
+        "paid_plan_required": "Custom domains require a paid plan.",
+        "connect_failed": "Unable to connect the domain.",
+        "reconnect_failed": "Unable to reconnect the domain.",
+        "remove_failed": "Unable to remove the domain.",
+        "refresh_failed": "Unable to refresh domain verification.",
+        "copy_field": "Copy {name}",
+        "custom_code_placeholder": "Enter custom CSS or a stylesheet URL, such as https://example.com/style.css"
       },
       "customize_lms": {
         "page_subtitle": "Choose which tabs, banners, course tools, and extras students see.",
@@ -2358,7 +2385,15 @@
           "status": "Watched {percent}% of the video content",
           "videos_complete": "Watched {percent}% of the required video content ({complete} of {required} videos)",
           "seek_blocked": "You cannot skip ahead on this video",
-          "complete_via_watch": "This lesson completes when you watch enough of the video"
+          "complete_via_watch": "This lesson completes when you watch enough of the video",
+          "title": "Video learning records",
+          "saved_duration": "Saved watch time {watched} / duration {duration}",
+          "resume_position": "Resume position {position}",
+          "save_hint": "Progress is saved periodically during playback and when paused or leaving. Time is paused in the background.",
+          "completed": "Lesson completed",
+          "not_started": "Not started",
+          "in_progress": "In progress",
+          "threshold": "Completion requires watching {percent}% of the video duration."
         },
         "session": {
           "join": "Join session",
@@ -2752,7 +2787,9 @@
               "attachments_heading": "Attachments",
               "file_count": "{count, plural, one {# file} other {# files}}",
               "view_file": "View file",
-              "reorder_file": "Reorder file"
+              "reorder_file": "Reorder file",
+              "download_disabled": "Course file downloads are disabled. PDF course files can still be read online.",
+              "preview_unavailable": "This file cannot be previewed online. Please use the download button."
             }
           },
           "button_done": "Done"
@@ -3943,7 +3980,7 @@
       "settings": {
         "heading": "Settings",
         "cover_image": "Cover Image",
-        "optional_image": "This optional image will show up on your welcome page. If you include one, it should be at least 280 x 200",
+        "optional_image": "This optional cover appears in course lists. Use an image at least 280 × 200 pixels.",
         "replace": "Replace",
         "remove": "Remove",
         "del": "Delete",
@@ -3963,7 +4000,7 @@
         "reports": "Make grading reports available for lessons",
         "disabled": "Disabled",
         "enabled": "Enabled",
-        "order": "Order Lessons Tab",
+        "order": "Reorder course material tabs",
         "drag": "Drag and drop the labels to re-order your material tabs",
         "welcome_email": {
           "title": "Welcome email",
@@ -3985,12 +4022,12 @@
           "required_description": "Mark this course as required for future training assignments."
         },
         "content_card_title": "Content",
-        "access_card_title": "Access",
+        "access_card_title": "Access permissions",
         "content_grouping_title": "Content grouping",
         "content_grouping_description": "Group lessons and exercises by section in the content list.",
         "progression_mode_title": "Student progression",
         "progression_mode_description": "Control whether students can access all unlocked content or must complete items in order. Video watch completion only tracks uploaded videos.",
-        "progression_mode_free": "Free — unlocked content is accessible",
+        "progression_mode_free": "Flexible — learners can open unlocked content",
         "progression_mode_sequential": "Sequential — complete prior items to unlock next",
         "comments": {
           "title": "Lesson comments",
@@ -3998,8 +4035,8 @@
           "enabled": "Comments enabled for this course",
           "disabled": "Comments disabled for this course"
         },
-        "lesson_download": "Lesson download",
-        "available": "Let registered students download lessons as PDF.",
+        "lesson_download": "Allow employees to download course files",
+        "available": "Control downloads for all attachments in this course. Employees can still read course files online when downloads are disabled.",
         "allow_markdown_export": "Allow learners to copy lesson pages as Markdown",
         "allow_markdown_export_description": "When enabled, public lesson pages show a Copy Page button that exports the lesson content (excluding videos) as Markdown. This also publishes a public Markdown URL for each unlocked lesson.",
         "course_download": "Course download",
@@ -4009,7 +4046,7 @@
         "access": "When off, students can only join through an invite link or by being added from {people}.",
         "access_people": "People",
         "publish": "Publish Course",
-        "determines": "This determines if your course displays on your landing page",
+        "determines": "Published courses are available to employees who have joined them.",
         "published": "Published",
         "unpublished": "Unpublished",
         "certificate_deadline_required": "Set Certificate Deadline First",
@@ -4224,7 +4261,26 @@
       "load_failed_description": "Something went wrong while loading this student. Please try again.",
       "retry": "Retry",
       "exercise": "Exercise",
-      "exercise_load_failed": "Could not load exercises for this course."
+      "exercise_load_failed": "Could not load exercises for this course.",
+      "lesson_learning": {
+        "title": "Lesson learning records",
+        "description": "Based on saved active reading and video watch records. Time on external pages is excluded.",
+        "total_effective": "Effective learning time",
+        "video_time": "Video watch time",
+        "reading_time": "Active reading time",
+        "lesson": "Lesson",
+        "duration": "Video duration",
+        "status": "Learning status",
+        "first_entered": "First entered",
+        "last_recorded": "Last recorded",
+        "completed_at": "Completed at",
+        "position": "Resume position",
+        "not_started": "Not started",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "no_lessons": "No lesson learning records",
+        "first_entered_help": "First entered time appears after effective learning has been recorded."
+      }
     },
     "import": {
       "page_subtitle": "Add many people at once by email, then assign courses or cohorts if you like.",
@@ -5845,7 +5901,7 @@
       "training_count": "Training assignments",
       "course_count": "Courses",
       "certificate_count": "Certificates earned",
-      "learning_hours": "Actual learning hours",
+      "learning_hours": "Effective learning time (cumulative hours)",
       "training_points": "Training points",
       "nearest_expiry": "Next certificate expiry",
       "learners": "Learners",
@@ -5863,7 +5919,8 @@
       "makeup_required": "Makeup required",
       "matrix": "Training matrix",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "effective_time": "Effective learning time (cumulative)"
     },
     "plans": {
       "title": "Training plans",
@@ -6058,7 +6115,7 @@
       "optional": "Optional courses",
       "total_time": "Total study time",
       "progress_hint": "Completed {completed} / {total} courses; courses without a requirement setting are included only in the total.",
-      "time_hint": "Based on recorded study activity. Missing records are shown as —."
+      "time_hint": "Saved active reading and video watch time for assigned training courses, shown as minutes:seconds or hours:minutes:seconds."
     },
     "plan_extension": {
       "action": "Extend training deadline",
@@ -6083,7 +6140,87 @@
       "exit_preview": "Return to course management",
       "internal_link": "Internal course link",
       "internal_link_description": "Employees must sign in and be eligible for this course. Opening the link does not enroll them.",
-      "legacy_public": "Legacy public course (original type retained)"
+      "legacy_public": "Legacy public course (original type retained)",
+      "student_progress": "Learner progress"
+    },
+    "media": {
+      "add_from_course": "Add resources from a course",
+      "no_results_title": "No matching resources",
+      "no_results_description": "Try another search or filter."
+    },
+    "admin_workflow": {
+      "save_before_publish": "Save your changes before publishing this assessment.",
+      "assessment_steps": "Prepare the assessment, publish the training plan, then publish the saved assessment. Use Grading to enter employee scores.",
+      "search_plans": "Search plans by name or code",
+      "search_employees": "Search name, employee number, department or email",
+      "search_courses": "Search course names",
+      "all_statuses": "All statuses",
+      "tab_setup": "Assessment setup",
+      "tab_grading": "Grading",
+      "tab_results": "Results",
+      "apply_filters": "Apply filters",
+      "no_matches": "No matching records. Try another search or filter.",
+      "score_unsaved": "This employee has unsaved scores. Save each item or discard before switching employees.",
+      "step_basics": "Basic information",
+      "step_targets": "Courses and participants",
+      "step_assessment": "Save and prepare assessment",
+      "step_publish": "Review participants and publish",
+      "invite_employee": "Invite employee",
+      "invite_help": "Invite one employee by email using the existing organization invitation. After joining, complete their department, position and employee number here.",
+      "send_invite": "Send invitation",
+      "invite_invalid": "Enter a name of up to 200 characters and one valid email address.",
+      "invite_email_failed": "The employee record was created, but the invitation email could not be queued. Check mail configuration, then retry for the same address.",
+      "invite_sent": "The employee invitation has been queued for email delivery.",
+      "invite_existing": "This employee already belongs to the organization. Update their details in the employee list."
+    },
+    "admin_errors": {
+      "invalid_field": "Check the format or allowed range for {field}.",
+      "invalid_form": "Check the required fields and numeric ranges before saving.",
+      "weights": "Assessment weights must add up to 100%. Update the weights, save, then publish.",
+      "score_maximum": "The score cannot exceed this item's maximum score.",
+      "publish_plan": "Publish the training plan before publishing its assessment.",
+      "published_scheme": "This assessment has already been published and cannot be edited.",
+      "select_exercise": "Choose an exam or assignment for each matching assessment item.",
+      "exercise_type": "The selected exercise does not match the assessment item type.",
+      "exercise_scope": "Choose an exercise from a course included in this training plan.",
+      "exercise_maximum": "The maximum score must match the selected exercise's question points. Select the exercise again to refresh it.",
+      "select_courses": "Add courses to the training plan before configuring its assessment.",
+      "score_incomplete": "Complete all required scores and recalculate before applying an adjustment.",
+      "published_courses": "The plan contains an unavailable or unpublished course. Publish the course or remove it from the plan.",
+      "draft_only": "This plan is no longer a draft. Refresh to see its latest status.",
+      "courses_and_targets": "Select at least one course and one group of participants.",
+      "no_recipients": "No active employees match the selected participants. Check department, position or employee selections.",
+      "active_owner": "Choose an active employee as the plan owner.",
+      "active_employee": "A selected employee is inactive or outside this organization. Refresh and select again.",
+      "active_department": "A selected department is inactive or unavailable. Refresh and select again.",
+      "department_cycle": "A department cannot be placed under itself or one of its child departments.",
+      "department_in_use": "Move active employees and child departments before disabling this department.",
+      "manager_self": "An employee cannot be their own manager.",
+      "manager_cycle": "This manager selection creates a reporting cycle. Choose another manager.",
+      "date_order": "The end date must not be earlier than the start date."
+    },
+    "admin_fields": {
+      "name": "Name",
+      "code": "Code",
+      "year": "Year",
+      "startAt": "Start date",
+      "endAt": "End date",
+      "passScore": "Pass score",
+      "weight": "Weight",
+      "maxScore": "Maximum score",
+      "score": "Score",
+      "amount": "Adjustment",
+      "reason": "Adjustment reason (3–2000 characters)",
+      "items": "Assessment items",
+      "courseIds": "Courses",
+      "targets": "Participants",
+      "description": "Description",
+      "ownerMemberId": "Owner",
+      "employeeNo": "Employee number",
+      "departmentId": "Department",
+      "position": "Position",
+      "managerMemberId": "Manager",
+      "joinDate": "Join date"
     }
   },
   "interface_copy": {
@@ -6287,7 +6424,10 @@
     "enter_new_calculation": "Enter new calculation:",
     "image_exceeds_the_size_limit": "Image exceeds the size limit",
     "code_block": "Code Block",
-    "horizontal_rule": "Horizontal Rule"
+    "horizontal_rule": "Horizontal Rule",
+    "close": "Close",
+    "cancel": "Cancel",
+    "crop": "Crop"
   },
   "interface_feedback": {
     "failed_to_generate_text_please_try_again": "Failed to generate text. Please try again.",
@@ -6376,6 +6516,92 @@
     "next": "Next page (→)",
     "zoom_out": "Zoom out (-)",
     "zoom_in": "Zoom in (+)",
-    "close": "Close (Esc)"
+    "close": "Close (Esc)",
+    "fullscreen": "Full screen",
+    "exit_fullscreen": "Exit full screen"
+  },
+  "learner_tasks": {
+    "exam": "Exam",
+    "assignment": "Assignment",
+    "opens_at": "Opens",
+    "closes_at": "Closes",
+    "due_at": "Due",
+    "duration": "Duration: {minutes} minutes",
+    "score": "Score",
+    "attempt_due": "Current attempt ends",
+    "state_unknown": "Access needs confirmation",
+    "state_upcoming": "Not open yet",
+    "state_ended": "Closed",
+    "state_unavailable": "Currently unavailable",
+    "state_open": "Available to start",
+    "state_in_progress": "In progress",
+    "state_submitted": "Submitted",
+    "state_graded": "Graded",
+    "action_start": "Start",
+    "action_continue": "Continue",
+    "action_retake": "Retake",
+    "action_result": "View submission",
+    "checking": "Checking access…",
+    "access_unavailable": "This task cannot currently be opened",
+    "filter": "Assessment status",
+    "filter_pending": "To do",
+    "filter_upcoming": "Upcoming",
+    "filter_submitted": "Awaiting grading",
+    "filter_graded": "Graded",
+    "filter_all": "All",
+    "search": "Search task or course",
+    "refresh": "Refresh status",
+    "load_failed": "Assessment tasks could not be loaded. Please retry.",
+    "certificates_load_failed": "Certificates could not be loaded. Please retry.",
+    "courses_load_failed": "Courses and progress could not be loaded. Please retry.",
+    "empty": "No tasks in this view",
+    "empty_hint": "Try another status or check all tasks.",
+    "view_all": "View all tasks",
+    "training_courses": "Training courses",
+    "training_assessments": "Course assessments",
+    "training_assessments_empty": "These courses currently have no assessment tasks.",
+    "course_unavailable": "Course access is unavailable. Contact your training administrator.",
+    "training_detail": "Training details"
+  },
+  "media_player": {
+    "play": "Play",
+    "pause": "Pause",
+    "settings": "Settings",
+    "speed": "Speed",
+    "normal": "Normal",
+    "quality": "Quality",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "enter_fullscreen": "Enter fullscreen",
+    "exit_fullscreen": "Exit fullscreen",
+    "volume": "Volume",
+    "seek": "Seek",
+    "current_time": "Current time",
+    "duration": "Duration",
+    "captions": "Captions",
+    "enable_captions": "Enable captions",
+    "disable_captions": "Disable captions",
+    "auto": "Auto",
+    "disabled": "Disabled",
+    "enabled": "Enabled",
+    "menu_back": "Go back to previous menu",
+    "restart": "Restart",
+    "rewind": "Rewind {seektime} seconds",
+    "fast_forward": "Fast forward {seektime} seconds",
+    "seek_label": "{currentTime} of {duration}",
+    "played": "Played",
+    "buffered": "Buffered",
+    "download": "Download",
+    "frame_title": "Player for {title}",
+    "pip": "Picture in picture",
+    "loop": "Loop",
+    "start": "Start",
+    "end": "End",
+    "all": "All",
+    "reset": "Reset",
+    "advertisement": "Advertisement",
+    "quality_hd": "HD",
+    "quality_sd": "SD",
+    "airplay": "AirPlay"
   }
 }

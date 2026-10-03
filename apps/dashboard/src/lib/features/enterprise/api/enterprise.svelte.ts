@@ -1,11 +1,13 @@
 import { apiClient, getRequestBaseUrl } from '$lib/utils/services/api';
-import { locale, t } from '$lib/utils/functions/translations';
-import { get } from 'svelte/store';
-import { ApiError } from '$lib/utils/services/api/types';
+import { t } from '$lib/utils/functions/translations';
+import { enterpriseErrorMessage, enterpriseValidationMessage } from '../utils/enterprise-errors';
+import { isImportableEmail } from '@cio/utils/validation/organization';
+import { ZEnterpriseDepartment, ZEnterpriseEmployeeUpdate, ZEnterpriseRoles } from '@cio/utils/validation/enterprise';
 import type { EnterpriseEmployee, EnterpriseEmployees, EnterpriseOverview, EnterpriseRole } from '../utils/types';
 
 class EnterpriseApi {
   private currentOrganizationId: string | null = null;
+  private employeeRequest = 0;
   overview = $state<EnterpriseOverview | null>(null);
   employees = $state<EnterpriseEmployees>([]);
   selectedEmployee = $state<(EnterpriseEmployee & { roles: EnterpriseRole[] }) | null>(null);
@@ -13,6 +15,56 @@ class EnterpriseApi {
   busy = $state(false);
   error = $state('');
   notice = $state('');
+
+  async inviteEmployee(organizationId: string, email: string) {
+    this.notice = '';
+    if (!isImportableEmail(email)) {
+      this.error = t.get('audience.import.status.invalid_email');
+      return false;
+    }
+
+    this.busy = true;
+    this.error = '';
+    try {
+      const { orgApi } = await import('$features/org/api/org.svelte');
+      const normalizedEmail = email.trim().toLowerCase();
+      const recipient = { email: normalizedEmail };
+      const result = await orgApi.importAudienceMembers(
+        { recipients: [recipient], sendEmail: true, allCourses: false, allCohorts: false },
+        { notify: false }
+      );
+      if (!result) {
+        this.error = enterpriseErrorMessage(new Error(orgApi.error ?? ''));
+        return false;
+      }
+
+      const row = result.data.rows[0];
+      if (row && !['ready', 'already_member'].includes(row.status)) {
+        this.error = t.get(`audience.import.status.${row.status}`);
+        return false;
+      }
+
+      const reloaded = await this.load(organizationId);
+      if (!reloaded) return false;
+
+      if (result.data.emailsFailed > 0) {
+        this.error = t.get('enterprise.admin_workflow.invite_email_failed');
+        return false;
+      }
+
+      this.notice = t.get(
+        result.data.emailsSent > 0
+          ? 'enterprise.admin_workflow.invite_sent'
+          : 'enterprise.admin_workflow.invite_existing'
+      );
+      return true;
+    } catch (error) {
+      this.error = enterpriseErrorMessage(error);
+      return false;
+    } finally {
+      this.busy = false;
+    }
+  }
 
   async request<T>(organizationId: string, path: string, method = 'GET', body?: unknown): Promise<T> {
     try {
@@ -27,23 +79,7 @@ class EnterpriseApi {
 
       return result.data;
     } catch (error) {
-      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-        throw new Error(t.get('common.restricted_description'));
-      }
-
-      if (error instanceof ApiError && error.status === 404) throw new Error(t.get('common.page_not_found'));
-
-      let message = error instanceof Error ? error.message : '';
-      try {
-        const result = JSON.parse(message) as { error?: unknown };
-        message = typeof result.error === 'string' ? result.error : '';
-      } catch {
-        message = message.trim();
-      }
-
-      const displayMessage =
-        get(locale) === 'zh' && /[\u3400-\u9fff]/.test(message) ? message : t.get('enterprise.request_failed');
-      throw new Error(displayMessage);
+      throw new Error(enterpriseErrorMessage(error));
     }
   }
 
@@ -79,30 +115,46 @@ class EnterpriseApi {
   async selectEmployee(organizationId: string, employee: EnterpriseEmployee) {
     if (this.currentOrganizationId !== organizationId) return;
 
+    const request = ++this.employeeRequest;
     this.error = '';
     try {
       const detail = await this.request<EnterpriseEmployee & { roles: EnterpriseRole[] }>(
         organizationId,
         `/employees/${employee.member.id}`
       );
-      if (this.currentOrganizationId === organizationId) this.selectedEmployee = detail;
+      if (request !== this.employeeRequest || this.currentOrganizationId !== organizationId) return;
+
+      this.selectedEmployee = detail;
+      return detail;
     } catch {
-      if (this.currentOrganizationId === organizationId) this.error = t.get('enterprise.load_failed');
+      if (request === this.employeeRequest && this.currentOrganizationId === organizationId)
+        this.error = t.get('enterprise.load_failed');
     }
   }
 
   async save(organizationId: string, path: string, method: 'POST' | 'PUT', body: unknown) {
+    const schema = path.startsWith('/departments')
+      ? ZEnterpriseDepartment
+      : path.endsWith('/roles')
+        ? ZEnterpriseRoles
+        : ZEnterpriseEmployeeUpdate;
+    const validated = schema.safeParse(body);
+    if (!validated.success) {
+      this.error = enterpriseValidationMessage(validated.error);
+      return false;
+    }
+
     this.busy = true;
     this.error = '';
     try {
-      await this.request(organizationId, path, method, body);
+      await this.request(organizationId, path, method, validated.data);
       const reloaded = await this.load(organizationId);
       if (!reloaded) return false;
 
       this.notice = t.get('enterprise.saved');
       return true;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
       return false;
     } finally {
       this.busy = false;

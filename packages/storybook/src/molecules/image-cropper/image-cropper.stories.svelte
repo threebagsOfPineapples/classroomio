@@ -92,6 +92,23 @@
   {/snippet}
 </Story>
 
+<Story name="Localized Controls">
+  {#snippet template(args)}
+    <ImageCropper.Root {...args} accept="image/*" src="https://github.com/shadcn.png">
+      <ImageCropper.UploadTrigger>
+        <ImageCropper.Preview />
+      </ImageCropper.UploadTrigger>
+      <ImageCropper.Dialog closeLabel="关闭">
+        <ImageCropper.Cropper />
+        <ImageCropper.Controls>
+          <ImageCropper.Cancel label="取消" />
+          <ImageCropper.Crop label="裁剪" />
+        </ImageCropper.Controls>
+      </ImageCropper.Dialog>
+    </ImageCropper.Root>
+  {/snippet}
+</Story>
+
 <Story name="No Default Image">
   {#snippet template(args)}
     <div class="flex flex-col items-center gap-4">

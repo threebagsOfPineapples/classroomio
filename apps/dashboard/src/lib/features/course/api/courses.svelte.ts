@@ -12,6 +12,7 @@ import type {
 } from '$features/course/types';
 
 import { SvelteSet } from 'svelte/reactivity';
+import type { RecommendedCoursesOptions, RecommendedCoursesQuery } from '../utils/types';
 
 /**
  * API class for course operations
@@ -140,20 +141,15 @@ export class CoursesApi extends BaseApiWithErrors {
    * Fetches recommended courses (published courses user isn't enrolled in) for the current organization
    * Org ID is automatically added from currentOrg store
    */
-  async getRecommendedCourses(options?: {
-    limit?: number;
-    page?: number;
-    search?: string;
-    tagSlug?: string;
-    required?: boolean;
-  }) {
+  async getRecommendedCourses(options?: RecommendedCoursesOptions) {
     const requestId = ++this.recommendedRequestId;
-    const query: Record<string, string> = {};
+    const query: RecommendedCoursesQuery = {};
     if (options?.limit) query.limit = String(options.limit);
     if (options?.page) query.page = String(options.page);
     if (options?.search) query.search = options.search;
     if (options?.tagSlug) query.tagSlug = options.tagSlug;
-    if (options?.required !== undefined) query.required = String(options.required);
+    if (options?.required !== undefined) query.required = options.required ? 'true' : 'false';
+    if (options?.sort) query.sort = options.sort;
 
     await this.execute<GetRecommendedCoursesRequest>({
       requestFn: () =>

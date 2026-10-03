@@ -116,7 +116,11 @@
   <Page.Body>
     {#snippet child()}
       <Page.BodyHeader align="right" class="p-0!">
-        <Search placeholder={$t('courses.search_placeholder')} bind:value={searchValue} />
+        <Search
+          placeholder={$t('courses.search_placeholder')}
+          clearLabel={$t('public_courses.filters.clear_search')}
+          bind:value={searchValue}
+        />
 
         {#if $courseMetaDeta.view === 'list'}
           <IconButton onclick={() => setViewPreference('grid')}>

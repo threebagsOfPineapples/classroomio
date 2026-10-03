@@ -1,10 +1,13 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import { Editor } from '@cio/ui/custom/editor';
+  import { Editor, ImageUploadModal } from '@cio/ui/custom/editor';
   import { FIELDS, DEFAULT_CONTENT } from './constants';
   import chinese from '../../../../../apps/dashboard/src/lib/utils/translations/zh.json';
 
   function translateChinese(message) {
+    const labels = { Close: '关闭', Cancel: '取消', Crop: '裁剪' };
+    if (labels[message]) return labels[message];
+
     const key = message
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
@@ -34,6 +37,17 @@
 <Story name="Chinese Interface">
   {#snippet template()}
     <Editor translate={translateChinese} placeholder="请输入课程正文" content="<p>这是中文课程编辑器。</p>" />
+  {/snippet}
+</Story>
+
+<Story name="Standalone Chinese Image Upload">
+  {#snippet template()}
+    <ImageUploadModal
+      open
+      translate={translateChinese}
+      onImageUpload={async () => 'https://example.com/image.png'}
+      cropAspect={1.4}
+    />
   {/snippet}
 </Story>
 

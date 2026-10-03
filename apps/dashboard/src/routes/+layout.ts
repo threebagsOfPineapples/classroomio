@@ -1,7 +1,7 @@
-import { ensureTranslations, getPersistedLocale } from '$lib/utils/functions/translations';
+import { ensureTranslations } from '$lib/utils/functions/translations';
 
 export const load = async ({ data }) => {
-  await ensureTranslations(getPersistedLocale() ?? data?.localeCookie ?? 'zh');
+  await ensureTranslations('zh');
 
   return data ?? {};
 };

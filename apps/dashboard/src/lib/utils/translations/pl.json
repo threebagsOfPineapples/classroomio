@@ -19,7 +19,11 @@
     "restricted_title": "Dostęp ograniczony",
     "restricted_description": "Dostęp do tej organizacji jest ograniczony. Skontaktuj się z administratorem firmy.",
     "toggle_sidebar": "Pokaż lub ukryj pasek boczny",
-    "delete": "Delete"
+    "delete": "Delete",
+    "notifications": "Powiadomienia",
+    "close_notification": "Zamknij powiadomienie",
+    "grid_view": "Widok siatki",
+    "list_view": "Widok listy"
   },
   "validations": {
     "generic": {
@@ -821,7 +825,26 @@
         "activity": "Aktywność"
       },
       "activity_empty_title": "Harmonogram aktywności Już wkrótce",
-      "activity_empty_description": "Harmonogram ukończonych lekcji i przesłanych ćwiczeń z kursów będzie dostępny w przyszłej wersji."
+      "activity_empty_description": "Harmonogram ukończonych lekcji i przesłanych ćwiczeń z kursów będzie dostępny w przyszłej wersji.",
+      "lesson_learning": {
+        "title": "Rejestr nauki poszczególnych lekcji",
+        "description": "Na podstawie zapisanych danych o aktywnej lekturze i oglądaniu filmów. Czas na stronach zewnętrznych nie jest uwzględniany.",
+        "total_effective": "Efektywny czas nauki",
+        "video_time": "Czas oglądania filmów",
+        "reading_time": "Czas aktywnej lektury",
+        "lesson": "Lekcja",
+        "duration": "Długość filmu",
+        "status": "Status nauki",
+        "first_entered": "Pierwszy dostęp",
+        "last_recorded": "Ostatni zapis",
+        "completed_at": "Data ukończenia",
+        "position": "Pozycja wznowienia",
+        "not_started": "Nie rozpoczęto",
+        "in_progress": "W trakcie",
+        "completed": "Ukończono",
+        "no_lessons": "Brak zapisów nauki lekcji",
+        "first_entered_help": "Czas pierwszego dostępu pojawia się po zarejestrowaniu efektywnego czasu nauki."
+      }
     },
     "delete": {
       "action": "Usuń",
@@ -974,7 +997,7 @@
       "settings": {
         "heading": "Ustawienia",
         "cover_image": "Obraz na okładce",
-        "optional_image": "Ten opcjonalny obraz pojawi się na stronie powitalnej. Jeśli dołączysz taki plik, powinien on mieć wymiary co najmniej 280 x 200",
+        "optional_image": "Okładka jest widoczna na liście kursów. Użyj obrazu o wymiarach co najmniej 280 × 200 pikseli.",
         "replace": "Wymień",
         "remove": "Usuń",
         "del": "Usuń",
@@ -991,12 +1014,12 @@
         "reports": "Udostępnij raporty ocen na lekcjach",
         "disabled": "Wyłączone",
         "enabled": "Włączone",
-        "order": "Zakładka Zamów Lekcje",
+        "order": "Zmień kolejność kart materiałów kursu",
         "drag": "Przeciągnij i upuść etykiety, aby zmienić kolejność zakładek materiałów",
         "content_grouping_title": "Grupowanie treści",
         "content_grouping_description": "Grupuj lekcje i ćwiczenia według sekcji na liście treści.",
         "progression_mode_title": "Postęp ucznia",
-        "progression_mode_free": "Wolny — odblokowana treść jest dostępna",
+        "progression_mode_free": "Swobodna nauka — uczestnicy mogą otwierać odblokowane treści",
         "progression_mode_sequential": "Sekwencyjny — ukończ poprzednie elementy, aby odblokować następny",
         "comments": {
           "title": "Komentarze do lekcji",
@@ -1004,8 +1027,8 @@
           "enabled": "Komentarze włączone dla tego kursu",
           "disabled": "Komentarze wyłączone dla tego kursu"
         },
-        "lesson_download": "Lekcje do pobrania",
-        "available": "Udostępnij lekcję do pobrania w formacie PDF zarejestrowanym studentom",
+        "lesson_download": "Zezwalaj pracownikom na pobieranie plików kursu",
+        "available": "Kontroluje pobieranie wszystkich załączników w tym kursie. Pracownicy nadal mogą czytać pliki kursu online, gdy pobieranie jest wyłączone.",
         "course_download": "Pobieranie kursu",
         "course_avail": "Pobierz kopię tego kursu.",
         "download": "Pobierz",
@@ -1013,7 +1036,7 @@
         "access": "Gdy wyłączone, uczniowie mogą dołączyć tylko przez link z zaproszeniem lub po dodaniu w sekcji {people}.",
         "access_people": "Osoby",
         "publish": "Publikuj kurs",
-        "determines": "Od tego zależy, czy Twój kurs wyświetli się na stronie docelowej",
+        "determines": "Opublikowane kursy są dostępne dla pracowników, którzy do nich dołączyli.",
         "published": "Opublikowano",
         "unpublished": "Niepublikowane",
         "type": "Typ kursu",
@@ -1084,7 +1107,7 @@
           "required_description": "Oznacz kurs jako obowiązkowy dla przyszłych przydziałów szkoleniowych."
         },
         "content_card_title": "Treść",
-        "access_card_title": "Dostęp",
+        "access_card_title": "Uprawnienia dostępu",
         "locked_content": {
           "title": "Elementy kursu: {count} są zablokowane",
           "description": "Zarejestrowani uczniowie nie będą mogli brać udziału w zablokowanych lekcjach ani ćwiczeniach, dopóki ich nie odblokujesz.",
@@ -1358,7 +1381,7 @@
           "signatory_two_name": "Imię i nazwisko sygnatariusza 2",
           "signatory_two_role": "Rola sygnatariusza 2",
           "id_format": "Format identyfikatora certyfikatu",
-          "id_format_hint": "Użyj „{'seq'}' dla ostatnich czterech cyfr, '{'year'}' dla roku wydania, '{'month'}' dla miesiąca.",
+          "id_format_hint": "Użyj '{'seq'}' dla ostatnich czterech cyfr, '{'year'}' dla roku wydania i '{'month'}' dla miesiąca.",
           "accent_hint": "Kolor akcentujący pojawia się na regule odbiorcy, znaczkach i wyróżnieniu nagłówka szablonu.",
           "templates_hint": "Szablony są renderowane przy użyciu tego samego modułu renderującego, który jest używany w przypadku pobranych plików PDF i PNG.",
           "download_pdf": "Pobierz PDF",
@@ -1912,7 +1935,7 @@
                   "helper": "Przeciągnij elementy, aby określić właściwą kolejność.",
                   "add_step": "Dodaj krok",
                   "empty": "Dodaj kroki, a następnie przeciągnij, aby ustawić oczekiwaną kolejność.",
-                  "step_placeholder": "Krok „{'index'}'",
+                  "step_placeholder": "Krok '{'index'}'",
                   "remove_step_tooltip": "Usuń krok"
                 }
               },
@@ -2122,7 +2145,7 @@
                 },
                 "take": {
                   "helper": "Wybierz swoją ocenę.",
-                  "star_sr": "Gwiazdka „{'n'}” z „{'max'}”"
+                  "star_sr": "Gwiazdka '{'n'}' z '{'max'}'"
                 },
                 "edit": {
                   "correct_value_label": "Prawidłowa wartość gwiazdki",
@@ -2346,7 +2369,9 @@
               "attachments_heading": "Załączniki",
               "file_count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plika}}",
               "view_file": "Wyświetl plik",
-              "reorder_file": "Zmień kolejność pliku"
+              "reorder_file": "Zmień kolejność pliku",
+              "download_disabled": "Pobieranie plików tego kursu jest wyłączone. Pliki PDF kursu nadal można czytać online.",
+              "preview_unavailable": "Ten plik nie obsługuje podglądu online. Użyj przycisku pobierania."
             },
             "video": {
               "title": "Wideo",
@@ -2640,7 +2665,15 @@
           "status": "Obejrzano {percent}% treści wideo",
           "videos_complete": "Obejrzano {percent}% wymaganej treści wideo ({complete} z {required} filmów)",
           "seek_blocked": "Nie możesz przewinąć do przodu w tym filmie",
-          "complete_via_watch": "Ta lekcja kończy się, gdy obejrzysz wystarczającą część filmu"
+          "complete_via_watch": "Ta lekcja kończy się, gdy obejrzysz wystarczającą część filmu",
+          "title": "Rejestr nauki z filmów",
+          "saved_duration": "Zapisany czas oglądania {watched} / długość {duration}",
+          "resume_position": "Wznów od {position}",
+          "save_hint": "Postęp jest zapisywany regularnie podczas odtwarzania oraz przy wstrzymaniu lub opuszczeniu strony. Naliczanie czasu jest wstrzymywane w tle.",
+          "completed": "Lekcja ukończona",
+          "not_started": "Nie rozpoczęto",
+          "in_progress": "W trakcie",
+          "threshold": "Aby ukończyć, musisz obejrzeć {percent}% czasu trwania filmu."
         },
         "saving": "Zapisuję…",
         "saved": "Zapisano",
@@ -3283,7 +3316,14 @@
         "ssl_pending_heading": "Certyfikat SSL jest wydawany",
         "ssl_pending_body": "Twoja domena wskazuje na nas. Czekamy teraz na wystawienie i wdrożenie certyfikatu SSL. Zwykle zajmuje to kilka minut, gdy wszystkie poniższe rekordy DNS są już na swoim miejscu.",
         "validation_errors_heading": "Wystawienie certyfikatu jest zablokowane",
-        "verified_snackbar": "Zweryfikowano domenę niestandardową"
+        "verified_snackbar": "Zweryfikowano domenę niestandardową",
+        "paid_plan_required": "Własne domeny wymagają płatnego planu.",
+        "connect_failed": "Nie udało się połączyć domeny.",
+        "reconnect_failed": "Nie udało się ponownie połączyć domeny.",
+        "remove_failed": "Nie udało się usunąć domeny.",
+        "refresh_failed": "Nie udało się odświeżyć weryfikacji domeny.",
+        "copy_field": "Kopiuj {name}",
+        "custom_code_placeholder": "Wpisz własny kod CSS lub adres arkusza stylów, na przykład https://example.com/style.css"
       }
     },
     "quiz": {
@@ -3444,8 +3484,8 @@
   },
   "media_manager": {
     "page_title": "Menedżer mediów - ClassroomIO",
-    "heading": "Menedżer multimediów",
-    "empty": "Nie znaleziono żadnych zasobów",
+    "heading": "Materiały kursowe",
+    "empty": "Brak materiałów kursowych",
     "usage": {
       "title": "Gdzie używany",
       "description": "Aktualne odniesienia do użytkowania",
@@ -3534,7 +3574,7 @@
     },
     "filters": {
       "search_placeholder": "Wyszukaj zasoby",
-      "apply": "Zastosuj",
+      "apply": "Zastosuj filtry",
       "status_options": {
         "all": "Wszystkie statusy",
         "active": "Aktywny",
@@ -3559,8 +3599,8 @@
     "common": {
       "not_available": "N/D"
     },
-    "empty_description": "Zasób nie istnieje lub nie jest dostępny w tej organizacji.",
-    "page_subtitle": "Przechowuj pliki, wideo i linki do kursów w jednej bibliotece.",
+    "empty_description": "Otwórz kurs i dodaj pliki lub filmy do lekcji. Pojawią się tutaj.",
+    "page_subtitle": "Pliki przesłane do lekcji są tu dostępne do przeglądania i zarządzania.",
     "thumbnails": {
       "manage_title": "Zarządzaj miniaturami",
       "manage_description": "Obejrzyj podgląd wideo, wybierz jedną z automatycznie wygenerowanych klatek lub prześlij własną.",
@@ -4008,7 +4048,20 @@
           "heading": "Temat",
           "sub_heading": "Ustaw kolor swojej marki",
           "custom_theme": "Motyw niestandardowy",
-          "add_theme": "Dodaj motyw"
+          "add_theme": "Dodaj motyw",
+          "color_picker": {
+            "title": "Wybór koloru",
+            "hue": "Odcień",
+            "saturation": "Nasycenie",
+            "brightness": "Jasność",
+            "red": "Kanał czerwony",
+            "green": "Kanał zielony",
+            "blue": "Kanał niebieski",
+            "opacity": "Nieprzezroczystość",
+            "hex": "Kolor szesnastkowy",
+            "without_color": "Brak koloru",
+            "change_to": "Zmień na "
+          }
         }
       },
       "page_subtitle": "Ustaw nazwę, logo i motyw tej organizacji, które będą widzieć uczniowie."
@@ -4032,7 +4085,10 @@
         "upload_image": "Prześlij obraz",
         "file_size": "Maksymalny rozmiar pliku:",
         "accepted": "Zaakceptowano:",
-        "validation_error": "Rozmiar pliku przekracza maksymalny limit:"
+        "validation_error": "Rozmiar pliku przekracza maksymalny limit:",
+        "too_large": "Rozmiar pliku nie może przekraczać {max} MB.",
+        "unsupported_type": "Nieobsługiwany typ pliku: {type}",
+        "crop": "Przytnij"
       },
       "page_subtitle": "Twoje imię, e-mail i sposób, w jaki jesteś widoczny w ClassroomIO."
     },
@@ -5892,7 +5948,7 @@
       "training_count": "Training assignments",
       "course_count": "Courses",
       "certificate_count": "Certificates earned",
-      "learning_hours": "Actual learning hours",
+      "learning_hours": "Efektywny czas nauki (łączna liczba godzin)",
       "training_points": "Training points",
       "nearest_expiry": "Next certificate expiry",
       "learners": "Learners",
@@ -5910,7 +5966,8 @@
       "makeup_required": "Makeup required",
       "matrix": "Training matrix",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "effective_time": "Efektywny czas nauki (łącznie)"
     },
     "workbench": {
       "active_plans": "Trwające szkolenia",
@@ -6074,7 +6131,7 @@
       "optional": "Optional courses",
       "total_time": "Total study time",
       "progress_hint": "Completed {completed} / {total} courses; courses without a requirement setting are included only in the total.",
-      "time_hint": "Based on recorded study activity. Missing records are shown as —."
+      "time_hint": "Zapisany czas aktywnej lektury i oglądania filmów w przypisanych kursach szkoleniowych, wyświetlany jako minuty:sekundy lub godziny:minuty:sekundy."
     },
     "plan_extension": {
       "action": "Przedłuż termin szkolenia",
@@ -6099,7 +6156,87 @@
       "exit_preview": "Wróć do zarządzania kursem",
       "internal_link": "Wewnętrzny link do kursu",
       "internal_link_description": "Pracownicy muszą się zalogować i mieć dostęp do kursu. Link nie zapisuje ich automatycznie.",
-      "legacy_public": "Dotychczasowy kurs publiczny (zachowano oryginalny typ)"
+      "legacy_public": "Dotychczasowy kurs publiczny (zachowano oryginalny typ)",
+      "student_progress": "Postępy uczestników"
+    },
+    "media": {
+      "add_from_course": "Dodaj materiały z kursu",
+      "no_results_title": "Brak pasujących materiałów",
+      "no_results_description": "Spróbuj użyć innego wyszukiwania lub filtrów."
+    },
+    "admin_workflow": {
+      "all_statuses": "Wszystkie statusy",
+      "tab_grading": "Ocenianie",
+      "save_before_publish": "Zapisz zmiany przed opublikowaniem tej oceny.",
+      "assessment_steps": "Przygotuj ocenę, opublikuj plan szkolenia, a następnie zapisaną ocenę. Punkty pracowników wprowadzaj w zakładce Ocenianie.",
+      "search_plans": "Szukaj planów według nazwy lub kodu",
+      "search_employees": "Szukaj nazwiska, numeru pracownika, działu lub adresu e-mail",
+      "search_courses": "Szukaj nazw kursów",
+      "tab_setup": "Konfiguracja oceny",
+      "tab_results": "Wyniki",
+      "apply_filters": "Zastosuj filtry",
+      "no_matches": "Brak pasujących rekordów. Zmień wyszukiwanie lub filtry.",
+      "score_unsaved": "Ten pracownik ma niezapisane punkty. Zapisz każdą pozycję lub odrzuć zmiany przed wybraniem innego pracownika.",
+      "step_basics": "Podstawowe informacje",
+      "step_targets": "Kursy i uczestnicy",
+      "step_assessment": "Zapisz i przygotuj ocenę",
+      "step_publish": "Sprawdź uczestników i opublikuj",
+      "invite_employee": "Zaproś pracownika",
+      "invite_help": "Zaproś jednego pracownika e-mailem, korzystając z istniejącego procesu zaproszeń organizacji. Po dołączeniu uzupełnij tutaj jego dział, stanowisko i numer pracownika.",
+      "send_invite": "Wyślij zaproszenie",
+      "invite_invalid": "Wpisz imię i nazwisko o długości do 200 znaków oraz jeden prawidłowy adres e-mail.",
+      "invite_email_failed": "Utworzono rekord pracownika, ale nie udało się dodać zaproszenia do kolejki e-mail. Sprawdź konfigurację poczty i spróbuj ponownie z tym samym adresem.",
+      "invite_sent": "Zaproszenie pracownika dodano do kolejki wysyłki e-mail.",
+      "invite_existing": "Ten pracownik już należy do organizacji. Zaktualizuj jego dane na liście pracowników."
+    },
+    "admin_fields": {
+      "name": "Imię i nazwisko",
+      "code": "Kod",
+      "year": "Rok",
+      "startAt": "Data rozpoczęcia",
+      "endAt": "Data zakończenia",
+      "passScore": "Próg zaliczenia",
+      "maxScore": "Maximum score",
+      "score": "Wynik",
+      "courseIds": "Kursy",
+      "description": "Opis",
+      "ownerMemberId": "Odpowiedzialny",
+      "employeeNo": "Numer pracownika",
+      "departmentId": "Dział",
+      "position": "Stanowisko",
+      "managerMemberId": "Przełożony",
+      "weight": "Waga",
+      "amount": "Korekta punktów",
+      "reason": "Powód korekty (3–2000 znaków)",
+      "items": "Elementy oceny",
+      "targets": "Uczestnicy",
+      "joinDate": "Data zatrudnienia"
+    },
+    "admin_errors": {
+      "invalid_field": "Sprawdź format lub dozwolony zakres pola {field}.",
+      "invalid_form": "Przed zapisaniem sprawdź wymagane pola i zakresy wartości liczbowych.",
+      "weights": "Suma wag elementów oceny musi wynosić 100%. Popraw wagi, zapisz i opublikuj.",
+      "score_maximum": "Liczba punktów nie może przekroczyć maksimum dla tej pozycji.",
+      "publish_plan": "Opublikuj plan szkolenia przed opublikowaniem jego oceny.",
+      "published_scheme": "Ta ocena została już opublikowana i nie można jej edytować.",
+      "select_exercise": "Wybierz egzamin lub zadanie dla każdej odpowiedniej pozycji oceny.",
+      "exercise_type": "Wybrane ćwiczenie nie pasuje do typu pozycji oceny.",
+      "exercise_scope": "Wybierz ćwiczenie z kursu uwzględnionego w tym planie szkolenia.",
+      "exercise_maximum": "Maksymalna liczba punktów musi odpowiadać sumie punktów za pytania wybranego ćwiczenia. Wybierz ćwiczenie ponownie, aby ją odświeżyć.",
+      "select_courses": "Dodaj kursy do planu szkolenia przed skonfigurowaniem oceny.",
+      "score_incomplete": "Przed wprowadzeniem korekty uzupełnij wszystkie wymagane punkty i przelicz wynik.",
+      "published_courses": "Plan zawiera niedostępny lub nieopublikowany kurs. Opublikuj kurs albo usuń go z planu.",
+      "draft_only": "Ten plan nie jest już wersją roboczą. Odśwież, aby zobaczyć jego aktualny status.",
+      "courses_and_targets": "Wybierz co najmniej jeden kurs i jedną grupę uczestników.",
+      "no_recipients": "Żaden aktywny pracownik nie pasuje do wybranych uczestników. Sprawdź wybór działów, stanowisk lub pracowników.",
+      "active_owner": "Wybierz aktywnego pracownika jako osobę odpowiedzialną za plan.",
+      "active_employee": "Wybrany pracownik jest nieaktywny lub nie należy do tej organizacji. Odśwież i wybierz ponownie.",
+      "active_department": "Wybrany dział jest nieaktywny lub niedostępny. Odśwież i wybierz ponownie.",
+      "department_cycle": "Dział nie może podlegać samemu sobie ani żadnemu ze swoich poddziałów.",
+      "department_in_use": "Przed wyłączeniem działu przenieś aktywnych pracowników i poddziały.",
+      "manager_self": "Pracownik nie może być swoim własnym przełożonym.",
+      "manager_cycle": "Wybór tego przełożonego tworzy cykl w strukturze podległości. Wybierz inną osobę.",
+      "date_order": "Data zakończenia nie może być wcześniejsza niż data rozpoczęcia."
     }
   },
   "interface_copy": {
@@ -6303,7 +6440,10 @@
     "enter_new_calculation": "Enter new calculation:",
     "image_exceeds_the_size_limit": "Image exceeds the size limit",
     "code_block": "Code Block",
-    "horizontal_rule": "Horizontal Rule"
+    "horizontal_rule": "Horizontal Rule",
+    "close": "Zamknij",
+    "cancel": "Anuluj",
+    "crop": "Przytnij"
   },
   "interface_feedback": {
     "failed_to_generate_text_please_try_again": "Failed to generate text. Please try again.",
@@ -6392,6 +6532,92 @@
     "next": "Następna strona (→)",
     "zoom_out": "Pomniejsz (-)",
     "zoom_in": "Powiększ (+)",
-    "close": "Zamknij (Esc)"
+    "close": "Zamknij (Esc)",
+    "fullscreen": "Pełny ekran",
+    "exit_fullscreen": "Wyjdź z pełnego ekranu"
+  },
+  "learner_tasks": {
+    "exam": "Exam",
+    "assignment": "Assignment",
+    "due_at": "Termin",
+    "score": "Wynik",
+    "state_in_progress": "In progress",
+    "state_submitted": "Przesłane",
+    "state_graded": "Ocenione",
+    "action_start": "Początek",
+    "action_continue": "Kontynuuj",
+    "action_retake": "Powtórz",
+    "filter_upcoming": "Upcoming",
+    "filter_graded": "Ocenione",
+    "filter_all": "All",
+    "opens_at": "Otwarcie",
+    "closes_at": "Termin zakończenia",
+    "duration": "Czas trwania: {minutes} min",
+    "attempt_due": "Bieżące podejście kończy się",
+    "state_unknown": "Dostęp wymaga potwierdzenia",
+    "state_upcoming": "Jeszcze niedostępne",
+    "state_ended": "Zakończone",
+    "state_unavailable": "Obecnie niedostępne",
+    "state_open": "Można rozpocząć",
+    "action_result": "Zobacz przesłaną pracę",
+    "checking": "Sprawdzanie dostępu…",
+    "access_unavailable": "Tego zadania nie można obecnie otworzyć",
+    "filter": "Status oceny",
+    "filter_pending": "Do zrobienia",
+    "filter_submitted": "Oczekuje na ocenę",
+    "search": "Szukaj zadania lub kursu",
+    "refresh": "Odśwież status",
+    "load_failed": "Nie udało się wczytać zadań do oceny. Spróbuj ponownie.",
+    "certificates_load_failed": "Nie udało się wczytać certyfikatów. Spróbuj ponownie.",
+    "courses_load_failed": "Nie udało się wczytać kursów i postępów. Spróbuj ponownie.",
+    "empty": "Brak zadań w tym widoku",
+    "empty_hint": "Wybierz inny status lub sprawdź wszystkie zadania.",
+    "view_all": "Zobacz wszystkie zadania",
+    "training_courses": "Kursy szkoleniowe",
+    "training_assessments": "Oceny w kursach",
+    "training_assessments_empty": "Te kursy nie mają obecnie zadań do oceny.",
+    "course_unavailable": "Dostęp do kursu jest niedostępny. Skontaktuj się z administratorem szkoleń.",
+    "training_detail": "Szczegóły szkolenia"
+  },
+  "media_player": {
+    "play": "Odtwórz",
+    "pause": "Wstrzymaj",
+    "settings": "Ustawienia",
+    "speed": "Prędkość",
+    "normal": "Normalna",
+    "quality": "Jakość",
+    "mute": "Wycisz",
+    "unmute": "Włącz dźwięk",
+    "enter_fullscreen": "Pełny ekran",
+    "exit_fullscreen": "Wyjdź z pełnego ekranu",
+    "volume": "Głośność",
+    "seek": "Przewiń",
+    "current_time": "Bieżący czas",
+    "duration": "Czas trwania",
+    "captions": "Napisy",
+    "enable_captions": "Włącz napisy",
+    "disable_captions": "Wyłącz napisy",
+    "auto": "Automatycznie",
+    "disabled": "Wyłączone",
+    "enabled": "Włączone",
+    "menu_back": "Wróć do poprzedniego menu",
+    "restart": "Odtwórz od początku",
+    "rewind": "Cofnij o {seektime} sekund",
+    "fast_forward": "Przewiń do przodu o {seektime} sekund",
+    "seek_label": "{currentTime} z {duration}",
+    "played": "Odtworzono",
+    "buffered": "Zbuforowano",
+    "download": "Pobierz",
+    "frame_title": "Odtwarzacz dla {title}",
+    "pip": "Obraz w obrazie",
+    "loop": "Zapętl",
+    "start": "Początek",
+    "end": "Koniec",
+    "all": "Wszystko",
+    "reset": "Resetuj",
+    "advertisement": "Reklama",
+    "quality_hd": "HD",
+    "quality_sd": "SD",
+    "airplay": "AirPlay"
   }
 }

@@ -9,3 +9,27 @@ export type GetLMSExercisesSuccess = Extract<InferResponseType<GetLMSExercisesRe
 export type LMSExercise = GetLMSExercisesSuccess['data'][number];
 export type LMSExercises = GetLMSExercisesSuccess['data'];
 export type ExamAccess = Record<string, 'allowed' | 'denied' | 'unknown'>;
+export type LMSSubmission = LMSExercise['submission'][number];
+export type ExamWindow = Pick<LMSExercise, 'opensAt' | 'closesAt'> &
+  Partial<Pick<LMSExercise, 'canAttempt' | 'activeAttemptExpiresAt'>>;
+export type AssessmentTaskState =
+  | 'unknown'
+  | 'upcoming'
+  | 'ended'
+  | 'unavailable'
+  | 'open'
+  | 'in_progress'
+  | 'submitted'
+  | 'graded';
+export type AssessmentTaskAction = 'start' | 'continue' | 'retake' | 'result';
+export type AssessmentTaskFilter = 'pending' | 'upcoming' | 'submitted' | 'graded' | 'all';
+export type AssessmentTask = {
+  exercise: LMSExercise;
+  submission: LMSSubmission | undefined;
+  state: AssessmentTaskState;
+  submissionState: 'not_submitted' | 'grading' | 'submitted' | 'graded';
+  action: AssessmentTaskAction | null;
+  access: ExamAccess[string];
+  href: string;
+  totalPoints: number;
+};

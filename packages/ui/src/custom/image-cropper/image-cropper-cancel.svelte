@@ -1,9 +1,17 @@
 <script lang="ts">
-  import Button, { type ButtonElementProps } from '../../base/button/button.svelte';
+  import Button from '../../base/button/button.svelte';
+  import type { ImageCropperActionProps } from './types';
   import { useImageCropperCancel } from './image-cropper-context.svelte';
   import Trash2Icon from '@lucide/svelte/icons/trash-2';
 
-  let { ref = $bindable(null), variant = 'outline', size = 'sm', onclick, ...rest }: ButtonElementProps = $props();
+  let {
+    ref = $bindable(null),
+    variant = 'outline',
+    size = 'sm',
+    label = 'Cancel',
+    onclick,
+    ...rest
+  }: ImageCropperActionProps = $props();
 
   const cancelState = useImageCropperCancel();
 </script>
@@ -24,5 +32,5 @@
   }}
 >
   <Trash2Icon />
-  <span>Cancel</span>
+  <span>{label}</span>
 </Button>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import BellIcon from '@lucide/svelte/icons/bell';
@@ -45,7 +44,6 @@
       </span>
     </a>
     <span class="grow"></span>
-    <InterfaceLanguage />
 
     {#if !hideSearch}
       <div class="hidden lg:block"><Search scope="lms" /></div>

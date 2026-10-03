@@ -22,6 +22,7 @@
   import { uploadImage } from '$lib/utils/services/upload';
   import { queryUnsplash } from './upload-widget/utils';
   import { t } from '$lib/utils/functions/translations';
+  import { translateEditorMessage } from './utils/editor-translations';
 
   interface Props {
     placeholder?: string | ((node: any) => string);
@@ -52,16 +53,6 @@
     onReady,
     onEditorDestroy
   }: Props = $props();
-
-  function translateEditor(message: string) {
-    if (!message) return '';
-
-    const key = message
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_|_$/g, '');
-    return t.get(`editor_copy.${key}`);
-  }
 </script>
 
 {#await loadEditor()}
@@ -71,13 +62,13 @@
     aria-hidden="true"
   >
     {#if showToolBar}
-      <div class="ui:bg-muted/50 h-9 shrink-0 border-b border-dashed" />
+      <div class="ui:bg-muted/50 h-9 shrink-0 border-b border-dashed"></div>
     {/if}
-    <div class={cn('ui:bg-muted/50 relative h-full w-full animate-pulse overflow-auto p-4', editorClass)} />
+    <div class={cn('ui:bg-muted/50 relative h-full w-full animate-pulse overflow-auto p-4', editorClass)}></div>
   </div>
 {:then { Editor }}
   <Editor
-    translate={translateEditor}
+    translate={translateEditorMessage}
     {content}
     {showToolBar}
     {editable}

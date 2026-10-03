@@ -99,6 +99,13 @@ export const ZLessonGetParam = z.object({
 });
 export type TLessonGetParam = z.infer<typeof ZLessonGetParam>;
 
+export const ZLessonDocumentDownload = z
+  .object({
+    documentId: z.string().min(1).max(2048)
+  })
+  .strict();
+export type TLessonDocumentDownload = z.infer<typeof ZLessonDocumentDownload>;
+
 export const ZLessonListQuery = z.object({
   sectionId: z.string().optional(),
   courseId: z.string().min(1)

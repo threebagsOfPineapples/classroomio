@@ -47,6 +47,7 @@
   <Search
     class="w-full sm:w-[120px]"
     placeholder={$t('media_manager.filters.search_placeholder')}
+    clearLabel={$t('public_courses.filters.clear_search')}
     bind:value={search}
   />
   <Select.Root type="single" bind:value={status}>

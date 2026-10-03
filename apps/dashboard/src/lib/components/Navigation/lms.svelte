@@ -6,6 +6,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { shortenName } from '$lib/utils/functions/string';
+  import { getOrgLogoHref } from '$lib/utils/functions/org-branding';
 
   interface Props {
     navClass?: string;
@@ -20,8 +21,8 @@
       <a href={page.url.pathname} title={$t('navigation.goto_home')} id="logo" class="flex items-center text-lg">
         <Avatar.Root class="mr-2 h-7 w-7 rounded-md">
           <Avatar.Image
-            src={$currentOrg.avatarUrl ? $currentOrg.avatarUrl : '/logo-192.png'}
-            alt={$currentOrg.name ? $currentOrg.name : 'Organization'}
+            src={getOrgLogoHref($currentOrg)}
+            alt={$currentOrg.name || $t('enterprise.interface.platform_name')}
           />
           <Avatar.Fallback>{shortenName($currentOrg.name)}</Avatar.Fallback>
         </Avatar.Root>

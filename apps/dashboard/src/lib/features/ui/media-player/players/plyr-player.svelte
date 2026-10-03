@@ -7,6 +7,8 @@
   import { PLYR_DEFAULT_CONTROLS } from './constants';
   import { classroomio } from '$lib/utils/services/api';
   import type Plyr from 'plyr';
+  import { currentOrg } from '$lib/utils/store/org';
+  import { getOrgLogoHref } from '$lib/utils/functions/org-branding';
 
   /**
    * Resolve an HLS source. The caller passes either a full URL or the
@@ -170,13 +172,14 @@
     {/if}
   {/if}
 
-  <!-- ClassroomIO Logo Overlay -->
   <div
     class="plyr-logo-overlay absolute top-2 right-2 z-10 opacity-90 transition-opacity duration-200 ease-in-out hover:opacity-100"
   >
     <img
-      src="/logo-192.png"
-      alt={$t('public_course.powered_by.brand')}
+      src={getOrgLogoHref($currentOrg)}
+      alt={$currentOrg.name || $t('enterprise.interface.platform_name')}
+      width="28"
+      height="28"
       class="h-7 w-7 rounded-sm bg-white/90 p-0.5 shadow-sm"
     />
   </div>

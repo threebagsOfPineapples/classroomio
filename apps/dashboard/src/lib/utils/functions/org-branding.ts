@@ -1,20 +1,39 @@
 import type { AccountOrg } from '$features/app/types';
 
-export function getOrgFaviconHref(
-  org: Pick<AccountOrg, 'favicon' | 'avatarUrl'> | null | undefined,
-  pageOrigin?: string
-): string | null {
-  const favicon = org?.favicon?.trim();
-  const avatarUrl = org?.avatarUrl?.trim();
-  const rawHref = favicon || avatarUrl;
+type OrganizationBranding = Pick<AccountOrg, 'favicon' | 'avatarUrl'> | null | undefined;
 
-  if (!rawHref) {
+const DEFAULT_FAVICON = '/enterprise-training-favicon.png';
+const DEFAULT_LOGO = '/enterprise-training-icon.png';
+
+function resolveBrandImageHref(rawHref: string | null | undefined, pageOrigin?: string): string | null {
+  const imageHref = rawHref?.trim();
+  if (!imageHref) {
     return null;
   }
 
   try {
-    return new URL(rawHref, pageOrigin || undefined).href;
+    const imageUrl = new URL(imageHref, pageOrigin || 'https://localhost');
+    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
+      return null;
+    }
+
+    return pageOrigin || /^https?:\/\//i.test(imageHref) ? imageUrl.href : imageHref;
   } catch {
-    return rawHref;
+    return null;
   }
+}
+
+export function getOrgFaviconHref(org: OrganizationBranding, pageOrigin?: string): string {
+  return (
+    resolveBrandImageHref(org?.favicon, pageOrigin) ||
+    resolveBrandImageHref(org?.avatarUrl, pageOrigin) ||
+    resolveBrandImageHref(DEFAULT_FAVICON, pageOrigin) ||
+    DEFAULT_FAVICON
+  );
+}
+
+export function getOrgLogoHref(org: Pick<AccountOrg, 'avatarUrl'> | null | undefined, pageOrigin?: string): string {
+  return (
+    resolveBrandImageHref(org?.avatarUrl, pageOrigin) || resolveBrandImageHref(DEFAULT_LOGO, pageOrigin) || DEFAULT_LOGO
+  );
 }

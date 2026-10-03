@@ -320,52 +320,57 @@
     {#each navItems as item (item.id)}
       {#if item.isLesson}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton tooltipContent={item.title} isActive={item.isActive}>
+          <Sidebar.MenuButton
+            tooltipContent={item.title}
+            isActive={item.isActive}
+            class={isStudent ? 'gap-1.5' : 'gap-1.5 pr-8!'}
+          >
             {#snippet child({ props })}
               <HoverableItem class="">
                 {#snippet children(isHovered)}
                   <a href={resolve(item.url, {})} {...props}>
                     {#if item.icon}
                       {@const Icon = item.icon}
-                      <Icon size={16} {isHovered} />
+                      <span aria-hidden="true" class="shrink-0"><Icon size={16} {isHovered} /></span>
                     {/if}
 
-                    <span>{item.title}</span>
+                    <span class="min-w-0 flex-1 truncate whitespace-nowrap">{item.title}</span>
 
                     <div class="ml-auto flex items-center gap-1">
-                      {#if !isStudent}
-                        <IconButton
-                          variant="ghost-outline"
-                          size="icon-xs"
-                          class="transition-opacity duration-150 {isHovered ? 'opacity-100' : 'opacity-0'}"
-                          aria-label={$t('course.navItem.lessons.add_content')}
-                          aria-keyshortcuts="Control+Shift+N"
-                          tooltip={$t('course.navItem.lessons.add_content')}
-                          shortcut={['Ctrl', '⇧', 'N']}
-                          onclick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            openAddContentModal(id);
-                          }}
-                        >
-                          <Plus size={8} />
-                        </IconButton>
-                      {/if}
                       {#if showContentCount}
                         <ContentCountBadges lessons={contentCount.lessons} exercises={contentCount.exercises} />
                       {/if}
 
-                      <IconButton variant="ghost" size="icon-xs">
-                        <ChevronRightIcon
-                          class="transition-transform duration-200 {item.isActive ? 'rotate-90' : ''}"
-                        />
-                      </IconButton>
+                      <ChevronRightIcon
+                        aria-hidden="true"
+                        class="size-3 shrink-0 transition-transform duration-200 motion-reduce:transition-none {item.isActive
+                          ? 'rotate-90'
+                          : ''}"
+                      />
                     </div>
                   </a>
                 {/snippet}
               </HoverableItem>
             {/snippet}
           </Sidebar.MenuButton>
+
+          {#if !isStudent}
+            <Sidebar.MenuAction>
+              {#snippet child({ props })}
+                <IconButton
+                  {...props}
+                  variant="secondary"
+                  size="icon-xs"
+                  aria-label={$t('course.navItem.lessons.add_content')}
+                  aria-keyshortcuts="Control+Shift+N"
+                  title={$t('course.navItem.lessons.add_content')}
+                  onclick={() => openAddContentModal(id)}
+                >
+                  <Plus size={14} aria-hidden="true" />
+                </IconButton>
+              {/snippet}
+            </Sidebar.MenuAction>
+          {/if}
 
           {#if item.isActive}
             <CourseContentTree
@@ -386,14 +391,18 @@
                 {#snippet children(isHovered)}
                   {@const Icon = item.icon}
                   <a href={resolve(item.url, {})} {...props}>
-                    {#if Icon === TableOfContentsIcon}
-                      <Icon size={16} />
-                    {:else}
-                      <Icon {isHovered} size={16} />
-                    {/if}
-                    <span>{item.title}</span>
+                    <span aria-hidden="true" class="shrink-0">
+                      {#if Icon === TableOfContentsIcon}
+                        <Icon size={16} />
+                      {:else}
+                        <Icon {isHovered} size={16} />
+                      {/if}
+                    </span>
+                    <span class="min-w-0 truncate whitespace-nowrap">{item.title}</span>
                     {#if item.id === NAV_IDS.PEOPLE && $isStudentLimitReached}
-                      <PremiumIcon {isHovered} size={16} class="ui:text-primary ml-auto" />
+                      <span aria-hidden="true" class="ui:text-primary ml-auto"
+                        ><PremiumIcon {isHovered} size={16} /></span
+                      >
                     {/if}
                   </a>
                 {/snippet}

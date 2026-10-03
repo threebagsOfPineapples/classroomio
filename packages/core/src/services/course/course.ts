@@ -30,10 +30,15 @@ import {
   getUserExercisesStats
 } from '@cio/db/queries/analytics/analytics';
 import { getStudentCourseProgressImpactCounts } from '@cio/db/queries/course/reset-progress';
+import { getCourseLessonLearningRecords } from '@cio/db/queries/analytics';
 import { getCourseGroupId } from '@cio/db/queries/course/people';
 
 import { ContentType, ROLE } from '@cio/utils/constants';
-import { isPublishedComplianceMissingDeadline, resolveCourseCertificateDeadline } from '@cio/utils/functions';
+import {
+  getResumeLessonId,
+  isPublishedComplianceMissingDeadline,
+  resolveCourseCertificateDeadline
+} from '@cio/utils/functions';
 import type { TCourse } from '@cio/db/types';
 import type { DbOrTxClient } from '@cio/db/drizzle';
 import { NonAutoGradableQuestionOffender, type TCourseCreate } from '@cio/utils/validation/course';
@@ -240,11 +245,27 @@ export async function getCourse(courseId?: string, slug?: string, profileId?: st
     const { contentItems, org: courseOrg, ...rest } = course;
 
     const studentLimitReached = courseOrg ? await isStudentLimitReached(courseOrg.id) : false;
+    const lessonLearningRecords = profileId ? await getCourseLessonLearningRecords(course.id, profileId) : [];
+    const navigableContent = content.grouped ? content.sections.flatMap((section) => section.items) : content.items;
+    const resumeLessonId = getResumeLessonId(lessonLearningRecords, navigableContent);
+    const lessonLearningProgress = lessonLearningRecords
+      .filter((record) => record.effectiveSeconds > 0)
+      .sort(
+        (first, second) =>
+          new Date(second.lastRecordedAt ?? 0).getTime() - new Date(first.lastRecordedAt ?? 0).getTime()
+      )
+      .map((record) => ({
+        lessonId: record.id,
+        effectiveSeconds: record.effectiveSeconds,
+        lastRecordedAt: record.lastRecordedAt
+      }));
 
     const base = {
       ...rest,
       content,
       studentLimitReached,
+      resumeLessonId,
+      lessonLearningProgress,
       metadata: {
         ...course.metadata,
         progressionMode
@@ -726,10 +747,11 @@ export async function getUserCourseAnalytics(
     // failOnError makes this single-student detail page distinguish a failed
     // query from an empty one — an error here must render an error, not the
     // "no exercises" empty state.
-    const [userExercisesStats, lessons, courseProgress] = await Promise.all([
+    const [userExercisesStats, lessons, courseProgress, lessonLearningRecords] = await Promise.all([
       getUserExercisesStats(courseId, userId, { failOnError: true }),
       getLessonsWithCompletion(courseId, userId),
-      getProfileCourseProgress(courseId, userId, { failOnError: true })
+      getProfileCourseProgress(courseId, userId, { failOnError: true }),
+      getCourseLessonLearningRecords(courseId, userId)
     ]);
 
     if (!userExercisesStats || !lessons || !courseProgress) {
@@ -757,6 +779,10 @@ export async function getUserCourseAnalytics(
 
     const lessonsCompleted = courseProgress.lessons_completed || 0;
     const lessonsCount = courseProgress.lessons_count || 0;
+    const effectiveLearningSeconds = lessonLearningRecords.reduce(
+      (seconds, lesson) => seconds + lesson.effectiveSeconds,
+      0
+    );
 
     let progressImpact = null;
 
@@ -795,7 +821,9 @@ export async function getUserCourseAnalytics(
       lessonsCompleted,
       lessonsCount,
       progressPercentage,
-      progressImpact
+      progressImpact,
+      lessonLearningRecords,
+      effectiveLearningSeconds
     };
   } catch (error) {
     if (error instanceof AppError) {

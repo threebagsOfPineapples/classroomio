@@ -33,7 +33,13 @@
   const currentPath = $derived($currentOrgPath);
 </script>
 
-<Sidebar.Root collapsible="offcanvas" class="border-r">
+<Sidebar.Root
+  collapsible="offcanvas"
+  class="border-r"
+  mobileTitle={$t('interface_copy.menu')}
+  mobileDescription={$t('common.toggle_sidebar')}
+  closeLabel={$t('interface_copy.close_menu')}
+>
   <Sidebar.Header class="gap-2">
     <div class="flex items-center justify-between gap-1">
       <BackButton href={currentPath} label={t.get('org_navigation.back_to_app')} class="min-w-0 px-2! py-2!" />

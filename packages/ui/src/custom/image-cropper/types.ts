@@ -3,6 +3,7 @@ import type { HTMLAttributes, HTMLInputAttributes } from 'svelte/elements';
 
 import type { CropperProps } from 'svelte-easy-crop';
 import type { Snippet } from 'svelte';
+import type { ButtonElementProps } from '../../base/button/button.svelte';
 
 export type ImageCropperRootPropsWithoutHTML = WithChildren<{
   id?: string;
@@ -17,7 +18,9 @@ export type ImageCropperRootPropsWithoutHTML = WithChildren<{
 
 export type ImageCropperRootProps = ImageCropperRootPropsWithoutHTML & HTMLInputAttributes;
 
-export type ImageCropperDialogProps = DialogContentProps;
+export type ImageCropperDialogProps = DialogContentProps & { closeLabel?: string };
+
+export type ImageCropperActionProps = ButtonElementProps & { label?: string };
 
 export type ImageCropperCropperProps = Omit<Partial<CropperProps>, 'oncropcomplete' | 'image'>;
 

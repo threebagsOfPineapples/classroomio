@@ -17,7 +17,6 @@ interface LoadOutput {
   skipAuth: boolean;
   org: PublicOrg | null;
   baseMetaTags: MetaTagsProps;
-  localeCookie: string;
   locals: App.Locals;
   uploadLimits: UploadLimits;
 }
@@ -51,7 +50,6 @@ export const load = async ({ url, cookies, locals }): Promise<LoadOutput> => {
     skipAuth: orgSiteInfo.subdomain === 'play' || debugPlay === 'true',
     org: orgSiteInfo.org,
     baseMetaTags: await getBaseMetaTags(url, orgSiteInfo),
-    localeCookie: cookies.get('classroomio_locale') || '',
     locals,
     uploadLimits: getUploadLimits()
   };

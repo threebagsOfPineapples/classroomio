@@ -587,7 +587,7 @@ export const organizationRouter = new Hono()
     async (c) => {
       try {
         const user = c.get('user')!;
-        const { limit, page = 1, search, tagSlug, required } = c.req.valid('query');
+        const { limit, page = 1, search, tagSlug, required, sort } = c.req.valid('query');
 
         const orgId = c.req.header('cio-org-id')!;
         const { data, total } = await getRecommendedCourses(
@@ -597,7 +597,8 @@ export const organizationRouter = new Hono()
           page,
           search,
           tagSlug,
-          required === undefined ? undefined : required === 'true'
+          required === undefined ? undefined : required === 'true',
+          sort
         );
 
         const resolvedLimit = limit ?? total;

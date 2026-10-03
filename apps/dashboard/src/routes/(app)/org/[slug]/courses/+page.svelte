@@ -225,11 +225,8 @@
   });
 
   onMount(() => {
-    const courseView = localStorage.getItem('courseView') as 'grid' | 'list' | null;
-
-    if (courseView) {
-      $courseMetaDeta.view = courseView;
-    }
+    const managementView = localStorage.getItem('managementCourseView');
+    $courseMetaDeta.view = managementView === 'grid' ? 'grid' : 'list';
 
     const sortFromStorage = parseCourseSortValue(localStorage.getItem('classroomio_filter_course_sort_key'));
     const orderFromStorage = parseCourseSortOrder(localStorage.getItem('classroomio_filter_course_order_key'));
@@ -273,12 +270,12 @@
 </svelte:head>
 
 <Page.Root class="w-full">
-  <Page.Header>
-    <Page.HeaderContent>
-      <Page.Title>{$t('courses.heading')}</Page.Title>
+  <Page.Header class="training-course-list-header">
+    <Page.HeaderContent class="min-w-0 flex-1">
+      <Page.Title class="whitespace-nowrap">{$t('courses.heading')}</Page.Title>
       <Page.Subtitle>{$t('courses.page_subtitle')}</Page.Subtitle>
     </Page.HeaderContent>
-    <Page.Action>
+    <Page.Action class="w-auto! flex-none">
       <CreateCourseButton isResponsive />
     </Page.Action>
   </Page.Header>

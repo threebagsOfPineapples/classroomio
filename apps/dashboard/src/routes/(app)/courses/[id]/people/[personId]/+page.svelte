@@ -7,6 +7,7 @@
   import { t } from '$lib/utils/functions/translations';
   import StudentCourseRail from '$features/course/components/people/student-course-rail.svelte';
   import StudentExerciseList from '$features/course/components/people/student-exercise-list.svelte';
+  import StudentLessonLearning from '$features/course/components/people/student-lesson-learning.svelte';
   import type { UserCourseAnalytics } from '$features/course/utils/types';
 
   let { data } = $props();
@@ -36,6 +37,9 @@
 {:else if userCourseAnalytics}
   <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[19rem_1fr]">
     <StudentCourseRail {userCourseAnalytics} />
-    <StudentExerciseList courseId={data.courseId} {userCourseAnalytics} />
+    <div class="flex min-w-0 flex-col gap-4">
+      <StudentLessonLearning courseId={data.courseId} {userCourseAnalytics} />
+      <StudentExerciseList courseId={data.courseId} {userCourseAnalytics} />
+    </div>
   </div>
 {/if}

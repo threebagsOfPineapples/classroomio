@@ -69,6 +69,8 @@
   import StudentContentLockedNotice from '$features/course/components/student-content-locked-notice.svelte';
   import LiveSessionCard from '$features/course/components/lesson/live-session-card.svelte';
   import ReadingProgress from '$features/course/components/lesson/reading-progress.svelte';
+  import WatchProgress from '$features/course/components/lesson/video/watch-progress.svelte';
+  import { getInlinePdfDocument } from '$features/course/components/lesson/document/document-utils';
 
   interface Props {
     courseId: string;
@@ -237,7 +239,9 @@
     currentTabValue = urlTab ?? String(tabs[0].value);
   });
 
-  const viewModeComponents = $derived(getViewModeComponents(tabs));
+  const viewModeComponents = $derived(
+    getViewModeComponents(tabs, { preferDocument: Boolean(lessonApi.lesson && getInlinePdfDocument(lessonApi.lesson)) })
+  );
 
   const isMaterialsEmpty = $derived(tabs.every((tab) => tab.badgeValue === 0));
   const hasLessonVideos = $derived((lessonApi.lesson?.videos?.length ?? 0) > 0);
@@ -549,6 +553,8 @@
             <div class="mb-20 flex w-full flex-col" in:fade={{ delay: 500 }} out:fade>
               {#if $canRecordCourseLearning && lessonApi.lesson.completionPolicy !== 'video_watch'}
                 <ReadingProgress {courseId} {lessonId} />
+              {:else if $canRecordCourseLearning && lessonApi.lesson.completionPolicy === 'video_watch'}
+                <WatchProgress />
               {/if}
               {#if !hasLessonVideos}
                 <LessonMaterialActions showSummarize {lessonId} alignWithNote />

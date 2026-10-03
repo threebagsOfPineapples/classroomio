@@ -44,6 +44,52 @@
   {/snippet}
 </Story>
 
+<Story
+  name="LocalizedControls"
+  args={{
+    source: {
+      type: 'generic',
+      url: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'
+    },
+    options: {
+      controls: true,
+      i18n: {
+        play: '播放',
+        pause: '暂停',
+        settings: '设置',
+        speed: '速度',
+        normal: '正常',
+        quality: '画质',
+        mute: '静音',
+        unmute: '取消静音',
+        enterFullscreen: '进入全屏',
+        exitFullscreen: '退出全屏',
+        volume: '音量',
+        seek: '播放进度',
+        seekLabel: '{currentTime} / {duration}',
+        currentTime: '当前时间',
+        duration: '总时长',
+        captions: '字幕',
+        enableCaptions: '开启字幕',
+        disableCaptions: '关闭字幕',
+        disabled: '关闭',
+        enabled: '开启',
+        menuBack: '返回上一级菜单',
+        pip: '画中画',
+        airplay: '投屏',
+        qualityLabel: { 0: '自动' },
+        qualityBadge: { 1080: '高清', 720: '高清', 480: '标清' }
+      }
+    }
+  }}
+>
+  {#snippet template(args)}
+    <div class="w-full max-w-full md:w-160">
+      <MediaPlayer {...args} />
+    </div>
+  {/snippet}
+</Story>
+
 <!-- Vimeo Unlisted with Hash Story -->
 <Story
   name="VimeoUnlisted"

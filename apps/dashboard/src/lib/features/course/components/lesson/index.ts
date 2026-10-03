@@ -1,5 +1,4 @@
 export { default as ContentNavigationActions } from './content-navigation-actions.svelte';
-export { default as LanguageSelector } from './language-selector.svelte';
 export { default as LessonPageEditHeader } from './lesson-page-edit-header.svelte';
 export { default as Loader } from './loader.svelte';
 export { default as Comments } from './comments.svelte';

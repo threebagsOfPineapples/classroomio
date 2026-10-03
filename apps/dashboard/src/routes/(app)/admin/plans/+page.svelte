@@ -1,8 +1,10 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { page } from '$app/state';
-  import { currentOrg } from '$lib/utils/store/org';
-  import { t } from '$lib/utils/functions/translations';
+  import { currentOrg, currentOrgPath } from '$lib/utils/store/org';
+  import { t, locale } from '$lib/utils/functions/translations';
+  import { UnsavedChanges } from '$features/ui';
+  import { employeeLabel, matchesEmployee } from '$lib/features/enterprise/utils/admin-workflow';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
   import { trainingPlansApi } from '$lib/features/enterprise/api/training-plans.svelte';
   import type { TrainingPlanDetail, TrainingPlanDraft } from '$lib/features/enterprise/utils/types';
@@ -44,8 +46,13 @@
   let supplementMemberIds = $state<number[]>([]);
   let positionInput = $state('');
   let planSearch = $state('');
+  let planStatus = $state('all');
+  let courseSearch = $state('');
+  let employeeSearch = $state('');
   let message = $state('');
   let savedFingerprint = $state('');
+  let savedBasicsFingerprint = $state('');
+  let savedTargetsFingerprint = $state('');
   let confirmPublish = $state(false);
   let reminderOpen = $state(false);
   let reminderPlanId = $state('');
@@ -90,9 +97,41 @@
   const selected = $derived(trainingPlansApi.selected);
   const canEdit = $derived(!selected || selected.plan.status === 'DRAFT');
   const hasUnsavedChanges = $derived(savedFingerprint !== getDraftFingerprint());
+  const hasBasicsChanges = $derived(savedBasicsFingerprint !== JSON.stringify(form));
+  const hasTargetsChanges = $derived(savedTargetsFingerprint !== getTargetsFingerprint());
+  const basicsSaved = $derived(Boolean(selected?.plan.name && selected.plan.code) && !hasBasicsChanges);
+  const targetsSaved = $derived(Boolean(selected?.courses.length && selected.targets.length) && !hasTargetsChanges);
+  const planPublished = $derived(
+    Boolean(selected && ['PUBLISHED', 'IN_PROGRESS', 'COMPLETED'].includes(selected.plan.status))
+  );
+  const assessmentPublished = $derived(trainingPlansApi.assessment?.status === 'PUBLISHED');
+  const currentStep = $derived(
+    !basicsSaved
+      ? 1
+      : !targetsSaved
+        ? 2
+        : trainingPlansApi.assessmentLoading || trainingPlansApi.assessmentError || !trainingPlansApi.assessment
+          ? 3
+          : !planPublished
+            ? 4
+            : !assessmentPublished
+              ? 3
+              : null
+  );
+  const assessmentStatusKey = $derived(
+    trainingPlansApi.assessmentLoading
+      ? 'enterprise.loading'
+      : trainingPlansApi.assessmentError
+        ? 'enterprise.load_failed'
+        : trainingPlansApi.assessment
+          ? `enterprise.plans.status_${trainingPlansApi.assessment.status.toLowerCase()}`
+          : 'enterprise.assessment.not_started'
+  );
   const filteredPlans = $derived(
-    trainingPlansApi.plans.filter((plan) =>
-      `${plan.name} ${plan.code}`.toLocaleLowerCase().includes(planSearch.trim().toLocaleLowerCase())
+    trainingPlansApi.plans.filter(
+      (plan) =>
+        (planStatus === 'all' || plan.status === planStatus) &&
+        `${plan.name} ${plan.code}`.toLocaleLowerCase().includes(planSearch.trim().toLocaleLowerCase())
     )
   );
 
@@ -113,6 +152,16 @@
 
   function getDraftFingerprint() {
     return JSON.stringify({ form, selectedCourseIds, departmentTargets, positionTargets, employeeTargets });
+  }
+
+  function getTargetsFingerprint() {
+    return JSON.stringify({ selectedCourseIds, departmentTargets, positionTargets, employeeTargets });
+  }
+
+  function rememberDraft() {
+    savedFingerprint = getDraftFingerprint();
+    savedBasicsFingerprint = JSON.stringify(form);
+    savedTargetsFingerprint = getTargetsFingerprint();
   }
 
   function toggleCourse(courseId: string) {
@@ -154,7 +203,7 @@
   function resetForm() {
     confirmPublish = false;
     trainingPlansApi.clearSelection();
-    form = {
+    Object.assign(form, {
       name: '',
       code: '',
       description: '',
@@ -165,17 +214,27 @@
       startDate: today,
       endDate: today,
       passScore: ''
-    };
+    });
     selectedCourseIds = [];
     departmentTargets = [];
     positionTargets = [];
     employeeTargets = [];
     supplementMemberIds = [];
     message = '';
-    savedFingerprint = getDraftFingerprint();
+    courseSearch = '';
+    employeeSearch = '';
+    rememberDraft();
+  }
+
+  function startNewPlan() {
+    if (trainingPlansApi.busy || (hasUnsavedChanges && !window.confirm($t('common.unsaved_changes.message')))) return;
+
+    resetForm();
   }
 
   async function selectPlan(planId: string) {
+    if (trainingPlansApi.busy || (hasUnsavedChanges && !window.confirm($t('common.unsaved_changes.message')))) return;
+
     reminderNotice = '';
     const organizationId = $currentOrg.id;
     if (!organizationId) return;
@@ -184,7 +243,11 @@
     const detail: TrainingPlanDetail | null = await trainingPlansApi.select(organizationId, planId);
     if (!detail) return;
 
-    form = {
+    restorePlan(detail);
+  }
+
+  function restorePlan(detail: TrainingPlanDetail) {
+    Object.assign(form, {
       name: detail.plan.name,
       code: detail.plan.code,
       description: detail.plan.description ?? '',
@@ -195,7 +258,7 @@
       startDate: new Date(detail.plan.startAt).toLocaleDateString('sv-SE'),
       endDate: new Date(detail.plan.endAt).toLocaleDateString('sv-SE'),
       passScore: detail.plan.passScore?.toString() ?? ''
-    };
+    });
     selectedCourseIds = detail.courses.map((course) => course.courseId);
     departmentTargets = detail.targets
       .filter((target) => target.targetType === 'DEPARTMENT' && target.departmentId)
@@ -208,15 +271,22 @@
       .map((target) => target.memberId!);
     supplementMemberIds = [];
     message = '';
-    savedFingerprint = getDraftFingerprint();
+    rememberDraft();
+  }
+
+  function discardDraft() {
+    if (selected) restorePlan(selected);
+    else resetForm();
   }
 
   async function saveDraft() {
     const organizationId = $currentOrg.id;
     if (!organizationId || !canEdit) return;
 
+    message = '';
+    trainingPlansApi.error = '';
     if (!form.startDate || !form.endDate || selectedCourseIds.length === 0) {
-      message = $t('enterprise.plans.complete_fields');
+      trainingPlansApi.error = $t('enterprise.plans.complete_fields');
       return;
     }
 
@@ -226,14 +296,14 @@
       ...employeeTargets.map((memberId) => ({ targetType: 'USER' as const, memberId }))
     ];
     if (targets.length === 0) {
-      message = $t('enterprise.plans.select_targets');
+      trainingPlansApi.error = $t('enterprise.plans.select_targets');
       return;
     }
 
     const startDate = new Date(`${form.startDate}T00:00:00`);
     const endDate = new Date(`${form.endDate}T23:59:59`);
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || endDate < startDate) {
-      message = $t('enterprise.plans.complete_fields');
+      trainingPlansApi.error = $t('enterprise.admin_errors.date_order');
       return;
     }
 
@@ -251,9 +321,14 @@
       courseIds: selectedCourseIds,
       targets
     };
+    const submittedFingerprint = getDraftFingerprint();
+    const submittedBasicsFingerprint = JSON.stringify(form);
+    const submittedTargetsFingerprint = getTargetsFingerprint();
     const saved = await trainingPlansApi.save(organizationId, draft, selected?.plan.id);
     if (saved) {
-      savedFingerprint = getDraftFingerprint();
+      savedFingerprint = submittedFingerprint;
+      savedBasicsFingerprint = submittedBasicsFingerprint;
+      savedTargetsFingerprint = submittedTargetsFingerprint;
       message = $t('enterprise.saved');
     }
   }
@@ -300,6 +375,8 @@
   }
 </script>
 
+<UnsavedChanges {hasUnsavedChanges} />
+
 <svelte:head>
   <title>{$t('enterprise.plans.title')}</title>
 </svelte:head>
@@ -311,7 +388,9 @@
       <Page.Subtitle>{$t('enterprise.plans.subtitle')}</Page.Subtitle>
     </Page.HeaderContent>
     <Page.Action>
-      <Button variant="secondary" onclick={resetForm}>{$t('enterprise.plans.new')}</Button>
+      <Button testId="training-plan-new" variant="secondary" disabled={trainingPlansApi.busy} onclick={startNewPlan}
+        >{$t('enterprise.plans.new')}</Button
+      >
     </Page.Action>
   </Page.Header>
   <Page.Body>
@@ -325,22 +404,139 @@
       {#if enterpriseApi.overview?.canManage}
         <div class="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <nav aria-label={$t('enterprise.plans.title')} class="space-y-2">
-            <InputField name="plan-search" label={$t('enterprise.plans.title')} type="search" bind:value={planSearch} />
+            <InputField
+              name="plan-search"
+              label={$t('enterprise.admin_workflow.search_plans')}
+              type="search"
+              bind:value={planSearch}
+            />
+            <Select.Root type="single" bind:value={planStatus}>
+              <Select.Trigger aria-label={$t('enterprise.status')} class="w-full"
+                >{planStatus === 'all'
+                  ? $t('enterprise.admin_workflow.all_statuses')
+                  : $t(`enterprise.plans.status_${planStatus.toLowerCase()}`)}</Select.Trigger
+              >
+              <Select.Content>
+                <Select.Item value="all">{$t('enterprise.admin_workflow.all_statuses')}</Select.Item>
+                {#each ['DRAFT', 'PUBLISHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as status}<Select.Item
+                    value={status}>{$t(`enterprise.plans.status_${status.toLowerCase()}`)}</Select.Item
+                  >{/each}
+              </Select.Content>
+            </Select.Root>
             {#each filteredPlans as plan (plan.id)}
               <Button
                 variant={selected?.plan.id === plan.id ? 'secondary' : 'outline'}
-                class="w-full justify-start"
+                class="h-auto w-full flex-col items-start py-3 text-left whitespace-normal"
+                disabled={trainingPlansApi.busy}
+                testId={`training-plan-${plan.id}`}
                 onclick={() => selectPlan(plan.id)}
               >
-                {plan.name}
+                <strong>{plan.name}</strong>
+                <span class="text-xs"
+                  >{$t(`enterprise.plans.status_${plan.status.toLowerCase()}`)} · {new Date(
+                    plan.startAt
+                  ).toLocaleDateString($locale === 'zh' ? 'zh-CN' : $locale)} — {new Date(
+                    plan.endAt
+                  ).toLocaleDateString($locale === 'zh' ? 'zh-CN' : $locale)}</span
+                >
               </Button>
             {/each}
+            {#if filteredPlans.length === 0}<p class="ui:text-muted-foreground text-sm">
+                {$t('enterprise.admin_workflow.no_matches')}
+              </p>{/if}
           </nav>
 
           <div class="space-y-6">
             <section class="space-y-3 rounded-lg border p-4">
               <h2 class="font-semibold">{$t('enterprise.operations.publish_steps')}</h2>
               <p class="ui:text-muted-foreground text-sm">{$t('enterprise.operations.publish_help')}</p>
+              <ol class="grid gap-2 text-sm sm:grid-cols-2">
+                <li
+                  aria-current={currentStep === 1 ? 'step' : undefined}
+                  data-state={currentStep === 1 ? 'current' : basicsSaved ? 'complete' : 'pending'}
+                  class="rounded-md border p-3 {currentStep === 1
+                    ? 'ui:border-primary ui:bg-primary/5'
+                    : 'ui:border-border'}"
+                >
+                  1. {#if canEdit}<Button
+                      variant="link"
+                      size="sm"
+                      onclick={() => document.getElementById('plan-basics')?.scrollIntoView({ block: 'start' })}
+                      >{$t('enterprise.admin_workflow.step_basics')}</Button
+                    >{:else}{$t('enterprise.admin_workflow.step_basics')}{/if}
+                  <span data-testid="plan-step-basics-status" class="ui:text-muted-foreground mt-1 block text-xs"
+                    >{$t(
+                      hasBasicsChanges
+                        ? 'common.unsaved_changes.label'
+                        : basicsSaved
+                          ? 'enterprise.saved'
+                          : 'enterprise.assessment.not_started'
+                    )}</span
+                  >
+                </li>
+                <li
+                  aria-current={currentStep === 2 ? 'step' : undefined}
+                  data-state={currentStep === 2 ? 'current' : targetsSaved ? 'complete' : 'pending'}
+                  class="rounded-md border p-3 {currentStep === 2
+                    ? 'ui:border-primary ui:bg-primary/5'
+                    : 'ui:border-border'}"
+                >
+                  2. {#if canEdit}<Button
+                      variant="link"
+                      size="sm"
+                      onclick={() => document.getElementById('plan-targets')?.scrollIntoView({ block: 'start' })}
+                      >{$t('enterprise.admin_workflow.step_targets')}</Button
+                    >{:else}{$t('enterprise.admin_workflow.step_targets')}{/if}
+                  <span data-testid="plan-step-targets-status" class="ui:text-muted-foreground mt-1 block text-xs"
+                    >{$t(
+                      hasTargetsChanges
+                        ? 'common.unsaved_changes.label'
+                        : targetsSaved
+                          ? 'enterprise.saved'
+                          : 'enterprise.assessment.not_started'
+                    )}</span
+                  >
+                </li>
+                <li
+                  aria-current={currentStep === 3 ? 'step' : undefined}
+                  data-state={currentStep === 3 ? 'current' : assessmentPublished ? 'complete' : 'pending'}
+                  class="rounded-md border p-3 {currentStep === 3
+                    ? 'ui:border-primary ui:bg-primary/5'
+                    : 'ui:border-border'}"
+                >
+                  3. {$t('enterprise.admin_workflow.step_assessment')}
+                  <span data-testid="plan-step-assessment-status" class="ui:text-muted-foreground mt-1 block text-xs"
+                    >{$t(assessmentStatusKey)}</span
+                  >
+                </li>
+                <li
+                  aria-current={currentStep === 4 ? 'step' : undefined}
+                  data-state={currentStep === 4 ? 'current' : planPublished ? 'complete' : 'pending'}
+                  class="rounded-md border p-3 {currentStep === 4
+                    ? 'ui:border-primary ui:bg-primary/5'
+                    : 'ui:border-border'}"
+                >
+                  4. {$t('enterprise.admin_workflow.step_publish')}
+                  <span data-testid="plan-step-publish-status" class="ui:text-muted-foreground mt-1 block text-xs"
+                    >{$t(
+                      selected
+                        ? `enterprise.plans.status_${selected.plan.status.toLowerCase()}`
+                        : 'enterprise.assessment.not_started'
+                    )}</span
+                  >
+                </li>
+              </ol>
+              {#if selected && trainingPlansApi.assessmentError}
+                <div class="flex flex-wrap items-center gap-2">
+                  <p role="alert" class="text-sm text-red-700">{trainingPlansApi.assessmentError}</p>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onclick={() => trainingPlansApi.loadAssessment($currentOrg.id, selected.plan.id)}
+                    >{$t('enterprise.ui_v2.retry')}</Button
+                  >
+                </div>
+              {/if}
               {#if selected && !hasUnsavedChanges}
                 <Button variant="secondary" href={`/admin/assessment?planId=${selected.plan.id}`}>
                   {$t('enterprise.operations.configure_assessment')}
@@ -388,16 +584,19 @@
                       </ul>
                     </details>
                   {/if}
+                  <InputField
+                    className="mt-5"
+                    label={$t('enterprise.admin_workflow.search_employees')}
+                    type="search"
+                    bind:value={employeeSearch}
+                  />
                   <Field.Group class="mt-5">
                     <Field.Set>
                       <Field.Legend>{$t('enterprise.plans.supplement')}</Field.Legend>
                       <Field.Group class="grid max-h-64 gap-2 overflow-auto sm:grid-cols-2">
-                        {#each enterpriseApi.employees.filter((employee) => employee.member.status === 'ACTIVE' && employee.member.employmentStatus !== 'TERMINATED' && !selected.enrolledMemberIds.includes(employee.member.id)) as employee (employee.member.id)}
+                        {#each enterpriseApi.employees.filter((employee) => employee.member.status === 'ACTIVE' && employee.member.employmentStatus !== 'TERMINATED' && !selected.enrolledMemberIds.includes(employee.member.id) && matchesEmployee(employee, enterpriseApi.overview.departments, employeeSearch)) as employee (employee.member.id)}
                           <CheckboxField
-                            label={employee.fullname ??
-                              employee.email ??
-                              employee.member.email ??
-                              String(employee.member.id)}
+                            label={employeeLabel(employee, enterpriseApi.overview.departments)}
                             checked={supplementMemberIds.includes(employee.member.id)}
                             onclick={() => toggleSupplementMember(employee.member.id)}
                           />
@@ -415,10 +614,16 @@
               </section>
             {:else}
               <Field.Group>
-                <Field.Set>
+                <Field.Set id="plan-basics" class="scroll-mt-24">
                   <Field.Legend>{$t('enterprise.plans.details')}</Field.Legend>
                   <Field.Group class="grid gap-3 sm:grid-cols-2">
-                    <InputField name="plan-name" label={$t('enterprise.name')} isRequired bind:value={form.name} />
+                    <InputField
+                      testId="training-plan-name"
+                      name="plan-name"
+                      label={$t('enterprise.name')}
+                      isRequired
+                      bind:value={form.name}
+                    />
                     <InputField name="plan-code" label={$t('enterprise.code')} isRequired bind:value={form.code} />
                     <InputField
                       name="plan-year"
@@ -512,8 +717,19 @@
 
                 <Field.Set>
                   <Field.Legend>{$t('enterprise.plans.courses')}</Field.Legend>
+                  <div class="flex flex-wrap items-end gap-3">
+                    <InputField
+                      label={$t('enterprise.admin_workflow.search_courses')}
+                      type="search"
+                      bind:value={courseSearch}
+                    /><Button variant="outline" size="sm" href={`${$currentOrgPath}/courses`}
+                      >{$t('org_navigation.courses')}</Button
+                    >
+                  </div>
                   <Field.Group class="grid gap-2 sm:grid-cols-2">
-                    {#each trainingPlansApi.courses as course (course.id)}
+                    {#each trainingPlansApi.courses.filter((course) => course.title
+                        .toLocaleLowerCase()
+                        .includes(courseSearch.trim().toLocaleLowerCase())) as course (course.id)}
                       <CheckboxField
                         label={course.title}
                         checked={selectedCourseIds.includes(course.id)}
@@ -525,7 +741,7 @@
 
                 <Field.Separator />
 
-                <Field.Set>
+                <Field.Set id="plan-targets" class="scroll-mt-24">
                   <Field.Legend>{$t('enterprise.plans.targets')}</Field.Legend>
                   <Field.Group class="space-y-3">
                     <p class="text-sm font-medium">{$t('enterprise.departments')}</p>
@@ -573,13 +789,15 @@
                       {/each}
                     </div>
                     <p class="text-sm font-medium">{$t('enterprise.employees')}</p>
+                    <InputField
+                      label={$t('enterprise.admin_workflow.search_employees')}
+                      type="search"
+                      bind:value={employeeSearch}
+                    />
                     <div class="grid max-h-64 gap-2 overflow-auto sm:grid-cols-2">
-                      {#each enterpriseApi.employees.filter((employee) => employee.member.status === 'ACTIVE' && employee.member.employmentStatus !== 'TERMINATED') as employee (employee.member.id)}
+                      {#each enterpriseApi.employees.filter((employee) => employee.member.status === 'ACTIVE' && employee.member.employmentStatus !== 'TERMINATED' && matchesEmployee(employee, enterpriseApi.overview.departments, employeeSearch)) as employee (employee.member.id)}
                         <CheckboxField
-                          label={employee.fullname ??
-                            employee.email ??
-                            employee.member.email ??
-                            String(employee.member.id)}
+                          label={employeeLabel(employee, enterpriseApi.overview.departments)}
                           checked={employeeTargets.includes(employee.member.id)}
                           onclick={() => toggleEmployee(employee.member.id)}
                         />
@@ -588,8 +806,6 @@
                   </Field.Group>
                 </Field.Set>
               </Field.Group>
-
-              <Button disabled={trainingPlansApi.busy} onclick={saveDraft}>{$t('enterprise.plans.save_draft')}</Button>
             {/if}
 
             {#if selected?.plan.status === 'DRAFT'}
@@ -640,6 +856,15 @@
       {/if}
     {/snippet}
   </Page.Body>
+  <Page.SettingsActions
+    hasChanges={canEdit && hasUnsavedChanges}
+    loading={trainingPlansApi.busy}
+    statusLabel={$t('common.unsaved_changes.label')}
+    discardLabel={$t('common.discard')}
+    saveLabel={$t('enterprise.plans.save_draft')}
+    onSave={saveDraft}
+    onDiscard={discardDraft}
+  />
 </Page.Root>
 
 <Dialog.Root bind:open={confirmPublish}>

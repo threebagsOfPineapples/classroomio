@@ -1,4 +1,5 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
+import type { TGetRecommendedCourses } from '@cio/utils/validation/course';
 import type { OrgAudienceMember, OrgAudiencePagination, OrgAudienceQuery } from '@api/types/org';
 import type {
   TCourseReorder,
@@ -555,10 +556,11 @@ export async function getRecommendedCourses(
   page?: number,
   search?: string,
   tagSlug?: string,
-  required?: boolean
+  required?: boolean,
+  sort?: TGetRecommendedCourses['sort']
 ) {
   try {
-    return getExploreCourses({ orgId, profileId: userId, limit, page, search, tagSlug, required });
+    return getExploreCourses({ orgId, profileId: userId, limit, page, search, tagSlug, required, sort });
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError(

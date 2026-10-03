@@ -76,7 +76,7 @@
 {:else}
   <!-- View Mode -->
   {#if !isHtmlValueEmpty(content)}
-    <div class="relative mx-auto w-full max-w-2xl" bind:this={noteRoot}>
+    <div data-reading-note={lessonId} class="relative mx-auto w-full max-w-2xl" bind:this={noteRoot}>
       <HTMLRender>
         <SafeHtmlContent {content} />
       </HTMLRender>

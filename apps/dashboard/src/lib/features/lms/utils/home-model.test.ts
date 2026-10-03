@@ -139,7 +139,7 @@ describe('enterprise home display models', () => {
     expect(display.find((exam) => exam.id === 'closed')?.state).toBe('ended');
     expect(
       getHomeExams(assignments, submissions([3, 2]), { open: 'allowed' }, now).find((exam) => exam.id === 'open')?.state
-    ).toBe('in_progress');
+    ).toBe('submitted');
     expect(
       getHomeExams(assignments, submissions([2, 1]), { open: 'allowed' }, now).find((exam) => exam.id === 'open')?.state
     ).toBe('submitted');

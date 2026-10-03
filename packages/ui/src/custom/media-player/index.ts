@@ -2,7 +2,7 @@ import MediaPlayer from './media-player.svelte';
 
 export { MediaPlayer };
 export { MediaPlayer as default };
-export type { VideoSource, VideoType, MediaPlayerOptions } from './types';
+export type { VideoSource, VideoType, MediaPlayerOptions, MediaPlayerI18n } from './types';
 export {
   formatYoutubeEmbedUrl,
   getYoutubeVideoId,

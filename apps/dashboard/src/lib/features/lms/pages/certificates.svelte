@@ -45,7 +45,11 @@
 </script>
 
 <div class="space-y-4">
-  <Search bind:value={searchValue} placeholder={$t('certificates.search')} />
+  <Search
+    bind:value={searchValue}
+    placeholder={$t('certificates.search')}
+    clearLabel={$t('public_courses.filters.clear_search')}
+  />
 
   {#if coursesApi.isLoading}
     <section class="cards-container">
@@ -53,6 +57,13 @@
       <CourseCardLoader />
       <CourseCardLoader />
     </section>
+  {:else if coursesApi.error}
+    <div class="training-panel space-y-3" role="alert">
+      <p>{$t('learner_tasks.certificates_load_failed')}</p>
+      <Button size="sm" variant="outline" onclick={() => void coursesApi.getEnrolledCourses()}>
+        {$t('enterprise.ui_v2.retry')}
+      </Button>
+    </div>
   {:else if filteredCertificates.length === 0}
     <Empty
       title={searchValue.trim() ? $t('certificates.no_results_title') : $t('certificates.empty_title')}

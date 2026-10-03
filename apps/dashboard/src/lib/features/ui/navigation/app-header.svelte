@@ -1,5 +1,4 @@
 <script lang="ts">
-  import InterfaceLanguage from '$features/ui/navigation/interface-language.svelte';
   import { onMount } from 'svelte';
   import { Separator } from '@cio/ui/base/separator';
   import * as Sidebar from '@cio/ui/base/sidebar';
@@ -30,7 +29,7 @@
 </script>
 
 <header
-  class="ui:border-border ui:bg-background sticky top-0 z-50 flex h-12 w-full shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-8"
+  class="ui:border-border ui:bg-background ui:z-app-bar sticky top-0 flex h-14 w-full shrink-0 items-center gap-2 border-b"
 >
   <div class="flex w-full items-center gap-2 px-4">
     <Sidebar.Trigger
@@ -51,7 +50,6 @@
     {/if}
 
     <span class="grow"></span>
-    <InterfaceLanguage />
 
     {#if $isOrgTeamMember}
       <Button href="/lms" variant="outline" size="sm" testId="switch-to-learning">
@@ -76,7 +74,7 @@
               testId="app-notifications-trigger"
               aria-label={$t('settings.tabs.notifications_tab')}
             >
-              <BellIcon class="custom rounded-full" />
+              <BellIcon class="size-4" aria-hidden="true" />
             </Button>
           {/snippet}
         </Popover.Trigger>

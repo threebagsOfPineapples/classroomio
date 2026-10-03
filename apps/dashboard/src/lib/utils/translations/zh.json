@@ -55,7 +55,11 @@
     "restricted_title": "访问受限",
     "restricted_description": "当前企业的访问受到限制，请联系公司管理员。",
     "toggle_sidebar": "展开或收起侧栏",
-    "delete": "删除"
+    "delete": "删除",
+    "notifications": "通知",
+    "close_notification": "关闭通知",
+    "grid_view": "卡片视图",
+    "list_view": "列表视图"
   },
   "compliance": {
     "title": "合规培训",
@@ -355,7 +359,10 @@
         "upload_image": "上传头像",
         "file_size": "最大文件大小：",
         "accepted": "支持格式：",
-        "validation_error": "文件大小超过上限："
+        "validation_error": "文件大小超过上限：",
+        "too_large": "文件大小不能超过 {max} MB。",
+        "unsupported_type": "不支持的文件类型：{type}",
+        "crop": "裁剪"
       },
       "personal_information": {
         "heading": "个人信息",
@@ -479,7 +486,20 @@
           "heading": "主题",
           "sub_heading": "设置品牌颜色",
           "custom_theme": "自定义主题",
-          "add_theme": "添加主题"
+          "add_theme": "添加主题",
+          "color_picker": {
+            "title": "颜色选择器",
+            "hue": "色相",
+            "saturation": "饱和度",
+            "brightness": "亮度",
+            "red": "红色通道",
+            "green": "绿色通道",
+            "blue": "蓝色通道",
+            "opacity": "不透明度",
+            "hex": "十六进制颜色",
+            "without_color": "无颜色",
+            "change_to": "切换为"
+          }
         },
         "customize_lms": {
           "heading": "学习平台设置",
@@ -1627,7 +1647,9 @@
               "reorder_file": "重新排序文件",
               "cancel": "取消",
               "delete": "删除",
-              "file_count": "{count} 个文件"
+              "file_count": "{count} 个文件",
+              "download_disabled": "此课程未开放课件下载；PDF课件仍可在线阅读。",
+              "preview_unavailable": "此文件不支持在线预览，请使用下载按钮。"
             }
           },
           "no_translation": "所选语言没有翻译",
@@ -2348,7 +2370,15 @@
           "status": "观看了 {percent}% 的视频内容",
           "videos_complete": "观看了 {percent}% 的所需视频内容（{complete} 的 {required} 视频）",
           "seek_blocked": "您无法跳过该视频",
-          "complete_via_watch": "当您观看足够多的视频后，本课程即可完成"
+          "complete_via_watch": "当您观看足够多的视频后，本课程即可完成",
+          "title": "视频学习记录",
+          "saved_duration": "已保存观看 {watched} / 总时长 {duration}",
+          "resume_position": "续学位置 {position}",
+          "save_hint": "播放时定期保存，暂停或离开时保存当前进度；切到后台会暂停计时。",
+          "completed": "本课时已完成",
+          "not_started": "尚未开始",
+          "in_progress": "学习中",
+          "threshold": "完成要求：有效观看时长达到视频总时长的 {percent}%。"
         },
         "section_prompt": {
           "cta": "启用部分",
@@ -2802,8 +2832,8 @@
         "slug": {
           "description": "公开链接的最后一段，只能使用字母、数字和连字符。",
           "label": "链接标识",
-          "public_only": "Slug 只能在公共课程中编辑。",
-          "in_use": "该 slug 已被本课程中的另一个项目使用。"
+          "public_only": "只有公开课程才能编辑链接标识。",
+          "in_use": "该链接标识已被本课程中的其他项目使用。"
         },
         "public_conversion": {
           "blocks_public_conversion_desc": "公开课程仅支持自动评分题目。请修改题型或删除题目后再转换。",
@@ -2833,7 +2863,7 @@
           "blocks_public_conversion": "不可自动升级"
         },
         "cover_image": "封面图片",
-        "optional_image": "此可选图像将显示在您的欢迎页面上。如果包含一个，其尺寸至少应为 280 x 200",
+        "optional_image": "课程封面会显示在课程列表中。建议使用至少 280 × 200 像素的图片。",
         "replace": "替换",
         "remove": "删除",
         "course_details": "课程详情",
@@ -2852,7 +2882,7 @@
         "reports": "为课程提供评分报告",
         "disabled": "已禁用",
         "enabled": "已启用",
-        "order": "订单课程选项卡",
+        "order": "调整课件标签顺序",
         "drag": "拖放标签以重新排序材料选项卡",
         "welcome_email": {
           "title": "欢迎电子邮件",
@@ -2867,19 +2897,19 @@
           "difficulty": "难度",
           "unspecified": "未指定",
           "learning_minutes": "预计学习时间（分钟）",
-          "credit": "制作人员",
+          "credit": "学分",
           "target_audience": "目标受众",
           "required": "必修课程",
           "required_description": "将此课程标记为未来培训任务所需。",
           "active": "启用"
         },
         "content_card_title": "内容",
-        "access_card_title": "接入",
+        "access_card_title": "访问权限",
         "content_grouping_title": "内容分组",
         "content_grouping_description": "按内容列表中的部分对课程和练习进行分组。",
         "progression_mode_title": "学员进展",
         "progression_mode_description": "控制学员是否可以访问所有解锁的内容或必须按顺序完成项目。视频观看完成仅跟踪上传的视频。",
-        "progression_mode_free": "免费 — 可以访问解锁内容",
+        "progression_mode_free": "自由学习 — 可访问已解锁内容",
         "progression_mode_sequential": "顺序 — 完成先前的项目以解锁下一个",
         "comments": {
           "title": "课程评论",
@@ -2887,8 +2917,8 @@
           "enabled": "本课程已启用评论",
           "disabled": "本课程已禁用评论"
         },
-        "lesson_download": "课程下载",
-        "available": "让注册学员下载 PDF 格式的课程。",
+        "lesson_download": "允许员工下载课件",
+        "available": "控制本课程全部附件的下载。关闭后，员工仍可在线阅读课件。",
         "allow_markdown_export": "允许学习者将课程页面复制为 Markdown",
         "allow_markdown_export_description": "启用后，公共课程页面会显示复制页面按钮，该按钮可将课程内容（不包括视频）导出为 Markdown。这还为每个解锁课程发布了一个公共 Markdown URL。",
         "course_download": "课程下载",
@@ -2898,7 +2928,7 @@
         "access": "关闭后，学员只能通过邀请链接或通过 {people} 添加来加入。",
         "access_people": "人",
         "publish": "发布课程",
-        "determines": "这确定您的课程是否显示在您的着陆页上",
+        "determines": "发布后，已加入课程的员工可以学习课程内容。",
         "published": "已发布",
         "unpublished": "未发表",
         "certificate_deadline_required": "首先设置证书截止日期",
@@ -3434,7 +3464,7 @@
       "training_count": "培训次数",
       "course_count": "课程数",
       "certificate_count": "获得证书",
-      "learning_hours": "实际学习学时",
+      "learning_hours": "有效已学时长（累计小时）",
       "training_points": "培训积分",
       "nearest_expiry": "最近证书到期日",
       "learners": "参训员工",
@@ -3452,7 +3482,8 @@
       "makeup_required": "需要补考",
       "matrix": "培训矩阵",
       "from": "开始日期",
-      "to": "结束日期"
+      "to": "结束日期",
+      "effective_time": "有效已学时长（累计）"
     },
     "plans": {
       "title": "培训计划",
@@ -3647,7 +3678,7 @@
       "optional": "选修课",
       "total_time": "累计学习",
       "progress_hint": "已完成 {completed} / {total} 门课程；未设置必修或选修的课程仅计入总数。",
-      "time_hint": "以系统实际记录为准，暂无记录时显示“—”。"
+      "time_hint": "汇总已分配培训课程的有效阅读和视频观看记录，格式为分:秒或时:分:秒。"
     },
     "plan_extension": {
       "action": "延长培训期限",
@@ -3672,7 +3703,87 @@
       "exit_preview": "返回课程管理",
       "internal_link": "内部课程链接",
       "internal_link_description": "员工须登录，并具备本课程的学习资格；链接不会自动报名。",
-      "legacy_public": "历史公开课程（保留原类型）"
+      "legacy_public": "历史公开课程（保留原类型）",
+      "student_progress": "学员进度"
+    },
+    "media": {
+      "add_from_course": "去课程添加课件",
+      "no_results_title": "没有符合条件的资源",
+      "no_results_description": "请调整搜索词或筛选条件。"
+    },
+    "admin_workflow": {
+      "save_before_publish": "请先保存当前修改，再发布本考核方案。",
+      "assessment_steps": "先准备考核方案，发布培训计划后再发布已保存的方案；员工评分请切换到“评分处理”。",
+      "search_plans": "查找计划名称或编号",
+      "search_employees": "查找姓名、工号、部门或邮箱",
+      "search_courses": "查找课程名称",
+      "all_statuses": "全部状态",
+      "tab_setup": "考核方案",
+      "tab_grading": "评分处理",
+      "tab_results": "结果统计",
+      "apply_filters": "查询",
+      "no_matches": "暂无匹配记录，请调整搜索条件或筛选。",
+      "score_unsaved": "当前员工有未保存的评分，请逐项保存或放弃后再切换员工。",
+      "step_basics": "填写基本信息",
+      "step_targets": "选择课程与培训对象",
+      "step_assessment": "保存后配置考核方案",
+      "step_publish": "核对人员并发布计划",
+      "invite_employee": "邀请员工",
+      "invite_help": "通过现有企业邀请流程添加一名员工。员工按邮件完成加入后，可在此完善部门、岗位和工号。",
+      "send_invite": "发送邀请",
+      "invite_invalid": "请填写姓名（不超过 200 字）和一个有效邮箱。",
+      "invite_email_failed": "员工记录已创建，但邀请邮件未能加入发送队列。请检查邮件配置后用同一邮箱重试。",
+      "invite_sent": "员工邀请已提交邮件发送队列。",
+      "invite_existing": "该员工已属于本企业，可在员工列表中维护资料。"
+    },
+    "admin_errors": {
+      "invalid_field": "请检查“{field}”的填写格式或允许范围。",
+      "invalid_form": "请检查必填项和数值范围后再保存。",
+      "weights": "考核项目权重合计必须为 100%，请调整并保存后再发布。",
+      "score_maximum": "录入分数不能超过该考核项目的满分。",
+      "publish_plan": "请先发布培训计划，再发布考核方案。",
+      "published_scheme": "该考核方案已发布，不能修改。",
+      "select_exercise": "请为考试、作业类型的考核项目选择对应的考试或作业。",
+      "exercise_type": "所选考试或作业与考核项目类型不一致，请重新选择。",
+      "exercise_scope": "请选择本培训计划所含课程中的考试或作业。",
+      "exercise_maximum": "满分须与所选考试或作业的题目总分一致，请重新选择以刷新满分。",
+      "select_courses": "请先为培训计划选择课程，再配置考核方案。",
+      "score_incomplete": "请先补齐必需评分并重新计算成绩，再进行分数调整。",
+      "published_courses": "计划中含未发布或已停用的课程，请先发布课程或从计划中移除。",
+      "draft_only": "该计划已不再是草稿，请刷新查看最新状态。",
+      "courses_and_targets": "请至少选择一门课程和一组培训对象。",
+      "no_recipients": "当前培训对象未匹配到有效员工，请检查部门、岗位或员工选择。",
+      "active_owner": "请为计划负责人选择一名有效的在职员工。",
+      "active_employee": "所选员工已停用、离职或不属于本企业，请刷新后重新选择。",
+      "active_department": "所选部门已停用或不可用，请刷新后重新选择。",
+      "department_cycle": "上级部门不能选择自身或自身的下级部门。",
+      "department_in_use": "该部门仍有在用的下级部门或员工，请先调整归属后再停用。",
+      "manager_self": "员工不能选择自己作为直属上级。",
+      "manager_cycle": "该直属上级设置会形成循环汇报关系，请重新选择。",
+      "date_order": "结束日期不能早于开始日期。"
+    },
+    "admin_fields": {
+      "name": "名称",
+      "code": "编号",
+      "year": "年度",
+      "startAt": "开始日期",
+      "endAt": "结束日期",
+      "passScore": "及格分",
+      "weight": "权重",
+      "maxScore": "满分",
+      "score": "分数",
+      "amount": "调整分数",
+      "reason": "调整原因（3—2000 字）",
+      "items": "考核项目",
+      "courseIds": "课程",
+      "targets": "培训对象",
+      "description": "说明",
+      "ownerMemberId": "负责人",
+      "employeeNo": "工号",
+      "departmentId": "部门",
+      "position": "岗位",
+      "managerMemberId": "直属上级",
+      "joinDate": "入职日期"
     }
   },
   "schedule": {
@@ -3971,7 +4082,26 @@
       "retry": "重试",
       "exercise": "练习",
       "exercise_load_failed": "无法加载本课程的练习。",
-      "status": "状态"
+      "status": "状态",
+      "lesson_learning": {
+        "title": "课时学习记录",
+        "description": "根据已保存的有效阅读和视频观看记录汇总；不包含外部网页停留时间。",
+        "total_effective": "有效已学时长",
+        "video_time": "视频观看",
+        "reading_time": "有效阅读",
+        "lesson": "课时",
+        "duration": "视频总时长",
+        "status": "学习状态",
+        "first_entered": "首次进入",
+        "last_recorded": "最后记录",
+        "completed_at": "完成时间",
+        "position": "续播位置",
+        "not_started": "未学习",
+        "in_progress": "学习中",
+        "completed": "已完成",
+        "no_lessons": "暂无课时学习记录",
+        "first_entered_help": "首次进入时间在保存有效学习记录后显示。"
+      }
     },
     "invite": {
       "row_actions_aria": "开放行动",
@@ -4825,7 +4955,14 @@
         "custom_favicon_remove": "删除图标",
         "custom_favicon_saved": "图标已更新",
         "custom_code": "定制代码",
-        "save": "保存"
+        "save": "保存",
+        "paid_plan_required": "自定义域名需要付费套餐。",
+        "connect_failed": "无法连接域名。",
+        "reconnect_failed": "无法重新连接域名。",
+        "remove_failed": "无法移除域名。",
+        "refresh_failed": "无法刷新域名验证结果。",
+        "copy_field": "复制{name}",
+        "custom_code_placeholder": "填写自定义样式代码或样式表地址，例如：https://example.com/style.css"
       },
       "customize_lms": {
         "page_subtitle": "选择学员看到的选项卡、横幅、课程工具和附加内容。",
@@ -5235,10 +5372,10 @@
   },
   "media_manager": {
     "page_title": "课件资源 - 至臻培训",
-    "heading": "媒体管理器",
-    "page_subtitle": "将课程的文件、视频和链接保存在一个库中。",
-    "empty": "未找到资产",
-    "empty_description": "该资产不存在或在此组织中不可用。",
+    "heading": "课件资源",
+    "page_subtitle": "课程课时中上传的文件会汇总在此，供查看和维护。",
+    "empty": "暂无课件资源",
+    "empty_description": "打开课程并向课时添加文件或视频，资源会汇总在这里。",
     "common": {
       "not_available": "不适用"
     },
@@ -5250,7 +5387,7 @@
     },
     "filters": {
       "search_placeholder": "搜索资产",
-      "apply": "申请",
+      "apply": "应用筛选",
       "refresh": "刷新",
       "kind_options": {
         "all": "所有类型",
@@ -6287,7 +6424,10 @@
     "enter_new_calculation": "请输入新公式：",
     "image_exceeds_the_size_limit": "图片超过大小限制",
     "code_block": "代码块",
-    "horizontal_rule": "分隔线"
+    "horizontal_rule": "分隔线",
+    "close": "关闭",
+    "cancel": "取消",
+    "crop": "裁剪"
   },
   "interface_feedback": {
     "failed_to_generate_text_please_try_again": "生成文本失败，请重试。",
@@ -6376,6 +6516,92 @@
     "next": "下一页（→）",
     "zoom_out": "缩小（-）",
     "zoom_in": "放大（+）",
-    "close": "关闭（Esc）"
+    "close": "关闭（Esc）",
+    "fullscreen": "全屏阅读",
+    "exit_fullscreen": "退出全屏"
+  },
+  "learner_tasks": {
+    "exam": "考试",
+    "assignment": "作业",
+    "opens_at": "开放时间",
+    "closes_at": "截止时间",
+    "due_at": "截止日期",
+    "duration": "限时 {minutes} 分钟",
+    "score": "成绩",
+    "attempt_due": "本次作答截止",
+    "state_unknown": "待确认参与资格",
+    "state_upcoming": "尚未开放",
+    "state_ended": "已截止",
+    "state_unavailable": "暂不可参加",
+    "state_open": "可以参加",
+    "state_in_progress": "正在作答",
+    "state_submitted": "已提交",
+    "state_graded": "已评分",
+    "action_start": "开始作答",
+    "action_continue": "继续作答",
+    "action_retake": "再次作答",
+    "action_result": "查看提交",
+    "checking": "正在确认参与资格…",
+    "access_unavailable": "当前无法进入此项考核",
+    "filter": "考核状态",
+    "filter_pending": "待处理",
+    "filter_upcoming": "未开放",
+    "filter_submitted": "待评分",
+    "filter_graded": "已评分",
+    "filter_all": "全部",
+    "search": "搜索考核或课程",
+    "refresh": "刷新状态",
+    "load_failed": "考核任务加载失败，请重试。",
+    "certificates_load_failed": "证书加载失败，请重试。",
+    "courses_load_failed": "课程与学习进度加载失败，请重试。",
+    "empty": "当前分类暂无考核任务",
+    "empty_hint": "可切换分类或查看全部任务。",
+    "view_all": "查看全部考核",
+    "training_courses": "培训课程",
+    "training_assessments": "课程考核",
+    "training_assessments_empty": "当前培训课程暂无考核任务。",
+    "course_unavailable": "当前未获得课程访问权限，请联系培训管理员。",
+    "training_detail": "培训详情"
+  },
+  "media_player": {
+    "play": "播放",
+    "pause": "暂停",
+    "settings": "设置",
+    "speed": "播放速度",
+    "normal": "正常",
+    "quality": "画质",
+    "mute": "静音",
+    "unmute": "取消静音",
+    "enter_fullscreen": "全屏播放",
+    "exit_fullscreen": "退出全屏",
+    "volume": "音量",
+    "seek": "跳转",
+    "current_time": "当前时间",
+    "duration": "总时长",
+    "captions": "字幕",
+    "enable_captions": "开启字幕",
+    "disable_captions": "关闭字幕",
+    "auto": "自动",
+    "disabled": "关闭",
+    "enabled": "开启",
+    "menu_back": "返回上一级菜单",
+    "restart": "重新播放",
+    "rewind": "后退 {seektime} 秒",
+    "fast_forward": "快进 {seektime} 秒",
+    "seek_label": "{currentTime} / {duration}",
+    "played": "已播放",
+    "buffered": "已缓冲",
+    "download": "下载",
+    "frame_title": "{title}播放器",
+    "pip": "画中画",
+    "loop": "循环播放",
+    "start": "起点",
+    "end": "终点",
+    "all": "全部",
+    "reset": "重置",
+    "advertisement": "广告",
+    "quality_hd": "高清",
+    "quality_sd": "标清",
+    "airplay": "AirPlay"
   }
 }

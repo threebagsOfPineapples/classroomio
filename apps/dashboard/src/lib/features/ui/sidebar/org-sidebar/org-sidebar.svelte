@@ -21,7 +21,13 @@
 {#if !isOrgLoaded}
   <SidebarSkeleton />
 {:else}
-  <Sidebar.Root collapsible="icon" class="enterprise-sidebar">
+  <Sidebar.Root
+    collapsible="icon"
+    class="enterprise-sidebar"
+    mobileTitle={$t('interface_copy.menu')}
+    mobileDescription={$t('common.toggle_sidebar')}
+    closeLabel={$t('interface_copy.close_menu')}
+  >
     <Sidebar.Header>
       <AppLogo />
     </Sidebar.Header>

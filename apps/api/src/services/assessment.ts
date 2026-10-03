@@ -32,7 +32,7 @@ import {
   withAssessmentTransaction
 } from '@cio/db/queries/assessment';
 import {
-  countLearningMinutesForMembers,
+  getEffectiveLearningSecondsForMembers,
   getTrainingPlan,
   listTrainingPlans,
   lockTrainingPlan
@@ -538,7 +538,7 @@ export async function getTrainingArchiveSummary(organizationId: string, profileI
   const records = await getTrainingArchive(organizationId, profileId, memberId ?? overview.memberId);
   const scored = records.filter((record) => record.finalScore !== null);
   const courseIds = new Set(records.flatMap((record) => record.courses.map((course) => course.id)));
-  const learningMinutes = await countLearningMinutesForMembers(
+  const learningTime = await getEffectiveLearningSecondsForMembers(
     organizationId,
     [memberId ?? overview.memberId],
     [...courseIds]
@@ -555,7 +555,8 @@ export async function getTrainingArchiveSummary(organizationId: string, profileI
     courseCount: courseIds.size,
     certificateCount: certifiedCourseIds.size,
     nearestCertificateExpiry,
-    actualLearningHours: Math.round((learningMinutes / 60) * 100) / 100,
+    actualLearningSeconds: learningTime.totalSeconds,
+    actualLearningHours: Math.round((learningTime.totalSeconds / 3600) * 100) / 100,
     trainingPoints: null,
     averageScore: scored.length
       ? Math.round((scored.reduce((sum, record) => sum + record.finalScore!, 0) / scored.length) * 10) / 10
@@ -638,13 +639,7 @@ export async function getTrainingStatistics(
   });
   const memberIds = [...new Set(rows.map((row) => row.memberId))];
   const courseIds = [...new Set(rows.flatMap((row) => row.courses.map((course) => course.id)))];
-  const learningMinutes = await countLearningMinutesForMembers(
-    organizationId,
-    memberIds,
-    courseIds,
-    from ? new Date(fromTime).toISOString() : undefined,
-    to ? new Date(toTime).toISOString() : undefined
-  );
+  const learningTime = await getEffectiveLearningSecondsForMembers(organizationId, memberIds, courseIds);
   const scored = rows.filter((row) => row.finalScore !== null);
   const evaluated = rows.filter((row) => row.satisfactionRating !== null);
   const departmentGroups = new Map<string, typeof rows>();
@@ -708,7 +703,8 @@ export async function getTrainingStatistics(
     averageSatisfaction: evaluated.length
       ? Math.round((evaluated.reduce((sum, row) => sum + row.satisfactionRating!, 0) / evaluated.length) * 10) / 10
       : null,
-    actualLearningHours: Math.round((learningMinutes / 60) * 100) / 100,
+    actualLearningSeconds: learningTime.totalSeconds,
+    actualLearningHours: Math.round((learningTime.totalSeconds / 3600) * 100) / 100,
     byDepartment: [...departmentGroups].map(([departmentId, group]) => {
       const departmentScored = group.filter((row) => row.finalScore !== null);
       return {

@@ -20,8 +20,15 @@
 </script>
 
 {#if isResponsive && isMobileStore.current}
-  <Button variant="outline" size="icon" disabled={!$isOrgAdmin} onclick={onClick}>
-    <PlusIcon size={16} />
+  <Button
+    variant="secondary"
+    size="icon"
+    aria-label={$t('courses.heading_button')}
+    title={$t('courses.heading_button')}
+    disabled={!$isOrgAdmin}
+    onclick={onClick}
+  >
+    <PlusIcon size={16} aria-hidden="true" />
   </Button>
 {:else}
   <Button {variant} onclick={onClick} disabled={!$isOrgAdmin}>{$t('courses.heading_button')}</Button>

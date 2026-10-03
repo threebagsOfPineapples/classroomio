@@ -33,11 +33,11 @@
 </script>
 
 <IconButton
+  variant="secondary"
   onclick={handleRefresh}
   disabled={disabled || isRefreshing}
-  tooltip={t.get('common.refresh')}
-  tooltipSide="bottom"
   aria-label={t.get('common.refresh')}
+  title={t.get('common.refresh')}
 >
-  <RefreshCcwIcon class={isRefreshing ? 'animate-spin' : ''} size={16} />
+  <RefreshCcwIcon class={isRefreshing ? 'animate-spin' : ''} size={16} aria-hidden="true" />
 </IconButton>

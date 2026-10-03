@@ -13,14 +13,14 @@
 <div class="logo">
   <a
     href={resolve('/', {})}
-    title={`${$t('navigation.goto')} ${orgName || 'ClassroomIO'} ${$t('navigation.home')}`}
+    title={`${$t('navigation.goto')} ${orgName || $t('enterprise.interface.platform_name')} ${$t('navigation.home')}`}
     class="flex items-center gap-2"
     id="logo"
     data-hveid="8"
   >
     <img
-      src={logo || '/logo-192.png'}
-      alt={`${orgName || 'ClassroomIO'} logo`}
+      src={logo || '/enterprise-training-icon.png'}
+      alt={orgName || $t('enterprise.interface.platform_name')}
       class="mx-auto inline-block w-9 rounded"
       width="36"
       height="36"

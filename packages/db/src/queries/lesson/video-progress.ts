@@ -1,7 +1,7 @@
 import * as schema from '@db/schema';
 
 import type { TLessonVideoProgress, TNewLessonVideoProgress } from '@db/types';
-import { and, db, eq } from '@db/drizzle';
+import { and, db, eq, sql } from '@db/drizzle';
 
 export async function getLessonVideoProgress(
   lessonId: string,
@@ -47,6 +47,29 @@ export async function getLessonVideoProgressForLesson(
       `Failed to get lesson video progress rows for lesson "${lessonId}": ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
+}
+
+export async function updateLessonVideoPosition(
+  lessonId: string,
+  profileId: string,
+  assetId: string,
+  positionSeconds: number
+): Promise<TLessonVideoProgress | null> {
+  const lastPositionSeconds = Math.floor(positionSeconds);
+  const furthestSeconds = sql`greatest(${schema.lessonVideoProgress.furthestSeconds}, ${lastPositionSeconds})`;
+  const [updated] = await db
+    .update(schema.lessonVideoProgress)
+    .set({ lastPositionSeconds, furthestSeconds })
+    .where(
+      and(
+        eq(schema.lessonVideoProgress.lessonId, lessonId),
+        eq(schema.lessonVideoProgress.profileId, profileId),
+        eq(schema.lessonVideoProgress.assetId, assetId)
+      )
+    )
+    .returning();
+
+  return updated ?? null;
 }
 
 function normalizeLessonVideoProgressValues(

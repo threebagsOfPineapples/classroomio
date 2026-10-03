@@ -152,6 +152,8 @@
   const INTERACTIVE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+
     const target = event.target as HTMLElement;
     if (INTERACTIVE_TAGS.has(target.tagName) || target.isContentEditable) return;
 

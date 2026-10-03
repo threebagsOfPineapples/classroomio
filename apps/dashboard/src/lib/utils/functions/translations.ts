@@ -14,56 +14,6 @@ export const config = {
       locale: 'zh',
       key: '',
       loader: loadChineseTranslations
-    },
-    {
-      locale: 'en',
-      key: '',
-      loader: async () => (await import('../translations/en.json')).default
-    },
-    {
-      locale: 'hi',
-      key: '',
-      loader: async () => (await import('../translations/hi.json')).default
-    },
-    {
-      locale: 'fr',
-      key: '',
-      loader: async () => (await import('../translations/fr.json')).default
-    },
-    {
-      locale: 'pl',
-      key: '',
-      loader: async () => (await import('../translations/pl.json')).default
-    },
-    {
-      locale: 'pt',
-      key: '',
-      loader: async () => (await import('../translations/pt.json')).default
-    },
-    {
-      locale: 'de',
-      key: '',
-      loader: async () => (await import('../translations/de.json')).default
-    },
-    {
-      locale: 'vi',
-      key: '',
-      loader: async () => (await import('../translations/vi.json')).default
-    },
-    {
-      locale: 'ru',
-      key: '',
-      loader: async () => (await import('../translations/ru.json')).default
-    },
-    {
-      locale: 'es',
-      key: '',
-      loader: async () => (await import('../translations/es.json')).default
-    },
-    {
-      locale: 'da',
-      key: '',
-      loader: async () => (await import('../translations/da.json')).default
     }
   ]
 };
@@ -78,19 +28,6 @@ function isSupportedLocale(value: string): value is TLocale {
   return config.loaders.some((loader) => loader.locale === value);
 }
 
-/*
-  `@sveltekit-i18n/base` keeps its loading state in a process-global singleton: a
-  single `currentRoute` writable that every request overwrites, and a shared
-  `promises` Set that any request can `.clear()`. `loadTranslations` resolves by
-  filtering that Set for its own `{ locale, route }` entry, so two concurrent SSR
-  renders can leave one of them awaiting a promise the other already purged --
-  the request then never settles and the browser gets no HTML at all.
-
-  Dedupe by locale so concurrent renders await one shared promise instead of
-  racing. Note the loaders below declare no `routes`, so every loader already
-  runs for every route: there is nothing to load per-pathname, and passing one
-  only widens the race to every first-time URL.
-*/
 const localeLoads = new Map<string, Promise<unknown>>();
 
 /** Load a locale once per process, reusing the in-flight promise for callers that race. */
@@ -99,7 +36,6 @@ function primeLocale(targetLocale: string): Promise<unknown> {
   if (inFlight) return inFlight;
 
   const load = Promise.resolve(loadTranslations(targetLocale)).catch((error) => {
-    // Drop the cached rejection so the next render can retry.
     localeLoads.delete(targetLocale);
     throw error;
   });
@@ -109,31 +45,21 @@ function primeLocale(targetLocale: string): Promise<unknown> {
   return load;
 }
 
-/**
- * Load a locale's translations once per process, then activate it for this
- * render. Use this instead of calling `loadTranslations` directly.
- */
+/** Load Chinese interface translations and normalize browser language preferences. */
 export async function ensureTranslations(requestedLocale: string): Promise<void> {
   const targetLocale = isSupportedLocale(requestedLocale) ? requestedLocale : 'zh';
   await primeLocale(targetLocale);
 
-  // `locale.set` re-enters the library's loader trigger; `forceSet` just marks
-  // the active locale for the strings we already hold.
   locale.forceSet(targetLocale);
-  if (typeof document !== 'undefined') document.documentElement.lang = targetLocale === 'zh' ? 'zh-CN' : targetLocale;
+  if (typeof document !== 'undefined') document.documentElement.lang = 'zh-CN';
+  persistLocale('zh');
 }
 
-export function handleLocaleChange(newLocale: TLocale) {
-  if (!isSupportedLocale(newLocale)) {
-    return;
-  }
-
-  if (typeof document !== 'undefined') document.documentElement.lang = newLocale === 'zh' ? 'zh-CN' : newLocale;
-  locale.set(newLocale);
-
-  selectedLocale.set(newLocale);
-
-  persistLocale(newLocale);
+export function handleLocaleChange(_requestedLocale: TLocale) {
+  if (typeof document !== 'undefined') document.documentElement.lang = 'zh-CN';
+  locale.forceSet('zh');
+  selectedLocale.set('zh');
+  persistLocale('zh');
 }
 
 export function getPersistedLocale(): TLocale | null {

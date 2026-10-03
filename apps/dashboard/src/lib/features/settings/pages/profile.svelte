@@ -124,22 +124,37 @@
 
     <Field.Group>
       <Field.Field>
-        <Field.Label>{$t('settings.profile.personal_information.full_name')}</Field.Label>
-        <Input bind:value={$profile.fullname} class="" oninput={() => (hasUnsavedChanges = true)} />
+        <Field.Label for="profile-fullname">{$t('settings.profile.personal_information.full_name')}</Field.Label>
+        <Input
+          id="profile-fullname"
+          name="fullname"
+          autocomplete="name"
+          bind:value={$profile.fullname}
+          oninput={() => (hasUnsavedChanges = true)}
+        />
         {#if profileApi.errors.fullname}
           <Field.Error>{$t(profileApi.errors.fullname)}</Field.Error>
         {/if}
       </Field.Field>
       <Field.Field>
-        <Field.Label>{$t('settings.profile.personal_information.username')}</Field.Label>
-        <Input bind:value={$profile.username} oninput={() => (hasUnsavedChanges = true)} />
+        <Field.Label for="profile-username">{$t('settings.profile.personal_information.username')}</Field.Label>
+        <Input
+          id="profile-username"
+          name="username"
+          autocomplete="username"
+          bind:value={$profile.username}
+          oninput={() => (hasUnsavedChanges = true)}
+        />
         {#if profileApi.errors.username}
           <Field.Error>{$t(profileApi.errors.username)}</Field.Error>
         {/if}
       </Field.Field>
       <Field.Field>
-        <Field.Label>{$t('settings.profile.personal_information.email')}</Field.Label>
+        <Field.Label for="profile-email">{$t('settings.profile.personal_information.email')}</Field.Label>
         <Input
+          id="profile-email"
+          name="email"
+          autocomplete="email"
           bind:value={email}
           class="w-full"
           type="email"

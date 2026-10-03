@@ -27,6 +27,47 @@ export interface VideoSource {
   tracks?: VideoTextTrack[];
 }
 
+export interface MediaPlayerI18n {
+  restart?: string;
+  rewind?: string;
+  play?: string;
+  pause?: string;
+  fastForward?: string;
+  seek?: string;
+  seekLabel?: string;
+  played?: string;
+  buffered?: string;
+  currentTime?: string;
+  duration?: string;
+  volume?: string;
+  mute?: string;
+  unmute?: string;
+  enableCaptions?: string;
+  disableCaptions?: string;
+  download?: string;
+  enterFullscreen?: string;
+  exitFullscreen?: string;
+  frameTitle?: string;
+  captions?: string;
+  settings?: string;
+  pip?: string;
+  airplay?: string;
+  menuBack?: string;
+  speed?: string;
+  normal?: string;
+  quality?: string;
+  loop?: string;
+  start?: string;
+  end?: string;
+  all?: string;
+  reset?: string;
+  disabled?: string;
+  enabled?: string;
+  advertisement?: string;
+  qualityBadge?: Record<number, string>;
+  qualityLabel?: Record<number, string>;
+}
+
 export interface MediaPlayerOptions {
   autoplay?: boolean;
   controls?: boolean;
@@ -36,6 +77,7 @@ export interface MediaPlayerOptions {
   height?: number | string;
   class?: string;
   playsinline?: boolean;
+  i18n?: MediaPlayerI18n;
   /** Whether the viewer is a learner (controls user-facing error copy). */
   isLearnerView?: boolean;
   /** Fires on HTML5 timeupdate (seconds). */
@@ -86,7 +128,7 @@ export interface MediaPlayerOptions {
    */
   onBeforeHlsLoad?: () => Promise<{ authExpired?: boolean } | void>;
   seekPolicy?: {
-    mode: 'locked_until_complete';
+    mode: 'locked_until_complete' | 'tracking';
     watchThresholdPercent: number;
     initialFurthestSeconds?: number;
     pauseOnHidden?: boolean;

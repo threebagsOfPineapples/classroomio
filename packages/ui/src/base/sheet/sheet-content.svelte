@@ -33,12 +33,14 @@
     side = 'right',
     portalProps,
     overlayClass,
+    closeLabel = 'Close',
     children,
     ...restProps
   }: WithoutChildrenOrChild<SheetPrimitive.ContentProps> & {
     portalProps?: SheetPrimitive.PortalProps;
     side?: Side;
     overlayClass?: string;
+    closeLabel?: string;
     children: Snippet;
   } = $props();
 </script>
@@ -56,10 +58,12 @@
     <HoverableItem>
       {#snippet children(isHovered)}
         <SheetPrimitive.Close
-          class="ui:ring-offset-background ui:focus-visible:ring-ring ui:rounded-xs ui:focus-visible:outline-hidden ui:absolute ui:right-4 ui:top-4 ui:opacity-70 ui:transition-opacity ui:hover:opacity-100 ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2 ui:disabled:pointer-events-none"
+          class="ui:ring-offset-background ui:focus-visible:ring-ring ui:rounded-xs ui:focus-visible:outline-hidden ui:absolute ui:right-4 ui:top-4 ui:flex ui:size-11 ui:items-center ui:justify-center ui:opacity-70 ui:transition-opacity ui:hover:opacity-100 ui:focus-visible:ring-2 ui:focus-visible:ring-offset-2 ui:disabled:pointer-events-none"
+          aria-label={closeLabel}
+          title={closeLabel}
         >
-          <CloseIcon {isHovered} />
-          <span class="sr-only">Close</span>
+          <span aria-hidden="true"><CloseIcon {isHovered} size={18} /></span>
+          <span class="ui:sr-only">{closeLabel}</span>
         </SheetPrimitive.Close>
       {/snippet}
     </HoverableItem>

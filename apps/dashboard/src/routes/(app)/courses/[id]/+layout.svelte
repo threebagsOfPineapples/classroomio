@@ -25,9 +25,8 @@
   import { get } from 'svelte/store';
   import { page } from '$app/state';
   import { profile } from '$lib/utils/store/user';
-  import { currentOrg, isOrgAdmin } from '$lib/utils/store/org';
-  import { enterpriseApi } from '$features/enterprise/api/enterprise.svelte';
-  import { canRecordCourseLearning, isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
+  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { CourseMobileBottomNav } from '$features/course/components/mobile';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
@@ -107,35 +106,6 @@
 
   $effect(() => {
     if (previewRedirectRequired) goto(`/courses/${courseId}/lessons?preview=true`, { replaceState: true });
-  });
-
-  $effect(() => {
-    const organizationId = $currentOrg.id;
-    if (!organizationId || !isCourseReady || !isPermitted || !$canRecordCourseLearning) return;
-    if (!isLessonOrExercisePage || isLessonEditMode) return;
-
-    let timer: ReturnType<typeof setInterval> | undefined;
-    const syncTimer = () => {
-      if (timer) clearInterval(timer);
-      timer = undefined;
-      if (document.hidden || !document.hasFocus()) return;
-
-      timer = setInterval(() => {
-        void enterpriseApi.request(organizationId, '/learning/heartbeat', 'POST', { courseId }).catch(() => {});
-      }, 60000);
-    };
-
-    document.addEventListener('visibilitychange', syncTimer);
-    window.addEventListener('focus', syncTimer);
-    window.addEventListener('blur', syncTimer);
-    syncTimer();
-
-    return () => {
-      if (timer) clearInterval(timer);
-      document.removeEventListener('visibilitychange', syncTimer);
-      window.removeEventListener('focus', syncTimer);
-      window.removeEventListener('blur', syncTimer);
-    };
   });
 
   const contentAskAiWidthClass = $derived(getContentAskAiBarWidthClass({ lessonId, isLessonEditMode }));

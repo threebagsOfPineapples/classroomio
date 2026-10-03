@@ -12,6 +12,7 @@
   import { onMount, untrack } from 'svelte';
 
   import { t } from '$lib/utils/functions/translations';
+  import { getOrgFaviconHref } from '$lib/utils/functions/org-branding';
   import { snackbar } from '$features/ui/snackbar/store';
   import { orgApi } from '$features/org/api/org.svelte';
   import { blockedSubdomain } from '$lib/utils/constants/app';
@@ -128,7 +129,7 @@
     }
 
     if (blockedSubdomain.includes(siteName || '')) {
-      errors.siteName = 'Sitename already exists.';
+      errors.siteName = $t('add_org.sitename');
       return;
     }
 
@@ -230,7 +231,7 @@
     if (!isDomainValid) return;
 
     if ($isFreePlan) {
-      errors.customDomain = 'Custom domains are only available on paid plans';
+      errors.customDomain = $t('components.settings.domains.paid_plan_required');
       return;
     }
 
@@ -241,7 +242,7 @@
     try {
       const response = await sendDomainRequest('connect', sanitizedDomain);
       if (!response.success || !response.data) {
-        throw new Error(response.message || 'Failed to connect domain');
+        throw new Error(response.message || $t('components.settings.domains.connect_failed'));
       }
 
       applyDomainSetup(response.data);
@@ -261,7 +262,7 @@
     try {
       const response = await sendDomainRequest('connect', $currentOrg.customDomain);
       if (!response.success || !response.data) {
-        throw new Error(response.message || 'Failed to reconnect domain');
+        throw new Error(response.message || $t('components.settings.domains.reconnect_failed'));
       }
 
       applyDomainSetup(response.data);
@@ -281,7 +282,7 @@
     try {
       const response = await sendDomainRequest('remove', $currentOrg.customDomain);
       if (!response.success || !response.data) {
-        throw new Error(response.message || 'Failed to remove domain');
+        throw new Error(response.message || $t('components.settings.domains.remove_failed'));
       }
 
       applyDomainSetup(response.data);
@@ -301,7 +302,7 @@
     try {
       const response = await sendDomainRequest('refresh', $currentOrg.customDomain);
       if (!response.success || !response.data) {
-        throw new Error(response.message || 'Failed to refresh domain');
+        throw new Error(response.message || $t('components.settings.domains.refresh_failed'));
       }
 
       applyDomainSetup(response.data);
@@ -527,7 +528,7 @@
                             text={field.value}
                             variant="outline"
                             size="icon-sm"
-                            aria-label={'Copy ' + field.label}
+                            aria-label={$t('components.settings.domains.copy_field', { name: field.label })}
                             class="shrink-0"
                           />
                         </div>
@@ -611,7 +612,7 @@
       <UploadImage
         shape="rounded-md"
         bind:avatar={favicon}
-        src={$currentOrg.favicon || $currentOrg.avatarUrl || '/logo-512.png'}
+        src={getOrgFaviconHref($currentOrg)}
         widthHeight="w-16 h-16 lg:w-24 lg:h-24"
         flexDirection="flex-row"
         maxFileSizeInMb={faviconMaxFileSizeMb}
@@ -640,7 +641,7 @@
     <Field.Field>
       <Textarea
         bind:value={customCode}
-        placeholder="e.g <link rel='stylesheet' href='https://example.com/style.css' />"
+        placeholder={$t('components.settings.domains.custom_code_placeholder')}
         class="w-4/5"
         rows={7}
         disabled={true}

@@ -7,6 +7,8 @@
 
   interface Props {
     placeholder?: string;
+    'aria-label'?: string;
+    clearLabel?: string;
     value?: string;
     class?: string;
     onValueChange?: (value: string) => void;
@@ -14,6 +16,8 @@
 
   let {
     placeholder = '',
+    'aria-label': ariaLabel,
+    clearLabel = 'Clear search',
     value = $bindable(''),
     class: className = '',
     onValueChange,
@@ -37,15 +41,15 @@
 </script>
 
 <InputGroup.Root {...mergedProps}>
-  <InputGroup.Input {placeholder} bind:value oninput={handleInput} />
+  <InputGroup.Input {placeholder} aria-label={ariaLabel || placeholder || undefined} bind:value oninput={handleInput} />
   {#if value}
     <InputGroup.Addon align="inline-end">
-      <InputGroup.Button aria-label="Clear search" onclick={clearValue}>
-        <XIcon />
+      <InputGroup.Button variant="secondary" aria-label={clearLabel} title={clearLabel} onclick={clearValue}>
+        <XIcon aria-hidden="true" />
       </InputGroup.Button>
     </InputGroup.Addon>
   {/if}
   <InputGroup.Addon>
-    <SearchIcon />
+    <SearchIcon aria-hidden="true" />
   </InputGroup.Addon>
 </InputGroup.Root>

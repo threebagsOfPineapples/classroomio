@@ -7,6 +7,9 @@ import {
   exercise,
   examMakeup,
   learningActivityMinute,
+  lesson,
+  lessonCompletion,
+  lessonVideoProgress,
   organizationmember,
   submission,
   trainingEnrollment,
@@ -377,6 +380,66 @@ export async function countLearningMinutesForMembers(
     .where(and(...conditions));
 
   return result?.minutes ?? 0;
+}
+
+export async function getEffectiveLearningSecondsForMembers(
+  organizationId: string,
+  memberIds: number[],
+  courseIds?: string[],
+  client: DbOrTxClient = db
+) {
+  if (memberIds.length === 0 || courseIds?.length === 0) {
+    return { readingSeconds: 0, watchedSeconds: 0, totalSeconds: 0 };
+  }
+
+  const profiles = client
+    .selectDistinct({ profileId: organizationmember.profileId })
+    .from(organizationmember)
+    .where(
+      and(
+        eq(organizationmember.organizationId, organizationId),
+        inArray(organizationmember.id, memberIds),
+        isNotNull(organizationmember.profileId)
+      )
+    );
+  const courseConditions = [eq(group.organizationId, organizationId)];
+  if (courseIds) courseConditions.push(inArray(course.id, courseIds));
+
+  const [readingTotals, videoTotals] = await Promise.all([
+    client
+      .select({
+        readingSeconds: sql<number>`coalesce(sum(greatest(${lessonCompletion.readingSeconds}, 0)), 0)`.mapWith(Number)
+      })
+      .from(lessonCompletion)
+      .innerJoin(lesson, eq(lessonCompletion.lessonId, lesson.id))
+      .innerJoin(course, eq(lesson.courseId, course.id))
+      .innerJoin(group, eq(course.groupId, group.id))
+      .where(and(...courseConditions, inArray(lessonCompletion.profileId, profiles))),
+    client
+      .select({
+        watchedSeconds: sql<number>`coalesce(sum(greatest(${lessonVideoProgress.watchedSeconds}, 0)), 0)`.mapWith(
+          Number
+        )
+      })
+      .from(lessonVideoProgress)
+      .innerJoin(lesson, eq(lessonVideoProgress.lessonId, lesson.id))
+      .innerJoin(course, eq(lesson.courseId, course.id))
+      .innerJoin(group, eq(course.groupId, group.id))
+      .where(
+        and(
+          ...courseConditions,
+          inArray(lessonVideoProgress.profileId, profiles),
+          sql`exists (
+            select 1 from jsonb_array_elements(coalesce(${lesson.videos}, '[]'::jsonb)) configured_video
+            where configured_video->>'assetId' = ${lessonVideoProgress.assetId}
+          )`
+        )
+      )
+  ]);
+  const readingSeconds = readingTotals[0]?.readingSeconds ?? 0;
+  const watchedSeconds = videoTotals[0]?.watchedSeconds ?? 0;
+
+  return { readingSeconds, watchedSeconds, totalSeconds: readingSeconds + watchedSeconds };
 }
 
 export function insertTrainingEnrollments(values: Array<typeof trainingEnrollment.$inferInsert>, client: DbOrTxClient) {

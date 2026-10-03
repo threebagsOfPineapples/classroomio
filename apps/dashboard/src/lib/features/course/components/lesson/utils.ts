@@ -6,7 +6,7 @@ import Note from './note/note.svelte';
 import Slide from './slide/slide.svelte';
 import Video from './video/video.svelte';
 
-export function getViewModeComponents(tabs = CONSTANTS.tabs): Component[] {
+export function getViewModeComponents(tabs = CONSTANTS.tabs, options: { preferDocument?: boolean } = {}): Component[] {
   const componentMap: Record<number, Component> = {
     1: Note,
     2: Slide,
@@ -14,7 +14,10 @@ export function getViewModeComponents(tabs = CONSTANTS.tabs): Component[] {
     4: Document
   };
 
-  const componentNames = tabs
+  const orderedTabs = options.preferDocument
+    ? [...tabs].sort((first, second) => Number(second.value === 4) - Number(first.value === 4))
+    : tabs;
+  const componentNames = orderedTabs
     .map((tab) => {
       const component = componentMap[tab.value];
       return component || null;

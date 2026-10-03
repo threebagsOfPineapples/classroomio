@@ -14,6 +14,7 @@
   import { lmsExercisesApi } from '$features/lms/api/exercises.svelte';
   import { filterLearningCourses, getCourseLearningAction } from '$features/course/utils/course-learning';
   import { getHomeExams, getPendingTraining } from '../utils/home-model';
+  import { formatLessonLearningDuration } from '$features/course/utils/lesson-learning-utils';
   import LearningCourses from '../components/learning-courses.svelte';
   import UpcomingSessionsCard from '../components/upcoming-sessions-card.svelte';
 
@@ -62,7 +63,7 @@
       })
       .slice(0, 3);
   });
-  const learningHours = $derived(assessmentApi.archiveSummary?.actualLearningHours);
+  const learningSeconds = $derived(assessmentApi.archiveSummary?.actualLearningSeconds);
   const upcomingSessions = $derived(
     coursesApi.enrolledCourses
       .filter((course) => course.type === 'LIVE_CLASS' && course.upcomingSession)
@@ -145,14 +146,14 @@
       {/if}
     </section>
     <section class="training-panel learner-summary-card">
-      <h2><ClockIcon aria-hidden="true" />{$t('enterprise.assessment.learning_hours')}</h2>
+      <h2><ClockIcon aria-hidden="true" />{$t('enterprise.assessment.effective_time')}</h2>
       <div class="learner-summary-values">
         <p>
-          {$t('enterprise.learner_home.total_time')}<strong
-            >{assessmentApi.loading || assessmentApi.error || learningHours == null
+          {$t('enterprise.learner_home.total_time')}<strong data-testid="learner-effective-learning-time"
+            >{assessmentApi.loading || assessmentApi.error || learningSeconds == null
               ? '—'
-              : Math.round(learningHours * 60)}</strong
-          ><span>{$t('enterprise.ui_v2.minute_unit')}</span>
+              : formatLessonLearningDuration(learningSeconds)}</strong
+          >
         </p>
         <p>
           {$t('enterprise.assessment.average_score')}<strong

@@ -89,7 +89,12 @@
     <Field.Set>
       <Field.Legend>{$t('widgets.editor.available_courses')}</Field.Legend>
       <div class="flex items-center gap-2">
-        <Search class="max-w-none flex-1" placeholder={$t('widgets.form.course_search')} bind:value={courseSearch} />
+        <Search
+          class="max-w-none flex-1"
+          placeholder={$t('widgets.form.course_search')}
+          clearLabel={$t('public_courses.filters.clear_search')}
+          bind:value={courseSearch}
+        />
         <CourseFilterPopover
           {activeFilterCount}
           {filterPublished}

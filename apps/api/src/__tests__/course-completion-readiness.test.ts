@@ -20,6 +20,7 @@ it.each([
   ['manual', [], [{ type: 'application/pdf', name: '入职.pdf', key: 'pdf-1' }], true],
   ['manual', [], [{ type: 'docx', name: '入职.docx', key: 'doc-1' }], false],
   ['manual', [], [{ type: 'pdf', name: '入职.pdf', key: '' }], false],
+  ['manual', [], [{ type: 'pdf', name: '入职.pdf', key: '', assetId: 'asset-1' }], true],
   ['manual', [{ type: 'upload', assetId: 'video-1' }], [], false],
   ['video_watch', [{ type: 'upload', assetId: 'video-1' }], [], true],
   ['video_watch', [{ type: 'youtube', link: 'https://example.com/video' }], [], false],

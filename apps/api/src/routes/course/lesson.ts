@@ -7,6 +7,7 @@ import {
   ZLessonReadingProgress,
   ZLessonCreate,
   ZLessonGetParam,
+  ZLessonDocumentDownload,
   ZLessonHistoryParam,
   ZLessonHistoryQuery,
   ZLessonListQuery,
@@ -43,12 +44,39 @@ import { lessonCourseMiddleware } from '@api/middlewares/lesson-course';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { notifyCourseSessionUpdateService } from '@api/services/course/notify-session';
 import { generateLessonPdf } from '@api/utils/lesson';
+import { getLessonDocumentDownload } from '@cio/core/services/lesson/document-download';
 import { ensureCourseGroupMemberId } from '@cio/core/services/course/course';
 import { handleError } from '@api/utils/errors';
 import { lessonLanguageRouter } from '@api/routes/course/lesson-language';
 import { zValidator } from '@hono/zod-validator';
 
 export const lessonRouter = new Hono()
+  .post(
+    '/:lessonId/document/download',
+    authMiddleware,
+    courseMemberMiddleware,
+    lessonCourseMiddleware,
+    zValidator('param', ZLessonGetParam),
+    zValidator('json', ZLessonDocumentDownload),
+    async (c) => {
+      try {
+        const user = c.get('user')!;
+        const courseId = c.req.param('courseId')!;
+        const { lessonId } = c.req.valid('param');
+        const { documentId } = c.req.valid('json');
+        await assertEnrolledStudentContentAccess({
+          courseId,
+          profileId: user.id,
+          contentId: lessonId,
+          type: ContentType.Lesson
+        });
+        const data = await getLessonDocumentDownload(courseId, lessonId, user.id, documentId);
+        return c.json({ success: true, data });
+      } catch (error) {
+        return handleError(c, error, '无法下载课程文件');
+      }
+    }
+  )
   .post(
     '/:lessonId/reading-progress',
     authMiddleware,

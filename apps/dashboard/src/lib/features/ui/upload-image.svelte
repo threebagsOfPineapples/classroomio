@@ -3,6 +3,7 @@
   import * as ImageCropper from '@cio/ui/custom/image-cropper';
   import CameraIcon from '@lucide/svelte/icons/camera';
   import PencilIcon from '@lucide/svelte/icons/pencil';
+  import UserRoundIcon from '@lucide/svelte/icons/user-round';
   import { validateImageUpload } from '$lib/utils/functions/fileValidation';
   import { snackbar } from '$features/ui/snackbar/store';
 
@@ -39,10 +40,10 @@
     change
   }: Props = $props();
 
-  const defaultImg = 'https://cdn4.iconfinder.com/data/icons/small-n-flat/24/user-alt-512.png';
   const isSignaturePreview = $derived(previewVariant === 'signature');
 
   let cropperSrc = $state('');
+  let failedImageSrc = $state('');
 
   $effect(() => {
     cropperSrc = src || '';
@@ -58,7 +59,7 @@
 
     const validation = validateImageUpload(file);
     if (!validation.isValid) {
-      snackbar.error(validation.error || 'Invalid file type');
+      snackbar.error($t('settings.profile.profile_picture.unsupported_type', { type: file.type || file.name }));
       errorMessage = $t('snackbar.landing_page_settings.error.try_again');
 
       src = '';
@@ -82,14 +83,12 @@
   const onUnsupportedFile = (file: File) => {
     const maxFileSizeInBytes = maxFileSizeInMb * 1024 * 1024;
 
-    // Check if error is due to file size
     if (file.size > maxFileSizeInBytes) {
-      errorMessage = `${$t('settings.profile.profile_picture.validation_error')} File size exceeds ${maxFileSizeInMb}MB limit`;
+      errorMessage = $t('settings.profile.profile_picture.too_large', { max: maxFileSizeInMb });
       return;
     }
 
-    // Otherwise, it's an unsupported file type
-    errorMessage = `${$t('settings.profile.profile_picture.validation_error')} Unsupported file type: ${file.type}`;
+    errorMessage = $t('settings.profile.profile_picture.unsupported_type', { type: file.type || file.name });
   };
 
   const previewContainerClass = $derived(
@@ -117,8 +116,14 @@
         <ImageCropper.Preview>
           {#snippet child({ src: imageSrc })}
             <div class="group relative h-full w-full">
-              {#if imageSrc || !isSignaturePreview}
-                <img class={previewImageClass} src={imageSrc || defaultImg} alt="" />
+              {#if imageSrc && imageSrc !== failedImageSrc}
+                <img class={previewImageClass} src={imageSrc} alt="" onerror={() => (failedImageSrc = imageSrc)} />
+              {:else if !isSignaturePreview}
+                <div
+                  class="ui:bg-muted ui:text-muted-foreground flex h-full w-full items-center justify-center {shape}"
+                >
+                  <UserRoundIcon class="h-1/2 w-1/2" aria-hidden="true" />
+                </div>
               {/if}
               <div
                 class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100 {shape}"
@@ -143,14 +148,17 @@
       <p class="text-center text-xs text-gray-500">
         {$t('settings.profile.profile_picture.file_size')}
         {maxFileSizeInMb}MB<br />
-        {$t('settings.profile.profile_picture.accepted')}: jpeg, jpg, png, webp
+        {$t('settings.profile.profile_picture.accepted')} jpeg, jpg, png, webp
       </p>
       {#if errorMessage}
         <p class="text-sm text-red-500">{errorMessage}</p>
       {/if}
     </div>
 
-    <ImageCropper.Dialog class={elevatedDialog ? 'z-[300]!' : undefined}>
+    <ImageCropper.Dialog
+      class={elevatedDialog ? 'z-[300]!' : undefined}
+      closeLabel={$t('settings.landing_page.editor.close')}
+    >
       <ImageCropper.Cropper cropShape={shape === 'rounded-full' ? 'round' : 'rect'} />
       <ImageCropper.Controls>
         {#if isSignaturePreview}
@@ -158,9 +166,9 @@
             {$t('course.navItem.certificates.editor.signature_dont_crop')}
           </ImageCropper.UseOriginal>
         {:else}
-          <ImageCropper.Cancel />
+          <ImageCropper.Cancel label={$t('settings.profile.personal_information.cancel')} />
         {/if}
-        <ImageCropper.Crop />
+        <ImageCropper.Crop label={$t('settings.profile.profile_picture.crop')} />
       </ImageCropper.Controls>
     </ImageCropper.Dialog>
   </ImageCropper.Root>

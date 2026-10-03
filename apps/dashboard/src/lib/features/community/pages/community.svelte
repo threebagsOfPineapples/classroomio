@@ -62,7 +62,11 @@
 </script>
 
 <Page.BodyHeader>
-  <Search placeholder={$t('community.find_question')} bind:value={searchValue} />
+  <Search
+    placeholder={$t('community.find_question')}
+    clearLabel={$t('public_courses.filters.clear_search')}
+    bind:value={searchValue}
+  />
 
   <Select.Root type="single" bind:value={selectedId}>
     <Select.Trigger class="w-full bg-gray-100 dark:bg-neutral-800">

@@ -34,7 +34,11 @@
 </script>
 
 <Page.BodyHeader align="right" class="p-0!">
-  <Search placeholder={searchPlaceholder} bind:value={searchValue} />
+  <Search
+    placeholder={searchPlaceholder}
+    clearLabel={$t('public_courses.filters.clear_search')}
+    bind:value={searchValue}
+  />
   {@render filterControls?.()}
 </Page.BodyHeader>
 

@@ -92,15 +92,7 @@
   });
 </script>
 
-{#if data.isOrgSite}
-  <OrgSiteFavicon org={data.org} />
-{/if}
-
-<svelte:head>
-  {#if !data.isOrgSite}
-    <link rel="icon" type="image/png" href="/enterprise-training-icon.png" />
-  {/if}
-</svelte:head>
+<OrgSiteFavicon org={data.isOrgSite ? data.org : $currentOrg} />
 
 <div>
   <AppModeWatcher />

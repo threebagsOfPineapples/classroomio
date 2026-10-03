@@ -5,6 +5,7 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { shortenName } from '$lib/utils/functions/string';
   import { basePath } from '$lib/utils/store/app';
+  import { getOrgLogoHref } from '$lib/utils/functions/org-branding';
 </script>
 
 <Sidebar.Menu>
@@ -17,7 +18,7 @@
         <a href={$basePath} {...props}>
           {#if $currentOrg.name}
             <Avatar.Root class="flex size-6! items-center justify-center rounded-md!">
-              <Avatar.Image src={$currentOrg.avatarUrl} alt={$currentOrg.name} />
+              <Avatar.Image src={getOrgLogoHref($currentOrg)} alt={$currentOrg.name} />
               <Avatar.Fallback class="rounded-md! text-xs">{shortenName($currentOrg.name)}</Avatar.Fallback>
             </Avatar.Root>
             <span class="truncate text-sm">{$currentOrg.name}</span>

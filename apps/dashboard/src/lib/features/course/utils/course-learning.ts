@@ -5,7 +5,9 @@ import { getStudentCourseContinuePath } from './student-course-navigation';
 export function getCourseLearningState(course: UserEnrolledCourses[number]) {
   if (isStudentCourseComplete(course)) return 'completed';
 
-  return (course.progressRate ?? 0) > 0 || (course.exercisesCompleted ?? 0) > 0 ? 'in_progress' : 'not_started';
+  return course.hasEffectiveLearning === true || (course.progressRate ?? 0) > 0 || (course.exercisesCompleted ?? 0) > 0
+    ? 'in_progress'
+    : 'not_started';
 }
 
 export function getCourseLearningAction(course: UserEnrolledCourses[number]) {

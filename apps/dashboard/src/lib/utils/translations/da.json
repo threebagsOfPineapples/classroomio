@@ -19,7 +19,11 @@
     "restricted_title": "Begrænset adgang",
     "restricted_description": "Adgangen til denne organisation er begrænset. Kontakt din virksomheds administrator.",
     "toggle_sidebar": "Vis eller skjul sidepanel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "notifications": "Meddelelser",
+    "close_notification": "Luk meddelelse",
+    "grid_view": "Gittervisning",
+    "list_view": "Listevisning"
   },
   "validations": {
     "generic": {
@@ -821,7 +825,26 @@
         "activity": "Aktivitet"
       },
       "activity_empty_title": "Aktivitetstidslinje Kommer snart",
-      "activity_empty_description": "En tidslinje over gennemførte lektioner og øvelsesafleveringer på tværs af deres kurser vil være tilgængelig i en fremtidig udgivelse."
+      "activity_empty_description": "En tidslinje over gennemførte lektioner og øvelsesafleveringer på tværs af deres kurser vil være tilgængelig i en fremtidig udgivelse.",
+      "lesson_learning": {
+        "title": "Læringsregistreringer pr. lektion",
+        "description": "Baseret på gemte registreringer af aktiv læsning og videoafspilning. Tid på eksterne sider medregnes ikke.",
+        "total_effective": "Effektiv læringstid",
+        "video_time": "Tid brugt på at se video",
+        "reading_time": "Aktiv læsetid",
+        "lesson": "Lektion",
+        "duration": "Videoens varighed",
+        "status": "Læringsstatus",
+        "first_entered": "Første adgang",
+        "last_recorded": "Seneste registrering",
+        "completed_at": "Fuldført den",
+        "position": "Position for genoptagelse",
+        "not_started": "Ikke startet",
+        "in_progress": "I gang",
+        "completed": "Fuldført",
+        "no_lessons": "Ingen læringsregistreringer for lektioner",
+        "first_entered_help": "Tidspunktet for første adgang vises, når effektiv læring er registreret."
+      }
     },
     "delete": {
       "action": "Slet",
@@ -974,7 +997,7 @@
       "settings": {
         "heading": "Indstillinger",
         "cover_image": "Forsidebillede",
-        "optional_image": "Dette valgfrie billede vises på din velkomstside. Hvis du inkluderer en, skal den være mindst 280 x 200",
+        "optional_image": "Forsidebilledet vises på kursuslisten. Brug et billede på mindst 280 × 200 pixel.",
         "replace": "Udskift",
         "remove": "Fjern",
         "del": "Slet",
@@ -991,12 +1014,12 @@
         "reports": "Gør karakterrapporter tilgængelige for lektioner",
         "disabled": "Deaktiveret",
         "enabled": "Aktiveret",
-        "order": "Fanen Bestil lektioner",
+        "order": "Skift rækkefølge på kursusmaterialets faner",
         "drag": "Træk og slip etiketterne for at omarrangere dine materialefaner",
         "content_grouping_title": "Indholdsgruppering",
         "content_grouping_description": "Gruppelektioner og øvelser efter afsnit i indholdslisten.",
         "progression_mode_title": "Elevprogression",
-        "progression_mode_free": "Fri — ulåst indhold er tilgængeligt",
+        "progression_mode_free": "Fri læring — kursister kan åbne indhold, der er låst op",
         "progression_mode_sequential": "Sekventiel — fuldfør tidligere elementer for at låse næste op",
         "comments": {
           "title": "Lektionskommentarer",
@@ -1004,8 +1027,8 @@
           "enabled": "Kommentarer aktiveret for dette kursus",
           "disabled": "Kommentarer deaktiveret for dette kursus"
         },
-        "lesson_download": "Hent lektioner",
-        "available": "Gør lektionen tilgængelig til download i pdf for tilmeldte studerende",
+        "lesson_download": "Tillad medarbejdere at downloade kursusfiler",
+        "available": "Styrer downloads af alle vedhæftede filer i dette kursus. Medarbejdere kan stadig læse kursusfiler online, når downloads er deaktiveret.",
         "course_download": "Kursusdownload",
         "course_avail": "Download en kopi af dette kursus.",
         "download": "Download",
@@ -1013,7 +1036,7 @@
         "access": "Når det er slået fra, kan studerende kun deltage via et invitationslink eller ved at blive tilføjet under {people}.",
         "access_people": "Personer",
         "publish": "Udgiv kursus",
-        "determines": "Dette afgør, om dit kursus vises på din landingsside",
+        "determines": "Udgivne kurser er tilgængelige for medarbejdere, der har tilmeldt sig dem.",
         "published": "Udgivet",
         "unpublished": "Upubliceret",
         "type": "Kursustype",
@@ -1084,7 +1107,7 @@
           "required_description": "Markér dette kursus som obligatorisk for fremtidige uddannelsestildelinger."
         },
         "content_card_title": "Indhold",
-        "access_card_title": "Adgang",
+        "access_card_title": "Adgangsrettigheder",
         "locked_content": {
           "title": "{count} kursuselement(er) er låst",
           "description": "Tilmeldte elever vil ikke kunne tage låste lektioner eller øvelser, før du låser dem op.",
@@ -2346,7 +2369,9 @@
               "attachments_heading": "Vedhæftede filer",
               "file_count": "{count, plural, one {# fil} other {# filer}}",
               "view_file": "Vis fil",
-              "reorder_file": "Omarranger fil"
+              "reorder_file": "Omarranger fil",
+              "download_disabled": "Downloads af filer til dette kursus er deaktiveret. PDF-kursusfiler kan stadig læses online.",
+              "preview_unavailable": "Denne fil understøtter ikke online forhåndsvisning. Brug downloadknappen."
             },
             "video": {
               "title": "Video",
@@ -2640,7 +2665,15 @@
           "status": "Set {percent}% af videoindholdet",
           "videos_complete": "Set {percent}% af det krævede videoindhold ({complete} af {required} videoer)",
           "seek_blocked": "Du kan ikke springe frem i denne video",
-          "complete_via_watch": "Denne lektion fuldføres, når du har set nok af videoen"
+          "complete_via_watch": "Denne lektion fuldføres, når du har set nok af videoen",
+          "title": "Registreringer af videolæring",
+          "saved_duration": "Gemt afspilningstid {watched} / varighed {duration}",
+          "resume_position": "Genoptag fra {position}",
+          "save_hint": "Fremskridtet gemmes løbende under afspilning og ved pause eller når du forlader siden. Tidsmålingen sættes på pause i baggrunden.",
+          "completed": "Lektion fuldført",
+          "not_started": "Ikke startet",
+          "in_progress": "I gang",
+          "threshold": "For at gennemføre skal du se {percent}% af videoens varighed."
         },
         "saving": "Gemmer...",
         "saved": "Gemt",
@@ -3283,7 +3316,14 @@
         "ssl_pending_heading": "SSL-certifikat er ved at blive udstedt",
         "ssl_pending_body": "Dit domæne peger på os. Vi venter nu på, at SSL-certifikatet bliver udstedt og implementeret. Dette tager normalt et par minutter, når alle nedenstående DNS-poster er på plads.",
         "validation_errors_heading": "Certifikatudstedelse er blokeret",
-        "verified_snackbar": "Tilpasset domæne bekræftet"
+        "verified_snackbar": "Tilpasset domæne bekræftet",
+        "paid_plan_required": "Brugerdefinerede domæner kræver et betalt abonnement.",
+        "connect_failed": "Domænet kunne ikke forbindes.",
+        "reconnect_failed": "Domænet kunne ikke forbindes igen.",
+        "remove_failed": "Domænet kunne ikke fjernes.",
+        "refresh_failed": "Domænebekræftelsen kunne ikke opdateres.",
+        "copy_field": "Kopiér {name}",
+        "custom_code_placeholder": "Indtast tilpasset CSS eller en URL til et typografiark, for eksempel https://example.com/style.css"
       }
     },
     "quiz": {
@@ -3444,8 +3484,8 @@
   },
   "media_manager": {
     "page_title": "Medieadministrator - ClassroomIO",
-    "heading": "Mediemanager",
-    "empty": "Ingen aktiver fundet",
+    "heading": "Kursusressourcer",
+    "empty": "Ingen kursusressourcer endnu",
     "usage": {
       "title": "Hvor brugt",
       "description": "Aktuelle brugsreferencer for",
@@ -3534,7 +3574,7 @@
     },
     "filters": {
       "search_placeholder": "Søg efter aktiver",
-      "apply": "Ansøg",
+      "apply": "Anvend filtre",
       "status_options": {
         "all": "Alle statusser",
         "active": "Aktiv",
@@ -3559,8 +3599,8 @@
     "common": {
       "not_available": "N/A"
     },
-    "empty_description": "Aktivet findes ikke eller er ikke tilgængeligt i denne organisation.",
-    "page_subtitle": "Hold filer, videoer og links til dine kurser samlet i ét bibliotek.",
+    "empty_description": "Åbn et kursus, og tilføj filer eller videoer til en lektion. De vises derefter her.",
+    "page_subtitle": "Filer uploadet til kursuslektioner vises her, så de kan ses og administreres.",
     "thumbnails": {
       "manage_title": "Administrer thumbnails",
       "manage_description": "Se forhåndsvisning af videoen, vælg en af de automatisk genererede frames, eller upload din egen.",
@@ -4008,7 +4048,20 @@
           "heading": "Tema",
           "sub_heading": "Indstil dit brandfarve",
           "custom_theme": "Brugerdefineret tema",
-          "add_theme": "Tilføj tema"
+          "add_theme": "Tilføj tema",
+          "color_picker": {
+            "title": "Farvevælger",
+            "hue": "Farvetone",
+            "saturation": "Mætning",
+            "brightness": "Lysstyrke",
+            "red": "Rød kanal",
+            "green": "Grøn kanal",
+            "blue": "Blå kanal",
+            "opacity": "Opacitet",
+            "hex": "Hex-farve",
+            "without_color": "Ingen farve",
+            "change_to": "Skift til "
+          }
         }
       },
       "page_subtitle": "Indstil navn, logo og tema, som eleverne ser for denne organisation."
@@ -4032,7 +4085,10 @@
         "upload_image": "Upload billede",
         "file_size": "Maks filstørrelse:",
         "accepted": "Accepteret:",
-        "validation_error": "Filstørrelsen overstiger den maksimale grænse:"
+        "validation_error": "Filstørrelsen overstiger den maksimale grænse:",
+        "too_large": "Filstørrelsen må ikke overstige {max} MB.",
+        "unsupported_type": "Filtypen understøttes ikke: {type}",
+        "crop": "Beskær"
       },
       "page_subtitle": "Dit navn, din e-mail og hvordan du fremstår, uanset hvor du arbejder i ClassroomIO."
     },
@@ -5892,7 +5948,7 @@
       "training_count": "Training assignments",
       "course_count": "Courses",
       "certificate_count": "Certificates earned",
-      "learning_hours": "Actual learning hours",
+      "learning_hours": "Effektiv læringstid (samlet antal timer)",
       "training_points": "Training points",
       "nearest_expiry": "Next certificate expiry",
       "learners": "Learners",
@@ -5910,7 +5966,8 @@
       "makeup_required": "Makeup required",
       "matrix": "Training matrix",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "effective_time": "Effektiv læringstid (samlet)"
     },
     "workbench": {
       "active_plans": "Igangværende uddannelse",
@@ -6074,7 +6131,7 @@
       "optional": "Optional courses",
       "total_time": "Total study time",
       "progress_hint": "Completed {completed} / {total} courses; courses without a requirement setting are included only in the total.",
-      "time_hint": "Based on recorded study activity. Missing records are shown as —."
+      "time_hint": "Gemt aktiv læsetid og tid brugt på at se videoer i tildelte kurser, vist som minutter:sekunder eller timer:minutter:sekunder."
     },
     "plan_extension": {
       "action": "Forlæng uddannelsesfristen",
@@ -6099,7 +6156,87 @@
       "exit_preview": "Tilbage til kursusadministration",
       "internal_link": "Internt kursuslink",
       "internal_link_description": "Medarbejdere skal logge ind og være berettigede til kurset. Linket tilmelder dem ikke automatisk.",
-      "legacy_public": "Tidligere offentligt kursus (oprindelig type bevaret)"
+      "legacy_public": "Tidligere offentligt kursus (oprindelig type bevaret)",
+      "student_progress": "Kursisternes fremskridt"
+    },
+    "media": {
+      "add_from_course": "Tilføj ressourcer fra et kursus",
+      "no_results_title": "Ingen matchende ressourcer",
+      "no_results_description": "Prøv en anden søgning eller et andet filter."
+    },
+    "admin_workflow": {
+      "all_statuses": "Alle statusser",
+      "tab_grading": "Bedømmelse",
+      "save_before_publish": "Gem dine ændringer, før du udgiver denne vurdering.",
+      "assessment_steps": "Forbered vurderingen, udgiv uddannelsesplanen, og udgiv derefter den gemte vurdering. Brug Bedømmelse til at indtaste medarbejdernes point.",
+      "search_plans": "Søg efter planer med navn eller kode",
+      "search_employees": "Søg efter navn, medarbejdernummer, afdeling eller e-mail",
+      "search_courses": "Søg efter kursusnavne",
+      "tab_setup": "Opsætning af vurdering",
+      "tab_results": "Resultater",
+      "apply_filters": "Anvend filtre",
+      "no_matches": "Ingen matchende poster. Prøv en anden søgning eller et andet filter.",
+      "score_unsaved": "Denne medarbejder har point, som ikke er gemt. Gem eller kassér hvert punkt, før du skifter medarbejder.",
+      "step_basics": "Grundlæggende oplysninger",
+      "step_targets": "Kurser og deltagere",
+      "step_assessment": "Gem og forbered vurderingen",
+      "step_publish": "Gennemgå deltagere og udgiv",
+      "invite_employee": "Inviter medarbejder",
+      "invite_help": "Inviter én medarbejder via e-mail med organisationens eksisterende invitation. Når medarbejderen er tilmeldt, kan du udfylde afdeling, stilling og medarbejdernummer her.",
+      "send_invite": "Send invitation",
+      "invite_invalid": "Indtast et navn på højst 200 tegn og én gyldig e-mailadresse.",
+      "invite_email_failed": "Medarbejderposten blev oprettet, men invitationsmailen kunne ikke sættes i kø. Kontrollér mailopsætningen, og prøv igen med samme adresse.",
+      "invite_sent": "Medarbejderinvitationen er sat i kø til levering via e-mail.",
+      "invite_existing": "Denne medarbejder tilhører allerede organisationen. Opdater oplysningerne på medarbejderlisten."
+    },
+    "admin_fields": {
+      "name": "Navn",
+      "code": "Kode",
+      "year": "År",
+      "startAt": "Startdato",
+      "endAt": "Slutdato",
+      "passScore": "Beståelsesgrænse",
+      "maxScore": "Maximum score",
+      "score": "Score",
+      "courseIds": "Kurser",
+      "description": "Beskrivelse",
+      "ownerMemberId": "Ansvarlig",
+      "employeeNo": "Medarbejdernummer",
+      "departmentId": "Afdeling",
+      "position": "Stilling",
+      "managerMemberId": "Leder",
+      "weight": "Vægt",
+      "amount": "Justering",
+      "reason": "Begrundelse for justering (3–2000 tegn)",
+      "items": "Vurderingspunkter",
+      "targets": "Deltagere",
+      "joinDate": "Ansættelsesdato"
+    },
+    "admin_errors": {
+      "invalid_field": "Kontrollér formatet eller det tilladte interval for {field}.",
+      "invalid_form": "Kontrollér de obligatoriske felter og talintervaller, før du gemmer.",
+      "weights": "Vurderingens vægte skal tilsammen give 100 %. Ret vægtene, gem, og udgiv derefter.",
+      "score_maximum": "Pointtallet må ikke overstige dette punkts maksimale pointtal.",
+      "publish_plan": "Udgiv uddannelsesplanen, før du udgiver dens vurdering.",
+      "published_scheme": "Denne vurdering er allerede udgivet og kan ikke redigeres.",
+      "select_exercise": "Vælg en prøve eller opgave for hvert relevant vurderingspunkt.",
+      "exercise_type": "Den valgte øvelse svarer ikke til typen af vurderingspunkt.",
+      "exercise_scope": "Vælg en øvelse fra et kursus i denne uddannelsesplan.",
+      "exercise_maximum": "Det maksimale pointtal skal svare til summen af spørgsmålenes point i den valgte øvelse. Vælg øvelsen igen for at opdatere tallet.",
+      "select_courses": "Føj kurser til uddannelsesplanen, før du opsætter vurderingen.",
+      "score_incomplete": "Udfyld alle krævede point, og beregn resultatet igen, før du foretager en justering.",
+      "published_courses": "Planen indeholder et utilgængeligt eller ikke-udgivet kursus. Udgiv kurset, eller fjern det fra planen.",
+      "draft_only": "Denne plan er ikke længere en kladde. Opdater siden for at se den nyeste status.",
+      "courses_and_targets": "Vælg mindst ét kursus og én gruppe deltagere.",
+      "no_recipients": "Ingen aktive medarbejdere matcher de valgte deltagere. Kontrollér valg af afdelinger, stillinger og medarbejdere.",
+      "active_owner": "Vælg en aktiv medarbejder som planansvarlig.",
+      "active_employee": "En valgt medarbejder er inaktiv eller tilhører ikke denne organisation. Opdater, og vælg igen.",
+      "active_department": "En valgt afdeling er inaktiv eller utilgængelig. Opdater, og vælg igen.",
+      "department_cycle": "En afdeling kan ikke placeres under sig selv eller en af sine underafdelinger.",
+      "department_in_use": "Flyt aktive medarbejdere og underafdelinger, før denne afdeling deaktiveres.",
+      "manager_self": "En medarbejder kan ikke være sin egen leder.",
+      "manager_cycle": "Dette ledervalg skaber en cirkulær reference i organisationshierarkiet. Vælg en anden leder.",
+      "date_order": "Slutdatoen må ikke være før startdatoen."
     }
   },
   "interface_copy": {
@@ -6303,7 +6440,10 @@
     "enter_new_calculation": "Enter new calculation:",
     "image_exceeds_the_size_limit": "Image exceeds the size limit",
     "code_block": "Code Block",
-    "horizontal_rule": "Horizontal Rule"
+    "horizontal_rule": "Horizontal Rule",
+    "close": "Luk",
+    "cancel": "Annuller",
+    "crop": "Beskær"
   },
   "interface_feedback": {
     "failed_to_generate_text_please_try_again": "Failed to generate text. Please try again.",
@@ -6392,6 +6532,92 @@
     "next": "Næste side (→)",
     "zoom_out": "Zoom ud (-)",
     "zoom_in": "Zoom ind (+)",
-    "close": "Luk (Esc)"
+    "close": "Luk (Esc)",
+    "fullscreen": "Fuld skærm",
+    "exit_fullscreen": "Afslut fuld skærm"
+  },
+  "learner_tasks": {
+    "exam": "Exam",
+    "assignment": "Assignment",
+    "due_at": "Frist",
+    "score": "Score",
+    "state_in_progress": "In progress",
+    "state_submitted": "Indsendt",
+    "state_graded": "Bedømt",
+    "action_start": "Start",
+    "action_continue": "Fortsæt",
+    "action_retake": "Gentag",
+    "filter_upcoming": "Upcoming",
+    "filter_graded": "Bedømt",
+    "filter_all": "All",
+    "opens_at": "Åbner",
+    "closes_at": "Lukker",
+    "duration": "Varighed: {minutes} minutter",
+    "attempt_due": "Det aktuelle forsøg slutter",
+    "state_unknown": "Adgang skal bekræftes",
+    "state_upcoming": "Ikke åbnet endnu",
+    "state_ended": "Lukket",
+    "state_unavailable": "Ikke tilgængelig i øjeblikket",
+    "state_open": "Klar til at starte",
+    "action_result": "Se aflevering",
+    "checking": "Kontrollerer adgang…",
+    "access_unavailable": "Denne opgave kan ikke åbnes i øjeblikket",
+    "filter": "Bedømmelsesstatus",
+    "filter_pending": "Skal udføres",
+    "filter_submitted": "Afventer bedømmelse",
+    "search": "Søg efter opgave eller kursus",
+    "refresh": "Opdater status",
+    "load_failed": "Bedømmelsesopgaverne kunne ikke indlæses. Prøv igen.",
+    "certificates_load_failed": "Certifikaterne kunne ikke indlæses. Prøv igen.",
+    "courses_load_failed": "Kurser og fremskridt kunne ikke indlæses. Prøv igen.",
+    "empty": "Ingen opgaver i denne visning",
+    "empty_hint": "Prøv en anden status, eller se alle opgaver.",
+    "view_all": "Se alle opgaver",
+    "training_courses": "Uddannelseskurser",
+    "training_assessments": "Kursusbedømmelser",
+    "training_assessments_empty": "Disse kurser har i øjeblikket ingen bedømmelsesopgaver.",
+    "course_unavailable": "Der er ikke adgang til kurset. Kontakt din uddannelsesadministrator.",
+    "training_detail": "Uddannelsesdetaljer"
+  },
+  "media_player": {
+    "play": "Afspil",
+    "pause": "Pause",
+    "settings": "Indstillinger",
+    "speed": "Hastighed",
+    "normal": "Normal",
+    "quality": "Kvalitet",
+    "mute": "Slå lyden fra",
+    "unmute": "Slå lyden til",
+    "enter_fullscreen": "Fuld skærm",
+    "exit_fullscreen": "Afslut fuld skærm",
+    "volume": "Lydstyrke",
+    "seek": "Spol",
+    "current_time": "Aktuel tid",
+    "duration": "Varighed",
+    "captions": "Undertekster",
+    "enable_captions": "Slå undertekster til",
+    "disable_captions": "Slå undertekster fra",
+    "auto": "Automatisk",
+    "disabled": "Deaktiveret",
+    "enabled": "Aktiveret",
+    "menu_back": "Gå tilbage til forrige menu",
+    "restart": "Start forfra",
+    "rewind": "Spol {seektime} sekunder tilbage",
+    "fast_forward": "Spol {seektime} sekunder frem",
+    "seek_label": "{currentTime} af {duration}",
+    "played": "Afspillet",
+    "buffered": "Bufferet",
+    "download": "Hent",
+    "frame_title": "Afspiller til {title}",
+    "pip": "Billede i billede",
+    "loop": "Gentag",
+    "start": "Start",
+    "end": "Slut",
+    "all": "Alle",
+    "reset": "Nulstil",
+    "advertisement": "Annonce",
+    "quality_hd": "HD",
+    "quality_sd": "SD",
+    "airplay": "AirPlay"
   }
 }

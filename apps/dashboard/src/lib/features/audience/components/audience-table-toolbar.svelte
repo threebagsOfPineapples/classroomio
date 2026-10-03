@@ -44,7 +44,12 @@
       {$t('audience.learner_count', { count: totalCount })}
     </p>
     <AudienceViewSwitcher {activeView} {onSelectView} />
-    <Search placeholder={$t('audience.search_placeholder')} bind:value={searchValue} class="w-full md:max-w-xs" />
+    <Search
+      placeholder={$t('audience.search_placeholder')}
+      clearLabel={$t('public_courses.filters.clear_search')}
+      bind:value={searchValue}
+      class="w-full md:max-w-xs"
+    />
     <AudienceFilterPopover
       {query}
       sortBy={query.sortBy}

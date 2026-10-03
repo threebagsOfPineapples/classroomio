@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import { get as getStore } from 'svelte/store';
 import english from '../translations/en.json';
 import chinese from '../translations/zh.json';
-import { config, ensureTranslations, locale } from './translations';
+import { config, ensureTranslations, handleLocaleChange, locale, selectedLocale } from './translations';
 
 const require = createRequire(import.meta.url);
 const parserRequire = createRequire(require.resolve('@sveltekit-i18n/parser-icu'));
@@ -96,11 +96,39 @@ describe('Chinese translations', () => {
     }
   });
 
-  it('supports an explicit language choice and defaults invalid choices to Chinese', async () => {
+  it('keeps the interface Chinese for saved and account language preferences', async () => {
     await ensureTranslations('en');
-    expect(getStore(locale)).toBe('en');
+    expect(getStore(locale)).toBe('zh');
     await ensureTranslations('invalid');
     expect(getStore(locale)).toBe('zh');
+    handleLocaleChange('fr');
+    expect(getStore(locale)).toBe('zh');
+    expect(getStore(selectedLocale)).toBe('zh');
+    expect(config.loaders.map((loader) => loader.locale)).toEqual(['zh']);
+  });
+
+  it('replaces an old browser language preference with Chinese on initialization', async () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
+    const storage = new Map([['classroomio_locale', 'en']]);
+    const mockDocument = { documentElement: { lang: 'en' }, cookie: 'classroomio_locale=en' };
+
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { localStorage: { setItem: (key: string, value: string) => storage.set(key, value) } }
+    });
+    Object.defineProperty(globalThis, 'document', { configurable: true, value: mockDocument });
+
+    try {
+      await ensureTranslations('en');
+      expect(storage.get('classroomio_locale')).toBe('zh');
+      expect(mockDocument.cookie).toContain('classroomio_locale=zh;');
+      expect(mockDocument.documentElement.lang).toBe('zh-CN');
+      expect(getStore(locale)).toBe('zh');
+    } finally {
+      Object.defineProperty(globalThis, 'window', { configurable: true, value: previousWindow });
+      Object.defineProperty(globalThis, 'document', { configurable: true, value: previousDocument });
+    }
   });
   it('resolves literal translation keys used by the training workflow pages', async () => {
     const messages = await config.loaders.find((item) => item.locale === 'zh')!.loader();

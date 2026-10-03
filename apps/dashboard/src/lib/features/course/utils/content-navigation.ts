@@ -1,12 +1,66 @@
 import type { Course } from './types';
+import { ContentType } from '@cio/utils/constants/content';
 import { getCourseContent, getOrderedNavigableContent, type ContentItem } from './content';
 
 export function isNavigableContentUnlocked(item: ContentItem): boolean {
-  return (item.isUnlocked ?? true) === true;
+  return item.isUnlocked !== false && item.accessible !== false;
 }
 
 export function getFirstIncompleteNavigableContent(course: Course | null): ContentItem | undefined {
   return getOrderedNavigableContent(course).find((item) => !item.isComplete && isNavigableContentUnlocked(item));
+}
+
+export function getContinueLearningContent(course: Course | null): ContentItem | undefined {
+  const resumedLesson = getOrderedNavigableContent(course).find(
+    (item) =>
+      item.type === ContentType.Lesson &&
+      item.id === course?.resumeLessonId &&
+      !item.isComplete &&
+      isNavigableContentUnlocked(item)
+  );
+
+  return resumedLesson ?? getFirstIncompleteNavigableContent(course);
+}
+
+export function getSavedLessonLearningSeconds(course: Course | null, lessonId: string): number {
+  return course?.lessonLearningProgress?.find((record) => record.lessonId === lessonId)?.effectiveSeconds ?? 0;
+}
+
+export function updateCourseSavedLessonLearning(
+  course: Course,
+  lessonId: string,
+  effectiveSeconds: number,
+  didLearn: boolean
+): Course {
+  const existingRecord = course.lessonLearningProgress?.find((record) => record.lessonId === lessonId);
+  const updatedRecord = { lessonId, effectiveSeconds, lastRecordedAt: existingRecord?.lastRecordedAt ?? null };
+  const lessonLearningProgress = (course.lessonLearningProgress ?? [])
+    .filter((record) => record.lessonId !== lessonId || (effectiveSeconds > 0 && !didLearn))
+    .map((record) => (record.lessonId === lessonId ? updatedRecord : record));
+  if (effectiveSeconds > 0) {
+    if (didLearn) lessonLearningProgress.unshift(updatedRecord);
+    else if (!existingRecord) lessonLearningProgress.push(updatedRecord);
+  }
+
+  const contentItems = getOrderedNavigableContent(course);
+  const currentItem = contentItems.find((item) => item.id === lessonId);
+  const currentResume = contentItems.find((item) => item.id === course.resumeLessonId);
+  const currentResumeAvailable =
+    currentResume && !currentResume.isComplete && isNavigableContentUnlocked(currentResume);
+  const fallbackResume = lessonLearningProgress.find((record) => {
+    const contentItem = contentItems.find((item) => item.id === record.lessonId);
+
+    return contentItem && !contentItem.isComplete && isNavigableContentUnlocked(contentItem);
+  });
+  const canResumeCurrent = currentItem && !currentItem.isComplete && isNavigableContentUnlocked(currentItem);
+  const resumeLessonId =
+    didLearn && effectiveSeconds > 0 && canResumeCurrent
+      ? lessonId
+      : currentResumeAvailable
+        ? course.resumeLessonId
+        : (fallbackResume?.lessonId ?? null);
+
+  return { ...course, lessonLearningProgress, resumeLessonId };
 }
 
 export function isContentItemInPath(itemId: string, currentPath: string | null | undefined): boolean {

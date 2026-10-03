@@ -2,6 +2,7 @@ import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import { courseApi } from './course.svelte';
 import { toggleConfetti } from '$features/ui/confetti/store';
 import { updateLessonCompletionInCourseContent } from '../utils/content-completion';
+import { getSavedLessonLearningSeconds, updateCourseSavedLessonLearning } from '../utils/content-navigation';
 import type {
   CourseSectionWithLessons,
   CreateCourseSectionRequest,
@@ -16,6 +17,8 @@ import type {
   GetLessonLanguageRequest,
   GetLessonRequest,
   Lesson,
+  LessonDocumentDownloadRequest,
+  LessonDocumentDownloadData,
   LessonComments,
   PromoteUngroupedSectionRequest,
   ReorderCourseSectionsRequest,
@@ -69,15 +72,25 @@ export class LessonApi extends BaseApiWithErrors {
         }),
       logContext: 'recording reading progress',
       onSuccess: (response) => {
+        if (courseApi.course?.id === courseId) {
+          const didLearn = response.data.seconds > getSavedLessonLearningSeconds(courseApi.course, lessonId);
+          const courseWithCompletion = response.data.isComplete
+            ? updateLessonCompletionInCourseContent(courseApi.course, lessonId, true)
+            : courseApi.course;
+          courseApi.course = updateCourseSavedLessonLearning(
+            courseWithCompletion,
+            lessonId,
+            response.data.seconds,
+            didLearn
+          );
+        }
+
         if (this.lesson?.id !== lessonId) return;
 
         this.readingError = false;
         this.readingProgress = response.data;
         if (response.data.isComplete) {
           this.lesson = { ...this.lesson, isComplete: true };
-          if (courseApi.course?.id === courseId) {
-            courseApi.course = updateLessonCompletionInCourseContent(courseApi.course, lessonId, true);
-          }
         }
       },
       onError: () => {
@@ -128,6 +141,31 @@ export class LessonApi extends BaseApiWithErrors {
         }
       }
     });
+  }
+
+  async getDocumentDownload(
+    courseId: string,
+    lessonId: string,
+    documentId: string
+  ): Promise<LessonDocumentDownloadData | undefined> {
+    const response = await this.execute<LessonDocumentDownloadRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].lesson[':lessonId'].document.download.$post({
+          param: { courseId, lessonId },
+          json: { documentId }
+        }),
+      logContext: 'getting lesson document download',
+      onError: (result) => {
+        const downloadDisabled =
+          typeof result === 'object' && 'code' in result && result.code === 'COURSE_DOCUMENT_DOWNLOAD_DISABLED';
+        const message = downloadDisabled
+          ? 'course.navItem.lessons.materials.tabs.document.download_disabled'
+          : 'course.navItem.lessons.materials.tabs.document.download_error';
+        snackbar.error(message);
+      }
+    });
+
+    return response?.data;
   }
 
   /**
@@ -680,15 +718,29 @@ export class LessonApi extends BaseApiWithErrors {
       logContext: 'reporting lesson watch progress',
       onSuccess: (response) => {
         const data = response.data as LessonWatchProgressUpdate | null;
-        if (!data || !this.lesson || this.lesson.id !== lessonId) return;
+        if (!data) return;
+
+        if (courseApi.course?.id === courseId) {
+          const effectiveSeconds = data.assets.reduce((seconds, asset) => seconds + asset.watchedSeconds, 0);
+          const didLearn =
+            payload.playedDeltaSeconds > 0 &&
+            effectiveSeconds > getSavedLessonLearningSeconds(courseApi.course, lessonId);
+          const courseWithCompletion = data.isComplete
+            ? updateLessonCompletionInCourseContent(courseApi.course, lessonId, true)
+            : courseApi.course;
+          courseApi.course = updateCourseSavedLessonLearning(
+            courseWithCompletion,
+            lessonId,
+            effectiveSeconds,
+            didLearn
+          );
+        }
+
+        if (!this.lesson || this.lesson.id !== lessonId) return;
 
         if (data.didJustComplete) {
           toggleConfetti();
           setTimeout(() => toggleConfetti(), 3000);
-        }
-
-        if (courseApi.course?.content && data.didJustComplete) {
-          courseApi.course = updateLessonCompletionInCourseContent(courseApi.course, lessonId, true);
         }
 
         this.lesson = {

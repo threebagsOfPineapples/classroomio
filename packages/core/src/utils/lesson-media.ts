@@ -112,7 +112,7 @@ function applyCanonicalDocumentMetadata(
     return {
       ...document,
       type: mapAssetMimeTypeToDocumentType(asset.mimeType, document.type),
-      key: asset.storageKey ?? document.key,
+      key: asset.provider === 'external_url' ? '' : (asset.storageKey ?? document.key),
       link: asset.provider === 'upload' ? document.link : (asset.sourceUrl ?? document.link),
       name: asset.title ?? document.name,
       size: asset.byteSize ?? document.size

@@ -80,7 +80,7 @@
   const setViewPreference = (preference: 'grid' | 'list') => {
     $courseMetaDeta.view = preference;
     if (browser) {
-      localStorage.setItem('courseView', preference);
+      localStorage.setItem('managementCourseView', preference);
     }
   };
 
@@ -110,7 +110,12 @@
 />
 
 <Page.BodyHeader align="right" class="p-0!">
-  <Search placeholder={$t('courses.search_placeholder')} bind:value={searchValue} />
+  <Search
+    placeholder={$t('courses.search_placeholder')}
+    aria-label={$t('courses.search_placeholder')}
+    clearLabel={$t('public_courses.filters.clear_search')}
+    bind:value={searchValue}
+  />
   {#if showSortSelect}
     <SortSelect options={filterOptions} bind:value={sortKey} />
   {/if}
@@ -118,12 +123,22 @@
 
   {#if !isLMS}
     {#if $courseMetaDeta.view === 'list'}
-      <IconButton onclick={() => setViewPreference('grid')}>
-        <GridIcon size={16} />
+      <IconButton
+        variant="secondary"
+        aria-label={$t('common.grid_view')}
+        title={$t('common.grid_view')}
+        onclick={() => setViewPreference('grid')}
+      >
+        <GridIcon size={16} aria-hidden="true" />
       </IconButton>
     {:else}
-      <IconButton onclick={() => setViewPreference('list')}>
-        <ListIcon size={16} />
+      <IconButton
+        variant="secondary"
+        aria-label={$t('common.list_view')}
+        title={$t('common.list_view')}
+        onclick={() => setViewPreference('list')}
+      >
+        <ListIcon size={16} aria-hidden="true" />
       </IconButton>
     {/if}
   {/if}
@@ -147,7 +162,7 @@
   {:else if isLMS || $courseMetaDeta.view === 'grid'}
     <CourseCardList {courses} {isExplore} {isLMS} {onCardClick} />
   {:else}
-    <ResourceListRow.Group class="@container">
+    <ResourceListRow.Group class="training-course-list @container">
       {#each courses as courseData (courseData.id)}
         <CourseListRow
           id={courseData.id}
@@ -157,6 +172,7 @@
           type={courseData.type}
           description={courseData.description}
           isPublished={courseData.isPublished ?? false}
+          status={'status' in courseData ? courseData.status : null}
           lessonCount={courseData.lessonCount}
           exerciseCount={'exerciseCount' in courseData ? (courseData.exerciseCount ?? 0) : 0}
           totalStudents={'totalStudents' in courseData ? courseData.totalStudents : 0}

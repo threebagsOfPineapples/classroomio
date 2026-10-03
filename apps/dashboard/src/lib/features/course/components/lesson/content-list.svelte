@@ -18,6 +18,7 @@
   import { t } from '$lib/utils/functions/translations';
   import type { CourseContentItem } from '$features/course/utils/types';
   import { getCourseContent } from '$features/course/utils/content';
+  import { getSavedLessonLearningSeconds } from '$features/course/utils/content-navigation';
   import { ContentType } from '@cio/utils/constants/content';
   import { profile } from '$lib/utils/store/user';
   import { contentEditingStore } from '$features/course/components/content/store';
@@ -364,7 +365,11 @@
 
               {#if isStudentView}
                 <span class={metaChipClass}>
-                  {item.isComplete ? $t('course.navItem.lessons.complete') : $t('course.navItem.lessons.incomplete')}
+                  {item.isComplete
+                    ? $t('course.navItem.lessons.complete')
+                    : getSavedLessonLearningSeconds(courseApi.course, item.contentId) > 0
+                      ? $t('course.navItem.lessons.watch_progress.in_progress')
+                      : $t('course.navItem.lessons.incomplete')}
                 </span>
               {/if}
             </div>

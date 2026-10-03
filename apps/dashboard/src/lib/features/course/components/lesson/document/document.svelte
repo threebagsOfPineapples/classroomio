@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { lessonApi } from '$features/course/api';
+  import { courseApi, lessonApi } from '$features/course/api';
   import { CloseButton, DeleteModal } from '$features/ui';
   import { lessonDocUpload } from '$features/course/components/lesson/store';
   import MODES from '$lib/utils/constants/mode';
@@ -8,13 +8,22 @@
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import ZoomInIcon from '@lucide/svelte/icons/zoom-in';
   import ZoomOutIcon from '@lucide/svelte/icons/zoom-out';
-  import { onMount } from 'svelte';
-  import { isPdfDocument } from '@cio/utils/functions/lesson-document';
+  import MaximizeIcon from '@lucide/svelte/icons/maximize';
+  import MinimizeIcon from '@lucide/svelte/icons/minimize';
+  import { Button } from '@cio/ui/base/button';
+  import { onMount, tick, untrack } from 'svelte';
+  import {
+    getLessonDocumentIdentity,
+    getPdfReadingResource,
+    isPdfDocument
+  } from '@cio/utils/functions/lesson-document';
   import DocumentList from './document-list.svelte';
-  import { isPdfPageEndVisible } from './document-utils';
+  import { getInlinePdfDocument, isPdfPageEndVisible } from './document-utils';
   import { t } from '$lib/utils/functions/translations';
   import type { LessonDocument } from '$features/course/utils/types';
   import { snackbar } from '$features/ui/snackbar/store';
+  import { isOrgAdmin, isOrgManagerRole } from '$lib/utils/store/org';
+  import { profile } from '$lib/utils/store/user';
 
   interface Props {
     mode?: (typeof MODES)[keyof typeof MODES];
@@ -22,10 +31,20 @@
 
   let { mode = MODES.view }: Props = $props();
 
+  const courseMember = $derived(courseApi.group.people.find((member) => member.profileId === $profile.id));
+  const canDownload = $derived(
+    !!$isOrgAdmin ||
+      isOrgManagerRole(Number(courseMember?.roleId)) ||
+      courseApi.course?.metadata?.lessonDownload === true
+  );
+
   let openDeleteDocumentModal = $state(false);
   let documentIndexToDelete = $state<number | null>(null);
-  let viewingPDF: any = $state(null);
+  let viewingPDF: LessonDocument | null = $state(null);
   let pdfViewerOpen = $state(false);
+  let isFullscreen = $state(false);
+  let mounted = $state(false);
+  let pdfViewer: HTMLDivElement | undefined = $state();
   let pdfCanvas: HTMLCanvasElement | undefined = $state();
   let pdfViewport: HTMLDivElement | undefined = $state();
   let renderedPage = 0;
@@ -41,9 +60,30 @@
   const viewedPages = new Set<number>();
   let viewerVersion = 0;
   let renderVersion = 0;
+  let viewingLessonId = $state<string | null>(null);
+  let automaticDocumentKey: string | null = null;
+
+  const inlineDocument = $derived(lessonApi.lesson ? getInlinePdfDocument(lessonApi.lesson) : null);
+  const inlineDocumentKey = $derived(
+    mode === MODES.view && inlineDocument
+      ? `${lessonApi.lesson?.id}:${getPdfReadingResource(inlineDocument)}:${inlineDocument.link}`
+      : null
+  );
+
+  $effect(() => {
+    if (!mounted) return;
+
+    const nextDocumentKey = inlineDocumentKey;
+    untrack(() => {
+      if (automaticDocumentKey === nextDocumentKey) return;
+
+      automaticDocumentKey = nextDocumentKey;
+      closePDFViewer();
+      if (nextDocumentKey && inlineDocument) void viewPDF(inlineDocument);
+    });
+  });
 
   onMount(() => {
-    // Load PDF.js dynamically
     const script = document.createElement('script');
     script.src = '/js/pdf.js/pdf.min.js';
     script.onload = () => {
@@ -51,14 +91,15 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.js/pdf.worker.min.js';
     };
     document.head.appendChild(script);
+    mounted = true;
     window.addEventListener('scroll', recordVisiblePage, true);
-    window.addEventListener('resize', recordVisiblePage);
+    window.addEventListener('resize', handleResize);
     window.addEventListener('focus', recordVisiblePage);
 
     return () => {
       closePDFViewer();
       window.removeEventListener('scroll', recordVisiblePage, true);
-      window.removeEventListener('resize', recordVisiblePage);
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('focus', recordVisiblePage);
       if (script.parentNode) {
         script.parentNode.removeChild(script);
@@ -96,13 +137,24 @@
   }
 
   async function downloadDocument(doc: LessonDocument) {
-    if (!doc.key) {
+    if (!canDownload) {
+      snackbar.error('course.navItem.lessons.materials.tabs.document.download_disabled');
+      return;
+    }
+
+    const courseId = courseApi.course?.id;
+    const lessonId = lessonApi.lesson?.id;
+    const documentId = getLessonDocumentIdentity(doc);
+    if (!courseId || !lessonId || !documentId) {
       snackbar.error('interface_feedback.document_not_loaded_correctly');
       return;
     }
 
+    const approvedDownload = await lessonApi.getDocumentDownload(courseId, lessonId, documentId);
+    if (!approvedDownload) return;
+
     try {
-      const response = await fetch(doc.link);
+      const response = await fetch(approvedDownload.url);
       if (!response.ok) {
         throw new Error('Failed to fetch document');
       }
@@ -110,7 +162,7 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = doc.name;
+      a.download = approvedDownload.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -130,19 +182,21 @@
     renderTimeout = setTimeout(() => {
       renderPage();
       renderTimeout = null;
-    }, 150); // 150ms debounce
+    }, 150);
   }
-  async function viewPDF(attachment: LessonDocument) {
+  async function viewPDF(attachment: LessonDocument, fullscreen = false) {
     closePDFViewer();
     const openingVersion = viewerVersion;
     viewedPages.clear();
     viewingPDF = attachment;
+    viewingLessonId = lessonApi.lesson?.id ?? null;
     pdfViewerOpen = true;
+    isFullscreen = fullscreen;
     isLoading = true;
     error = null;
 
     try {
-      if (!attachment.key) throw new Error('Missing PDF key');
+      if (!getPdfReadingResource(attachment) || !attachment.link) throw new Error('Missing PDF resource');
 
       for (let attempt = 0; !pdfjsLib && attempt < 100; attempt++) {
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -187,7 +241,6 @@
     const renderingScale = scale;
     renderedPage = 0;
 
-    // Wait for canvas to be available
     let attempts = 0;
     while (!pdfCanvas && attempts < 50) {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -202,7 +255,6 @@
     }
 
     try {
-      // Cancel any ongoing render task
       if (currentRenderTask) {
         currentRenderTask.cancel();
       }
@@ -210,7 +262,10 @@
       const page = await renderingDocument.getPage(renderingPage);
       if (renderingVersion !== renderVersion || renderingViewer !== viewerVersion) return;
 
-      const viewport = page.getViewport({ scale: renderingScale });
+      const originalViewport = page.getViewport({ scale: 1 });
+      const availableWidth = Math.max(1, (pdfViewport?.clientWidth ?? originalViewport.width) - 32);
+      const fitScale = Math.min(1, availableWidth / originalViewport.width);
+      const viewport = page.getViewport({ scale: fitScale * renderingScale });
 
       pdfCanvas.height = viewport.height;
       pdfCanvas.width = viewport.width;
@@ -249,10 +304,11 @@
     if (!isPdfPageEndVisible(canvasBottom, viewportBounds, window.innerHeight)) return;
 
     viewedPages.add(renderedPage);
-    if (viewedPages.size === pageCount && renderedPage === pageCount) {
+    const resource = getPdfReadingResource(viewingPDF);
+    if (resource && viewedPages.size === pageCount && renderedPage === pageCount) {
       window.dispatchEvent(
         new CustomEvent('lesson-reading-resource', {
-          detail: { lessonId: lessonApi.lesson?.id, resource: `pdf:${viewingPDF.key}` }
+          detail: { lessonId: viewingLessonId, resource }
         })
       );
     }
@@ -283,7 +339,9 @@
   }
 
   function handleViewPDF(doc: LessonDocument) {
-    viewPDF(doc);
+    const inlineResource = inlineDocument ? getPdfReadingResource(inlineDocument) : null;
+    const fullscreen = mode === MODES.edit || getPdfReadingResource(doc) !== inlineResource;
+    void viewPDF(doc, fullscreen);
   }
 
   function handleViewDocument(doc: LessonDocument) {
@@ -292,7 +350,11 @@
       return;
     }
 
-    window.open(doc.link, '_blank', 'noopener,noreferrer');
+    snackbar.info(
+      canDownload
+        ? 'course.navItem.lessons.materials.tabs.document.preview_unavailable'
+        : 'course.navItem.lessons.materials.tabs.document.download_disabled'
+    );
   }
 
   function reorderDocuments(documents: LessonDocument[]) {
@@ -303,18 +365,19 @@
     renderedPage = 0;
     viewerVersion++;
     renderVersion++;
-    // Cancel any ongoing render task
     if (currentRenderTask) {
       currentRenderTask.cancel();
     }
 
-    // Clear any pending render timeout
     if (renderTimeout) {
       clearTimeout(renderTimeout);
     }
 
     pdfViewerOpen = false;
+    isFullscreen = false;
     viewingPDF = null;
+    viewingLessonId = null;
+    if (pdfDoc) void pdfDoc.destroy();
     pdfDoc = null;
     pageNum = 1;
     pageCount = 0;
@@ -323,8 +386,30 @@
     currentRenderTask = null;
     renderTimeout = null;
   }
-  function handleKeydown(event: KeyboardEvent) {
+
+  function handleResize() {
     if (!pdfViewerOpen) return;
+
+    debouncedRender();
+  }
+
+  async function toggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    await tick();
+    await renderPage();
+  }
+
+  function focusViewer(event: PointerEvent) {
+    if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) return;
+
+    pdfViewer?.focus({ preventScroll: true });
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (!pdfViewerOpen || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.target instanceof Element && event.target.closest('input, textarea, select, [contenteditable="true"]'))
+      return;
+    if (!isFullscreen && (!pdfViewer || !pdfViewer.contains(document.activeElement))) return;
 
     switch (event.key) {
       case 'ArrowLeft':
@@ -341,12 +426,15 @@
         zoomOut();
         break;
       case 'Escape':
-        closePDFViewer();
-        window.removeEventListener('scroll', recordVisiblePage, true);
-        window.removeEventListener('resize', recordVisiblePage);
-        window.removeEventListener('focus', recordVisiblePage);
+        if (isFullscreen) void toggleFullscreen();
+        else closePDFViewer();
         break;
+      default:
+        return;
     }
+
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   onMount(() => {
@@ -367,26 +455,25 @@
   let displayDocuments = $derived(lessonApi.lesson?.documents || []);
 </script>
 
-<DocumentList
-  {mode}
-  {displayDocuments}
-  {formatFileSize}
-  {openDocumentUploadModal}
-  {requestRemoveDocument}
-  onViewDocument={handleViewDocument}
-  {downloadDocument}
-  {reorderDocuments}
-/>
-
-<DeleteModal bind:open={openDeleteDocumentModal} onDelete={confirmRemoveDocument} />
-
-<!-- PDF Viewer Modal -->
 {#if pdfViewerOpen}
-  <div class="ui:z-modal fixed inset-0 flex flex-col bg-white dark:bg-neutral-800">
-    <!-- Header -->
-    <div class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:bg-neutral-800">
-      <div class="flex items-center space-x-4">
-        <h2 class="max-w-md truncate text-lg font-semibold text-gray-900 dark:text-gray-300">
+  <div
+    bind:this={pdfViewer}
+    data-testid="lesson-pdf-viewer"
+    data-reading-lesson={viewingLessonId}
+    data-presentation={isFullscreen ? 'fullscreen' : 'inline'}
+    role="region"
+    aria-label={viewingPDF?.name}
+    tabindex="-1"
+    onpointerdown={focusViewer}
+    class={isFullscreen
+      ? 'ui:z-modal fixed inset-0 flex flex-col bg-white dark:bg-neutral-800'
+      : 'my-4 flex min-w-0 flex-col overflow-hidden rounded-lg border bg-white dark:bg-neutral-800'}
+  >
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3 dark:bg-neutral-800"
+    >
+      <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        <h2 class="max-w-full truncate text-lg font-semibold text-gray-900 sm:max-w-md dark:text-gray-300">
           {viewingPDF?.name}
         </h2>
         {#if !isLoading && !error}
@@ -399,22 +486,35 @@
         {/if}
       </div>
 
-      <div class="flex items-center space-x-2">
-        <!-- Navigation Controls -->
+      <div class="flex shrink-0 items-center space-x-2">
         {#if !isLoading && !error}
           <div class="flex items-center space-x-1">
-            <IconButton onclick={prevPage} disabled={pageNum <= 1} tooltip={$t('pdf_reader.previous')}>
+            <IconButton
+              onclick={prevPage}
+              disabled={pageNum <= 1}
+              tooltip={$t('pdf_reader.previous')}
+              aria-label={$t('pdf_reader.previous')}
+            >
               <ChevronLeftIcon size={16} />
             </IconButton>
 
-            <IconButton onclick={nextPage} disabled={pageNum >= pageCount} tooltip={$t('pdf_reader.next')}>
+            <IconButton
+              onclick={nextPage}
+              disabled={pageNum >= pageCount}
+              tooltip={$t('pdf_reader.next')}
+              aria-label={$t('pdf_reader.next')}
+            >
               <ChevronRightIcon size={16} />
             </IconButton>
           </div>
 
-          <!-- Zoom Controls -->
           <div class="flex items-center space-x-1">
-            <IconButton onclick={zoomOut} disabled={scale <= 0.5} tooltip={$t('pdf_reader.zoom_out')}>
+            <IconButton
+              onclick={zoomOut}
+              disabled={scale <= 0.5}
+              tooltip={$t('pdf_reader.zoom_out')}
+              aria-label={$t('pdf_reader.zoom_out')}
+            >
               <ZoomOutIcon size={16} />
             </IconButton>
 
@@ -422,18 +522,36 @@
               {Math.round(scale * 100)}%
             </span>
 
-            <IconButton onclick={zoomIn} disabled={scale >= 3.0} tooltip={$t('pdf_reader.zoom_in')}>
+            <IconButton
+              onclick={zoomIn}
+              disabled={scale >= 3.0}
+              tooltip={$t('pdf_reader.zoom_in')}
+              aria-label={$t('pdf_reader.zoom_in')}
+            >
               <ZoomInIcon size={16} />
             </IconButton>
           </div>
         {/if}
 
+        <IconButton
+          onclick={() => void toggleFullscreen()}
+          tooltip={$t(isFullscreen ? 'pdf_reader.exit_fullscreen' : 'pdf_reader.fullscreen')}
+          aria-label={$t(isFullscreen ? 'pdf_reader.exit_fullscreen' : 'pdf_reader.fullscreen')}
+        >
+          {#if isFullscreen}<MinimizeIcon size={16} />{:else}<MaximizeIcon size={16} />{/if}
+        </IconButton>
+
         <CloseButton onClick={closePDFViewer} tooltip={$t('pdf_reader.close')} />
       </div>
     </div>
 
-    <!-- PDF Content -->
-    <div bind:this={pdfViewport} class="flex-1 overflow-auto bg-gray-100 p-4">
+    <div
+      bind:this={pdfViewport}
+      data-testid="lesson-pdf-viewport"
+      class={isFullscreen
+        ? 'min-h-0 flex-1 overflow-auto bg-gray-100 p-4'
+        : 'h-[min(65vh,680px)] min-h-72 overflow-auto bg-gray-100 p-4'}
+    >
       {#if isLoading}
         <div class="flex h-full items-center justify-center">
           <div class="text-center">
@@ -459,9 +577,9 @@
               </svg>
             </div>
             <p class="mb-2 text-red-600">{$t(error)}</p>
-            <button onclick={() => viewPDF(viewingPDF)} class="text-blue-600 underline hover:text-blue-800">
+            <Button variant="outline" onclick={() => viewingPDF && viewPDF(viewingPDF, isFullscreen)}>
               {$t('course.navItem.lessons.materials.tabs.document.try_again')}
-            </button>
+            </Button>
           </div>
         </div>
       {:else}
@@ -476,7 +594,6 @@
       {/if}
     </div>
 
-    <!-- Footer with instructions -->
     {#if !isLoading && !error}
       <div class="border-t border-gray-200 bg-gray-50 px-4 py-2">
         <p class="text-center text-xs text-gray-500">
@@ -487,17 +604,26 @@
   </div>
 {/if}
 
+<DocumentList
+  {mode}
+  {displayDocuments}
+  {canDownload}
+  {formatFileSize}
+  {openDocumentUploadModal}
+  {requestRemoveDocument}
+  onViewDocument={handleViewDocument}
+  {downloadDocument}
+  {reorderDocuments}
+/>
+
+<DeleteModal bind:open={openDeleteDocumentModal} onDelete={confirmRemoveDocument} />
+
 <style>
-  /* Disable text selection on the canvas */
   canvas {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-  }
-
-  /* Disable drag and drop */
-  canvas {
     pointer-events: auto;
   }
 </style>

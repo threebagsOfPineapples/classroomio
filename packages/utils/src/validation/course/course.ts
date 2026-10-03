@@ -10,7 +10,8 @@ export const ZGetRecommendedCourses = z.object({
   page: z.string().transform(Number).pipe(z.number().min(1)).optional(),
   search: z.string().trim().max(120).optional(),
   tagSlug: z.string().trim().max(120).optional(),
-  required: z.enum(['true', 'false']).optional()
+  required: z.enum(['true', 'false']).optional(),
+  sort: z.enum(['date_created', 'last_updated_at', 'published', 'lessons']).optional()
 });
 export type TGetRecommendedCourses = z.infer<typeof ZGetRecommendedCourses>;
 

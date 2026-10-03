@@ -230,6 +230,7 @@
   <div class="flex flex-col items-center justify-end gap-2 md:flex-row">
     <Search
       placeholder={$t('course.navItem.people.search')}
+      clearLabel={$t('public_courses.filters.clear_search')}
       bind:value={searchValue}
       onValueChange={handleSearchValueChange}
     />

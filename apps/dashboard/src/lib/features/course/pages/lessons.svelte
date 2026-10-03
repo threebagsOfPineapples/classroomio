@@ -10,7 +10,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { isCourseLearnerView, isCoursePreview } from '$lib/utils/store/app';
   import { getCourseContent } from '$features/course/utils/content';
-  import { getFirstIncompleteNavigableContent } from '$features/course/utils/content-navigation';
+  import { getContinueLearningContent } from '$features/course/utils/content-navigation';
   import { ContentType } from '@cio/utils/constants/content';
 
   interface Props {
@@ -47,7 +47,7 @@
     if (!canResolveNext || isFetching || query.get('next') !== 'true') return;
 
     hasHandledNext = true;
-    const incompleteContent = getFirstIncompleteNavigableContent(courseApi.course);
+    const incompleteContent = getContinueLearningContent(courseApi.course);
     if (incompleteContent) {
       if (incompleteContent.type === ContentType.Lesson) {
         goto(`/courses/${courseId}/lessons/${incompleteContent.id}`);
@@ -73,30 +73,36 @@
   />
 {:else if contentLength > 0}
   <div
-    class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3"
+    class="mb-4 grid grid-cols-3 gap-2 sm:mb-5 sm:gap-3"
     role="region"
     aria-label={t.get('course.navItem.lessons.heading_v2')}
   >
-    <div class="ui:border-border flex flex-col gap-1 rounded-lg border px-4 py-3">
+    <div class="ui:border-border flex min-w-0 flex-col gap-1 rounded-lg border px-2 py-2 sm:px-4 sm:py-3">
       <div class="ui:text-muted-foreground flex items-center gap-2 text-xs font-medium">
-        <CourseContentIcon type={ContentType.Section} size={14} />
+        <span class="hidden shrink-0 sm:inline-flex" aria-hidden="true">
+          <CourseContentIcon type={ContentType.Section} size={14} />
+        </span>
         <span>{$t('course.navItem.lessons.stats.sections')}</span>
       </div>
-      <p class="text-2xl font-semibold tabular-nums">{sectionsTotal}</p>
+      <p class="text-xl leading-6 font-semibold tabular-nums sm:text-2xl sm:leading-8">{sectionsTotal}</p>
     </div>
-    <div class="ui:border-border flex flex-col gap-1 rounded-lg border px-4 py-3">
+    <div class="ui:border-border flex min-w-0 flex-col gap-1 rounded-lg border px-2 py-2 sm:px-4 sm:py-3">
       <div class="ui:text-muted-foreground flex items-center gap-2 text-xs font-medium">
-        <CourseContentIcon type={ContentType.Lesson} size={14} />
+        <span class="hidden shrink-0 sm:inline-flex" aria-hidden="true">
+          <CourseContentIcon type={ContentType.Lesson} size={14} />
+        </span>
         <span>{$t('course.navItem.lessons.stats.lessons')}</span>
       </div>
-      <p class="text-2xl font-semibold tabular-nums">{lessonsTotal}</p>
+      <p class="text-xl leading-6 font-semibold tabular-nums sm:text-2xl sm:leading-8">{lessonsTotal}</p>
     </div>
-    <div class="ui:border-border flex flex-col gap-1 rounded-lg border px-4 py-3">
+    <div class="ui:border-border flex min-w-0 flex-col gap-1 rounded-lg border px-2 py-2 sm:px-4 sm:py-3">
       <div class="ui:text-muted-foreground flex items-center gap-2 text-xs font-medium">
-        <CourseContentIcon type={ContentType.Exercise} size={14} />
+        <span class="hidden shrink-0 sm:inline-flex" aria-hidden="true">
+          <CourseContentIcon type={ContentType.Exercise} size={14} />
+        </span>
         <span>{$t('course.navItem.lessons.stats.exercises')}</span>
       </div>
-      <p class="text-2xl font-semibold tabular-nums">{exercisesTotal}</p>
+      <p class="text-xl leading-6 font-semibold tabular-nums sm:text-2xl sm:leading-8">{exercisesTotal}</p>
     </div>
   </div>
 

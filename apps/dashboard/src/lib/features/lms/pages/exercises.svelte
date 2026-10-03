@@ -1,162 +1,104 @@
 <script lang="ts">
-  import cloneDeep from 'lodash/cloneDeep';
-  import { Chip } from '@cio/ui/custom/chip';
+  import { onMount, untrack } from 'svelte';
+  import { Button } from '@cio/ui/base/button';
+  import { Search } from '@cio/ui/custom/search';
+  import { Empty } from '@cio/ui/custom/empty';
   import { profile } from '$lib/utils/store/user';
   import { currentOrg } from '$lib/utils/store/org';
-  import { snackbar } from '$features/ui/snackbar/store';
-  import { lmsExercisesApi } from '$features/lms/api/exercises.svelte';
-  import type { LMSExercise } from '$features/lms/utils/types';
-  import { calDateDiff } from '$lib/utils/functions/date';
   import { t } from '$lib/utils/functions/translations';
+  import { LMSExercisesApi } from '$features/lms/api/exercises.svelte';
+  import { filterAssessmentTasks, getAssessmentTasks } from '../utils/assessment-tasks';
+  import type { AssessmentTaskFilter } from '../utils/types';
+  import AssessmentTaskList from '../components/assessment-task-list.svelte';
 
-  const defaultSections = [
-    {
-      id: 0,
-      title: $t('exercises.not_submitted'),
-      items: [],
-      className: 'text-[#E35353] bg-[#FDDFE4]'
-    },
-    {
-      id: 1,
-      title: $t('exercises.submitted'),
-      items: [],
-      className: 'text-orange-700 bg-orange-200'
-    },
-    {
-      id: 2,
-      title: $t('exercises.in_progress'),
-      items: [],
-      className: 'text-yellow-700 bg-yellow-200'
-    },
-    {
-      id: 3,
-      title: $t('exercises.graded'),
-      value: 0,
-      items: [],
-      className: 'text-green-700 bg-green-200'
-    }
-  ];
-  let sections: Section[] = $state(cloneDeep(defaultSections));
-  let hasFetched = $state(false);
+  const exercisesApi = new LMSExercisesApi();
+  const filters: AssessmentTaskFilter[] = ['pending', 'upcoming', 'submitted', 'graded', 'all'];
+  let filter = $state<AssessmentTaskFilter>('pending');
+  let search = $state('');
+  let now = $state(Date.now());
+  let loadedFor = '';
+  const tasks = $derived(getAssessmentTasks(exercisesApi.exercises, exercisesApi.examAccess, now));
+  const visibleTasks = $derived(filterAssessmentTasks(tasks, filter, search));
 
-  interface Section {
-    id: number;
-    title: string;
-    className: string;
-    items: ExerciseItem[];
-  }
-
-  interface ExerciseItem {
-    courseTitle: string;
-    courseURL: string;
-    exerciseId: string;
-    exerciseTitle: string;
-    exerciseURL: string;
-    grade: string;
-    lessonNo: string;
-    lessonTitle: string;
-    lessonURL: string | null;
-    submissionStatus: number;
-    submissionUpdatedAt: string;
-  }
-
-  function generateSections(exercises: LMSExercise[]): Section[] {
-    const _sections: Section[] = cloneDeep(defaultSections);
-
-    for (const exercise of exercises) {
-      const { id, title, updated_at, submission, lesson, questions } = exercise;
-
-      const submissionItem = submission[0] || {
-        status_id: 0,
-        updated_at,
-        total: 0
-      };
-
-      const courseURL = `/courses/${lesson.course.id}`;
-      const lessonURL = lesson.id ? `${courseURL}/lessons/${lesson.id}` : null;
-      const exerciseURL = `${courseURL}/exercises/${id}`;
-
-      const grade = `${submissionItem.total}/${questions.reduce((acc, cur) => (acc += cur.points), 0)}`;
-
-      const item: ExerciseItem = {
-        exerciseId: id,
-        courseTitle: lesson.course.title,
-        courseURL,
-        exerciseTitle: title,
-        exerciseURL,
-        lessonTitle: lesson.title,
-        lessonNo: lesson.order < 9 ? '0' + (lesson.order + 1) : `${lesson.order}`,
-        lessonURL,
-        submissionStatus: submissionItem.status_id,
-        submissionUpdatedAt: calDateDiff(submissionItem.updated_at),
-        grade
-      };
-
-      _sections[submissionItem.status_id].items.push(item);
-    }
-
-    return _sections;
-  }
-
-  async function fetchData(profileId?: string, orgId?: string) {
-    if (hasFetched || !profileId || !orgId) {
-      return;
-    }
-
-    hasFetched = true;
-
-    await lmsExercisesApi.fetchLMSExercises(orgId);
-
-    if (!lmsExercisesApi.success) {
-      snackbar.error('snackbar.exercise.error_fetching');
-      return;
-    }
-
-    if (!lmsExercisesApi.exercises || lmsExercisesApi.exercises.length === 0) return;
-
-    sections = generateSections(lmsExercisesApi.exercises);
-    console.log('sections', sections);
+  function reload() {
+    now = Date.now();
+    return exercisesApi.load($currentOrg.id);
   }
 
   $effect(() => {
-    fetchData($profile.id, $currentOrg.id);
+    const orgId = $currentOrg.id;
+    const profileId = $profile.id;
+    if (!orgId || !profileId) return;
+
+    const loadKey = `${orgId}:${profileId}`;
+    if (loadedFor === loadKey) return;
+
+    loadedFor = loadKey;
+    untrack(() => void reload());
+  });
+
+  onMount(() => {
+    const timer = window.setInterval(() => {
+      now = Date.now();
+    }, 30_000);
+    return () => window.clearInterval(timer);
   });
 </script>
 
-<div class="flex w-full items-center overflow-x-auto">
-  {#each sections as { title, items, className, id }}
-    <div
-      class="mr-3 h-[70vh] max-w-[355px] min-w-[355px] overflow-hidden rounded-md border border-gray-50 bg-gray-100 p-3 dark:border-neutral-700 dark:bg-black"
-    >
-      <div class="mb-2 flex items-center gap-2">
-        <p class="ml-2 dark:text-white">{title}</p>
-        <Chip value={items.length} {className} />
-      </div>
-      <div class="h-full overflow-y-auto pr-2 pb-3">
-        {#each items as item}
-          <div class=" mx-0 my-2 w-full rounded-md bg-white px-3 py-3 dark:bg-neutral-800">
-            <a class="ui:text-primary mb-2 flex w-full cursor-pointer items-center" href={item.courseURL}>
-              <p class="text-xs">{item.courseTitle}</p>
-            </a>
-            <a class="text-md text-black dark:text-white" href={item.exerciseURL}>
-              {#if id === 3}
-                ({item.grade}) -
-              {/if}
-              {item.exerciseTitle}
-            </a>
-            {#if item.lessonURL}
-              <a class="my-2 flex w-fit items-center text-black no-underline hover:underline" href={item.lessonURL}>
-                <p class="text-grey text-sm dark:text-white">
-                  {$t('exercises.lesson')} <span class="italic">{item.lessonTitle}</span>
-                </p>
-              </a>
-            {/if}
-            <p class="text-xs text-gray-500 dark:text-white">
-              {item.submissionUpdatedAt}
-            </p>
-          </div>
-        {/each}
-      </div>
+<div class="space-y-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="training-filters" role="group" aria-label={$t('learner_tasks.filter')}>
+      {#each filters as value}
+        <Button size="sm" variant="ghost" aria-pressed={filter === value} onclick={() => (filter = value)}>
+          {$t(`learner_tasks.filter_${value}`)}
+          <span class="text-xs"
+            >{exercisesApi.isLoading || exercisesApi.error ? '—' : filterAssessmentTasks(tasks, value).length}</span
+          >
+        </Button>
+      {/each}
     </div>
-  {/each}
+    <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+      <Search
+        bind:value={search}
+        placeholder={$t('learner_tasks.search')}
+        clearLabel={$t('public_courses.filters.clear_search')}
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        onclick={reload}
+        disabled={exercisesApi.isLoading || exercisesApi.accessLoading}
+      >
+        {$t('learner_tasks.refresh')}
+      </Button>
+    </div>
+  </div>
+  {#if exercisesApi.isLoading}
+    <p class="ui:text-muted-foreground py-8 text-center" role="status">{$t('enterprise.loading')}</p>
+  {:else if exercisesApi.error}
+    <div class="training-panel space-y-3" role="alert">
+      <p>{$t('learner_tasks.load_failed')}</p>
+      <Button size="sm" variant="outline" onclick={reload}>{$t('enterprise.ui_v2.retry')}</Button>
+    </div>
+  {:else if visibleTasks.length}
+    <AssessmentTaskList tasks={visibleTasks} onRetry={reload} checking={exercisesApi.accessLoading} />
+  {:else}
+    <Empty
+      title={$t(search.trim() ? 'enterprise.ui_v2.search_empty' : 'learner_tasks.empty')}
+      description={$t(search.trim() ? 'enterprise.ui_v2.search_hint' : 'learner_tasks.empty_hint')}
+    >
+      {#if search.trim() || filter !== 'all'}
+        <Button
+          size="sm"
+          variant="outline"
+          onclick={() => {
+            search = '';
+            filter = 'all';
+          }}
+        >
+          {$t('learner_tasks.view_all')}
+        </Button>
+      {/if}
+    </Empty>
+  {/if}
 </div>

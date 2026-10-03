@@ -20,6 +20,7 @@
   import type { AssetKindFilter, AssetStatusFilter, AssetUsageGraph, OrganizationAsset } from '$features/media/utils';
   import { snackbar } from '$features/ui/snackbar/store';
   import { t } from '$lib/utils/functions/translations';
+  import { currentOrgPath } from '$lib/utils/store/org';
 
   interface Props {
     search?: string;
@@ -44,21 +45,27 @@
   let downloadingAssetId = $state<string | null>(null);
   let selectedAsset = $state<OrganizationAsset | null>(null);
   let usageData = $state<AssetUsageGraph | null>(null);
+  let appliedFilters = $state({ search: '', kind: 'all' as AssetKindFilter, status: 'all' as AssetStatusFilter });
 
   const assets = $derived(mediaApi.assets);
   const storageSummary = $derived(mediaApi.storageSummary);
   const pagination = $derived(mediaApi.pagination);
+  const hasActiveFilters = $derived(
+    Boolean(appliedFilters.search) || appliedFilters.kind !== 'all' || appliedFilters.status !== 'all'
+  );
 
   async function refreshAssets(page = 1) {
     isRefreshing = true;
+    const nextFilters = { search: search.trim(), kind, status };
     try {
       await mediaApi.listAssets({
         page,
         limit: pagination?.limit ?? 20,
-        search: search.trim() || undefined,
-        kind: kind === 'all' ? undefined : kind,
-        status: status === 'all' ? undefined : status
+        search: nextFilters.search || undefined,
+        kind: nextFilters.kind === 'all' ? undefined : nextFilters.kind,
+        status: nextFilters.status === 'all' ? undefined : nextFilters.status
       });
+      appliedFilters = nextFilters;
     } finally {
       isRefreshing = false;
     }
@@ -179,8 +186,6 @@
   const nextPage = $derived((pagination?.page ?? 1) + 1);
 </script>
 
-<StorageCards {storageSummary} />
-
 <Page.BodyHeader class="flex-col flex-wrap! items-start! gap-3 lg:flex-row">
   <MediaFilters
     bind:search
@@ -190,15 +195,24 @@
     onApply={() => refreshAssets(1)}
     onRefresh={refreshMediaData}
   />
+  <Button href="{$currentOrgPath}/courses" variant="outline" size="sm">
+    {$t('enterprise.media.add_from_course')}
+  </Button>
 </Page.BodyHeader>
 
 {#if assets.length === 0}
   <Empty
-    title={$t('media_manager.empty')}
-    description={$t('media_manager.empty_description')}
+    title={$t(hasActiveFilters ? 'enterprise.media.no_results_title' : 'media_manager.empty')}
+    description={$t(hasActiveFilters ? 'enterprise.media.no_results_description' : 'media_manager.empty_description')}
     icon={VideoIcon}
     variant="page"
-  />
+  >
+    {#if !hasActiveFilters}
+      <Button href="{$currentOrgPath}/courses" variant="default">
+        {$t('enterprise.media.add_from_course')}
+      </Button>
+    {/if}
+  </Empty>
 {:else}
   <Item.Group class="grid! w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
     {#each assets as asset (asset.id)}
@@ -240,6 +254,8 @@
     </Button>
   </div>
 {/if}
+
+<StorageCards {storageSummary} />
 
 <EditAssetDialog bind:open={editOpen} asset={selectedAsset} isSaving={isSavingAsset} onSave={saveAsset} />
 

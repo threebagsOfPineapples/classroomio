@@ -12,6 +12,7 @@
   interface Props {
     mode?: (typeof MODES)[keyof typeof MODES];
     displayDocuments?: LessonDocument[];
+    canDownload?: boolean;
     formatFileSize: (bytes: number) => string;
     openDocumentUploadModal: () => void;
     requestRemoveDocument: (index: number) => void;
@@ -23,6 +24,7 @@
   let {
     mode = MODES.view,
     displayDocuments = [],
+    canDownload = false,
     formatFileSize,
     openDocumentUploadModal,
     requestRemoveDocument,
@@ -54,13 +56,13 @@
     onViewDocument(document);
   }
 
-  function handleDownload(file: (typeof attachmentFiles)[number]) {
+  async function handleDownload(file: (typeof attachmentFiles)[number]) {
     const index = getDocumentIndexByAttachmentId(displayDocuments, file.id);
     const document = displayDocuments[index];
 
     if (!document) return;
 
-    void downloadDocument(document);
+    await downloadDocument(document);
   }
 
   function handleDelete(file: (typeof attachmentFiles)[number]) {
@@ -92,7 +94,7 @@
     labels={attachmentLabels}
     formatSize={formatFileSize}
     onView={handleView}
-    onDownload={attachmentMode === 'view' ? handleDownload : undefined}
+    onDownload={attachmentMode === 'view' && canDownload ? handleDownload : undefined}
     onDelete={attachmentMode === 'edit' ? handleDelete : undefined}
     onReorder={attachmentMode === 'edit' ? handleReorder : undefined}
   />

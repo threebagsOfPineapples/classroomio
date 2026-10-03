@@ -2,6 +2,7 @@ import { AppError, ErrorCodes } from '@cio/utils/errors';
 import { sanitizeHtml, sanitizeOptionalHtml, sanitizeUnknownStrings } from '../../utils/sanitize-html';
 import type { TExercise, TExerciseTemplate, TNewOption, TNewQuestion } from '@cio/db/types';
 import type { TExerciseCreate, TExerciseUpdate } from '@cio/utils/validation/exercise';
+import { getActiveMakeupPolicy } from '@cio/utils/functions/exam-makeup';
 import { getLessonById } from '@cio/db/queries/lesson';
 import {
   createExercises,
@@ -19,6 +20,7 @@ import {
   getExerciseWithRelationsOptimized,
   getExercisesByCourseId,
   getLMSExercises,
+  canCreateExamAttempt,
   createExerciseSections,
   deleteExerciseSectionsByIds,
   updateExerciseSection,
@@ -910,7 +912,7 @@ export async function createExerciseFromTemplate(
 export async function getLMSExercisesService(profileId: string, orgId: string) {
   try {
     const exercises = await getLMSExercises(profileId, orgId);
-    return exercises;
+    return exercises.map((exercise) => getLMSExerciseSummary(exercise));
   } catch (error) {
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to fetch LMS exercises',
@@ -918,4 +920,35 @@ export async function getLMSExercisesService(profileId: string, orgId: string) {
       500
     );
   }
+}
+
+export function getLMSExerciseSummary(exercise: Awaited<ReturnType<typeof getLMSExercises>>[number], now = Date.now()) {
+  const { attempts, makeup, ...details } = exercise;
+  const activePolicy = getActiveMakeupPolicy(makeup, now);
+  const upcomingPolicy =
+    makeup && exercise.closesAt && Date.parse(exercise.closesAt) <= now && Date.parse(makeup.opensAt) > now
+      ? getActiveMakeupPolicy(makeup, Date.parse(makeup.opensAt))
+      : null;
+  const policy = activePolicy ?? upcomingPolicy ?? exercise;
+  const opensAt = policy.opensAt ? new Date(policy.opensAt).toISOString() : null;
+  const closesAt = policy.closesAt ? new Date(policy.closesAt).toISOString() : null;
+  const dueBy = exercise.dueBy ? new Date(exercise.dueBy).toISOString() : null;
+  const activeAttempt = attempts.find((attempt) => !attempt.submittedAt && Date.parse(attempt.expiresAt) > now);
+  const activeAttemptExpiresAt = activeAttempt ? new Date(activeAttempt.expiresAt).toISOString() : null;
+  const attemptCount = attempts.length;
+  const canCreateAttempt = canCreateExamAttempt(attemptCount, policy.maxAttempts, policy.allowMakeup);
+  const isOpen = !!opensAt && !!closesAt && Date.parse(opensAt) <= now && Date.parse(closesAt) > now;
+  const canAttempt = exercise.isExam && isOpen && (!!activeAttempt || canCreateAttempt);
+
+  return {
+    ...details,
+    opensAt,
+    closesAt,
+    dueBy,
+    maxAttempts: policy.maxAttempts,
+    allowMakeup: policy.allowMakeup,
+    attemptCount,
+    activeAttemptExpiresAt,
+    canAttempt
+  };
 }

@@ -59,6 +59,22 @@
   {/snippet}
 </Story>
 
+<Story name="Localized close control">
+  {#snippet template()}
+    <Sheet.Root>
+      <Sheet.Trigger>
+        {#snippet child({ props })}<Button.Root {...props} variant="outline">打开菜单</Button.Root>{/snippet}
+      </Sheet.Trigger>
+      <Sheet.Content side="left" closeLabel="关闭菜单">
+        <Sheet.Header>
+          <Sheet.Title>菜单</Sheet.Title>
+          <Sheet.Description>查看企业培训页面。</Sheet.Description>
+        </Sheet.Header>
+      </Sheet.Content>
+    </Sheet.Root>
+  {/snippet}
+</Story>
+
 <Story name="Left">
   {#snippet template()}
     <Sheet.Root>

@@ -11,7 +11,6 @@ type CourseSettings = {
   allowSelfEnrollment: boolean;
   tabs: { id: number; name: string }[];
   lessonDownload: boolean;
-  allowMarkdownExport: boolean;
   isPublished: boolean;
   status: 'ACTIVE' | 'ARCHIVED';
   difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null;
@@ -46,7 +45,6 @@ export const settings = writable<CourseSettings>({
     { id: 4, name: 'course.navItem.lessons.materials.tabs.document.title' }
   ],
   lessonDownload: false,
-  allowMarkdownExport: false,
   isPublished: false,
   status: 'ACTIVE',
   difficulty: null,

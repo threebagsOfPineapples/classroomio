@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getEditorTranslation } from '../../translation';
-  const translate = getEditorTranslation();
+  import { untrack } from 'svelte';
+  const contextTranslate = getEditorTranslation();
   import type { Editor } from '@tiptap/core';
   import * as Dialog from '$src/base/dialog';
   import * as UnderlineTabs from '../../../underline-tabs';
@@ -10,9 +11,11 @@
   import UploadCloudIcon from '@lucide/svelte/icons/upload-cloud';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
   import SearchIcon from '@lucide/svelte/icons/search';
+  import XIcon from '@lucide/svelte/icons/x';
   import type { UnsplashPhoto } from '../../types';
 
   interface Props {
+    translate?: (message: string) => string;
     editor?: Editor;
     open?: boolean;
     onImageUpload?: (file: File) => Promise<string>;
@@ -24,6 +27,7 @@
   }
 
   let {
+    translate = contextTranslate,
     editor,
     open = $bindable(false),
     onImageUpload,
@@ -39,7 +43,7 @@
     { label: translate('Link'), value: 'link' }
   ]);
 
-  let currentTab = $state(tabs[0].value);
+  let currentTab = $state(untrack(() => tabs[0].value));
   let cropperSrc = $state('');
   let isUploading = $state(false);
 
@@ -104,7 +108,13 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="ui:z-[300]! ui:w-[95%] ui:max-w-2xl!">
+  <Dialog.Content class="ui:z-[300]! ui:w-[95%] ui:max-w-2xl!" showCloseButton={false}>
+    <Dialog.Close
+      aria-label={translate('Close')}
+      class="ui:absolute ui:end-4 ui:top-4 ui:cursor-pointer ui:rounded-sm ui:opacity-70 ui:transition-opacity ui:hover:opacity-100 ui:focus-visible:outline-none ui:focus-visible:ring-2 ui:focus-visible:ring-ring"
+    >
+      <XIcon size={16} />
+    </Dialog.Close>
     <Dialog.Header>
       <Dialog.Title>{translate('Insert image')}</Dialog.Title>
     </Dialog.Header>
@@ -148,11 +158,11 @@
                 </ImageCropper.UploadTrigger>
 
                 {#if enableCrop}
-                  <ImageCropper.Dialog class="ui:z-[350]!">
+                  <ImageCropper.Dialog class="ui:z-[350]!" closeLabel={translate('Close')}>
                     <ImageCropper.Cropper cropShape="rect" {...cropAspect ? { aspect: cropAspect } : {}} />
                     <ImageCropper.Controls>
-                      <ImageCropper.Cancel />
-                      <ImageCropper.Crop />
+                      <ImageCropper.Cancel label={translate('Cancel')} />
+                      <ImageCropper.Crop label={translate('Crop')} />
                     </ImageCropper.Controls>
                   </ImageCropper.Dialog>
                 {/if}
@@ -174,7 +184,12 @@
                 <div class="ui:flex-1">
                   <InputField bind:value={searchQuery} placeholder={translate('Search images on Unsplash...')} />
                 </div>
-                <Button type="submit" variant="outline" loading={isSearching}>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  loading={isSearching}
+                  aria-label={translate('Search images on Unsplash...')}
+                >
                   <SearchIcon size={16} />
                 </Button>
               </form>
@@ -197,7 +212,6 @@
                       </button>
                       {#if photo.user?.name}
                         <p class="ui:mt-1 ui:truncate ui:text-center ui:text-xs ui:font-light ui:text-muted-foreground">
-                          By
                           <a
                             href="https://unsplash.com/@{photo.user.username}"
                             target="_blank"

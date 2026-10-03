@@ -1,5 +1,13 @@
 import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 
+type RecommendedCoursesRequest = typeof classroomio.organization.courses.recommended.$get;
+export type RecommendedCoursesQuery = NonNullable<InferRequestType<RecommendedCoursesRequest>['query']>;
+export type RecommendedCoursesOptions = Omit<RecommendedCoursesQuery, 'limit' | 'page' | 'required'> & {
+  limit?: number;
+  page?: number;
+  required?: boolean;
+};
+
 export type ReadingProgressRequest =
   (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['reading-progress']['$post'];
 export type ReadingProgress = Extract<InferResponseType<ReadingProgressRequest>, { success: true }>['data'];
@@ -18,6 +26,14 @@ export type GetLessonRequest = (typeof classroomio.course)[':courseId']['lesson'
 export type GetLessonResponse = InferResponseType<GetLessonRequest> | null;
 export type GetLessonSuccess = Extract<InferResponseType<GetLessonRequest>, { success: true }>;
 export type Lesson = GetLessonSuccess['data'];
+
+export type LessonDocumentDownloadRequest =
+  (typeof classroomio.course)[':courseId']['lesson'][':lessonId']['document']['download']['$post'];
+export type LessonDocumentDownloadSuccess = Extract<
+  InferResponseType<LessonDocumentDownloadRequest>,
+  { success: true }
+>;
+export type LessonDocumentDownloadData = LessonDocumentDownloadSuccess['data'];
 
 // Create lesson types
 export type CreateLessonRequest = (typeof classroomio.course)[':courseId']['lesson']['$post'];
@@ -495,6 +511,7 @@ export type GetUserCourseAnalyticsRequest =
 export type GetUserCourseAnalyticsResponse = InferResponseType<GetUserCourseAnalyticsRequest>;
 export type GetUserCourseAnalyticsSuccess = Extract<GetUserCourseAnalyticsResponse, { success: true }>;
 export type UserCourseAnalytics = GetUserCourseAnalyticsSuccess['data'];
+export type LessonLearningRecord = UserCourseAnalytics['lessonLearningRecords'][number];
 
 export type ResetMemberCourseProgressRequest =
   (typeof classroomio.course)[':courseId']['members'][':memberId']['reset-progress']['$post'];

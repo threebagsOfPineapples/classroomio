@@ -11,6 +11,7 @@
   import { openAddContentModal } from '$features/course/components/content/open-content-create';
   import { courseApi } from '$features/course/api';
   import { profile } from '$lib/utils/store/user';
+  import { isCourseLearnerView } from '$lib/utils/store/app';
 
   let { data } = $props();
 
@@ -26,13 +27,13 @@
 </script>
 
 <Page.Root class="mx-auto flex w-[90%] px-4 md:max-w-2xl lg:max-w-3xl">
-  <Page.Header>
-    <Page.HeaderContent>
-      <Page.Title>
+  <Page.Header class={$isCourseLearnerView ? 'course-directory-learner-header' : undefined}>
+    <Page.HeaderContent class="min-w-0 flex-1">
+      <Page.Title class={$isCourseLearnerView ? 'whitespace-nowrap' : undefined}>
         {$t('course.navItem.lessons.heading_v2')}
       </Page.Title>
     </Page.HeaderContent>
-    <Page.Action>
+    <Page.Action class={$isCourseLearnerView ? 'w-auto! flex-none' : 'shrink-0'}>
       <div class="flex w-full justify-end gap-2">
         <RoleBasedSecurity allowedRoles={[1, 2]}>
           <Button variant="outline" onclick={() => (reorder = !reorder)} disabled={!!$contentEditingStore}>
@@ -78,3 +79,11 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
+
+<style>
+  :global(.course-directory-learner-header[data-slot='page-header'] > div) {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+</style>

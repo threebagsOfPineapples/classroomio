@@ -1,4 +1,4 @@
-import { isPdfDocument } from './lesson-document';
+import { getPdfReadingResource } from './lesson-document';
 
 type ReadingLesson = {
   completionPolicy: string;
@@ -6,7 +6,7 @@ type ReadingLesson = {
   videoUrl?: string | null;
   slides?: unknown[] | null;
   slideUrl?: string | null;
-  documents?: { key: string; name: string; type: string }[] | null;
+  documents?: { key: string; assetId?: string; name: string; type: string }[] | null;
   lessonLanguages: { locale: string | null; content: string | null }[];
 };
 
@@ -17,16 +17,16 @@ export function getReadingRequirements(lesson: ReadingLesson) {
     .replace(/&[^;]+;/g, ' ')
     .trim();
   const documents = lesson.documents ?? [];
-  const pdfs = documents.filter((document) => isPdfDocument(document) && document.key.trim().length > 0);
-  const resources = [...(text ? ['note'] : []), ...pdfs.map((document) => `pdf:${document.key}`)];
-  const requiredSeconds = Math.max(60, Math.ceil(text.length / 5) + pdfs.length * 60);
+  const pdfResources = documents.map(getPdfReadingResource).filter((resource): resource is string => Boolean(resource));
+  const resources = [...(text ? ['note'] : []), ...pdfResources];
+  const requiredSeconds = Math.max(60, Math.ceil(text.length / 5) + pdfResources.length * 60);
   const supported =
     lesson.completionPolicy === 'manual' &&
     !lesson.videos?.length &&
     !lesson.videoUrl &&
     !lesson.slides?.length &&
     !lesson.slideUrl &&
-    documents.length === pdfs.length &&
+    documents.length === pdfResources.length &&
     resources.length > 0;
   return { resources, requiredSeconds, supported };
 }

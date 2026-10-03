@@ -157,7 +157,11 @@
 
       <section class="space-y-2">
         <div class="flex flex-col items-center justify-end gap-2 md:flex-row">
-          <Search placeholder={$t('course.navItem.people.search')} bind:value={searchValue} />
+          <Search
+            placeholder={$t('course.navItem.people.search')}
+            clearLabel={$t('public_courses.filters.clear_search')}
+            bind:value={searchValue}
+          />
           <Select.Root type="single" name="roles" bind:value={filterBy}>
             <Select.Trigger class="max-w-[100px]">
               {selectOptions.find((option) => option.value === filterBy)?.label}

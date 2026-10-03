@@ -1,5 +1,8 @@
 import { t } from '$lib/utils/functions/translations';
 import { enterpriseApi } from './enterprise.svelte';
+import { ZAssessmentSchemeDraft, ZAssessmentInput, ZAssessmentAdjustment } from '@cio/utils/validation/assessment';
+import { enterpriseValidationMessage } from '../utils/enterprise-errors';
+import { isAssessmentDraftSaved } from '../utils/admin-workflow';
 import type {
   AssessmentDraft,
   TrainingMakeupDraft,
@@ -207,17 +210,28 @@ export class AssessmentApi {
   }
 
   async saveScheme(organizationId: string, planId: string, draft: AssessmentDraft) {
+    const validated = ZAssessmentSchemeDraft.safeParse(draft);
+    if (!validated.success) {
+      this.error = enterpriseValidationMessage(validated.error);
+      return false;
+    }
+
     return this.perform(async () => {
       this.scheme = await enterpriseApi.request<AssessmentScheme>(
         organizationId,
         `/plans/${planId}/assessment`,
         'PUT',
-        draft
+        validated.data
       );
     });
   }
 
-  async publishScheme(organizationId: string, planId: string) {
+  async publishScheme(organizationId: string, planId: string, draft: AssessmentDraft) {
+    if (!isAssessmentDraftSaved(this.scheme, draft)) {
+      this.error = t.get('enterprise.admin_workflow.save_before_publish');
+      return false;
+    }
+
     return this.perform(async () => {
       this.scheme = await enterpriseApi.request<AssessmentScheme>(
         organizationId,
@@ -235,6 +249,18 @@ export class AssessmentApi {
   }
 
   async enterScore(organizationId: string, enrollmentId: string, itemId: string, score: number) {
+    const validated = ZAssessmentInput.safeParse({ score });
+    if (!validated.success) {
+      this.error = enterpriseValidationMessage(validated.error);
+      return false;
+    }
+
+    const item = this.detail?.scheme?.items.find((candidate) => candidate.id === itemId);
+    if (item && score > item.maxScore) {
+      this.error = t.get('enterprise.admin_errors.score_maximum');
+      return false;
+    }
+
     return this.perform(async () => {
       await enterpriseApi.request(organizationId, `/enrollments/${enrollmentId}/items/${itemId}/input`, 'POST', {
         score
@@ -244,6 +270,12 @@ export class AssessmentApi {
   }
 
   async adjust(organizationId: string, enrollmentId: string, amount: number, reason: string) {
+    const validated = ZAssessmentAdjustment.safeParse({ amount, reason });
+    if (!validated.success) {
+      this.error = enterpriseValidationMessage(validated.error);
+      return false;
+    }
+
     return this.perform(async () => {
       this.detail = await enterpriseApi.request<EnrollmentAssessment>(
         organizationId,
@@ -267,8 +299,8 @@ export class AssessmentApi {
     try {
       await action();
       return true;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
       return false;
     } finally {
       this.busy = false;

@@ -1,5 +1,6 @@
 import type { AttachmentListFile } from '@cio/ui';
 import type { LessonDocument } from '$features/course/utils/types';
+import { getLessonDocumentIdentity, getPdfReadingResource } from '@cio/utils/functions/lesson-document';
 
 export function isPdfPageEndVisible(
   canvasBottom: number,
@@ -12,7 +13,29 @@ export function isPdfPageEndVisible(
 }
 
 export function getDocumentAttachmentId(document: LessonDocument, index: number): string {
-  return document.key || `document-${index}`;
+  return getLessonDocumentIdentity(document) ?? `document-${index}`;
+}
+
+export function getInlinePdfDocument(lesson: {
+  completionPolicy?: string;
+  videos?: unknown[] | null;
+  videoUrl?: string | null;
+  slides?: unknown[] | null;
+  slideUrl?: string | null;
+  documents?: LessonDocument[] | null;
+}): LessonDocument | null {
+  if (
+    lesson.completionPolicy !== 'manual' ||
+    lesson.videos?.length ||
+    lesson.videoUrl ||
+    lesson.slides?.length ||
+    lesson.slideUrl ||
+    lesson.documents?.length !== 1
+  )
+    return null;
+
+  const document = lesson.documents[0];
+  return getPdfReadingResource(document) ? document : null;
 }
 
 export function toAttachmentFiles(documents: LessonDocument[]): AttachmentListFile[] {

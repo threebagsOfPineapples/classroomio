@@ -53,4 +53,10 @@
   });
 </script>
 
-<Toaster position="top-right" class="!left-auto" closeButton />
+<Toaster
+  position="top-right"
+  class="!left-auto"
+  closeButton
+  containerAriaLabel={$t('common.notifications')}
+  closeButtonAriaLabel={$t('common.close_notification')}
+/>

@@ -20,16 +20,23 @@ import {
   getLessonsByCourseId,
   updateLesson,
   updateLessonComment,
+  updateLessonVideoPosition,
   upsertLessonCompletion,
   upsertLessonVideoProgress,
   type LessonById
 } from '@cio/db/queries/lesson';
 import type { TUpdateLessonWatchProgress } from '@cio/utils/validation/lesson';
 import { touchCourseUpdatedAt } from '@cio/db/queries/course';
-import { deleteAssetUsagesByTarget } from '@cio/db/queries/assets';
+import { deleteAssetUsagesByTarget, getAssetById } from '@cio/db/queries/assets';
 import { db } from '@cio/db/drizzle';
 import { enrichLessonWithPresignedUrls } from '../../utils/lesson-media';
 import { resolveWatchEnforcedAssetIds } from '../../utils/lesson-watch-enforcement';
+import {
+  calculateVideoWatchProgress,
+  getRegisteredVideoDuration,
+  getVideoWatchedPercent,
+  isValidVideoWatchDelta
+} from '@cio/utils/functions/lesson-video';
 import { resolveItemSlug } from '../course/slug';
 
 /**
@@ -413,8 +420,6 @@ export async function upsertLessonCompletionService(lessonId: string, profileId:
   throw new AppError('学习完成状态由系统根据学习记录判定，不能手动修改', ErrorCodes.VALIDATION_ERROR, 403);
 }
 
-const WATCH_PROGRESS_WALL_CLOCK_TOLERANCE = 1.5;
-
 export type LessonWatchProgressAssetResult = {
   assetId: string;
   lastPositionSeconds: number;
@@ -438,12 +443,6 @@ export type LessonWatchProgressResult = {
   assets: LessonWatchProgressAssetResult[];
 };
 
-function getWatchedPercent(watchedSeconds: number, durationSeconds: number | null | undefined): number {
-  if (!durationSeconds || durationSeconds <= 0) return 0;
-
-  return Math.min(100, Math.round((watchedSeconds / durationSeconds) * 100));
-}
-
 function buildAggregateWatchProgress(
   rows: Awaited<ReturnType<typeof getLessonVideoProgressForLesson>>,
   requiredAssetIds: string[]
@@ -462,7 +461,7 @@ function buildAggregateWatchProgress(
       watchedSeconds: row?.watchedSeconds ?? 0,
       furthestSeconds: row?.furthestSeconds ?? 0,
       durationSeconds: row?.durationSeconds ?? null,
-      watchedPercent: isAssetComplete ? 100 : getWatchedPercent(row?.watchedSeconds ?? 0, row?.durationSeconds),
+      watchedPercent: isAssetComplete ? 100 : getVideoWatchedPercent(row?.watchedSeconds ?? 0, row?.durationSeconds),
       isComplete: isAssetComplete
     };
   });
@@ -539,56 +538,47 @@ export async function updateLessonWatchProgressService(
       throw new AppError('This video is not configured for watch enforcement', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
+    const registeredAsset = await getAssetById(beat.assetId);
+    const durationSeconds = getRegisteredVideoDuration(registeredAsset);
+    if (!durationSeconds) {
+      throw new AppError(
+        'Video duration must be registered before tracking progress',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
+    }
+
+    if (Math.abs(beat.durationSeconds - durationSeconds) > 1) {
+      throw new AppError('Video duration does not match the registered asset', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
     const existing = await getLessonVideoProgress(lessonId, profileId, beat.assetId);
     const threshold = lesson.videoWatchThreshold ?? 95;
     const now = Date.now();
 
-    if (existing?.isComplete) {
+    if (existing && (existing.isComplete || beat.playedDeltaSeconds === 0)) {
+      const positionSeconds = Math.max(0, Math.min(durationSeconds, Math.floor(beat.positionSeconds)));
+      if (positionSeconds !== existing.lastPositionSeconds || positionSeconds > existing.furthestSeconds) {
+        await updateLessonVideoPosition(lessonId, profileId, beat.assetId, positionSeconds);
+      }
+
       const aggregate = buildAggregateWatchProgress(
         await getLessonVideoProgressForLesson(lessonId, profileId),
         requiredAssetIds
       );
-
-      return {
-        ...(aggregate ?? {
-          lastPositionSeconds: existing.lastPositionSeconds ?? beat.positionSeconds,
-          watchedSeconds: existing.watchedSeconds ?? 0,
-          furthestSeconds: existing.furthestSeconds ?? 0,
-          durationSeconds: existing.durationSeconds ?? beat.durationSeconds,
-          isComplete: true,
-          didJustComplete: false,
-          watchedPercent: 100,
-          videosComplete: requiredAssetIds.length,
-          videosRequired: requiredAssetIds.length,
-          assets: []
-        }),
-        didJustComplete: false
-      };
-    }
-
-    const positionSeconds = Math.floor(beat.positionSeconds);
-
-    if (existing?.updatedAt) {
-      const elapsedSeconds = (now - new Date(existing.updatedAt).getTime()) / 1000;
-      const maxAllowedDelta = Math.max(5, elapsedSeconds * WATCH_PROGRESS_WALL_CLOCK_TOLERANCE);
-
-      if (beat.playedDeltaSeconds > maxAllowedDelta) {
-        throw new AppError('Invalid watch progress update', ErrorCodes.VALIDATION_ERROR, 400);
+      if (!aggregate) {
+        throw new AppError('Failed to aggregate lesson watch progress', ErrorCodes.INTERNAL_ERROR, 500);
       }
+
+      return aggregate;
     }
 
-    const previousFurthest = existing?.furthestSeconds ?? 0;
-    const playedDeltaSeconds = Math.max(0, Math.round(beat.playedDeltaSeconds));
-    const reachedEnd = positionSeconds >= beat.durationSeconds - 1;
-    let watchedSeconds = Math.min(beat.durationSeconds, (existing?.watchedSeconds ?? 0) + playedDeltaSeconds);
-
-    if (reachedEnd) {
-      watchedSeconds = beat.durationSeconds;
+    if (!isValidVideoWatchDelta(beat.playedDeltaSeconds, existing?.updatedAt, now)) {
+      throw new AppError('Invalid watch progress update', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
-    const furthestSeconds = Math.max(previousFurthest, positionSeconds, reachedEnd ? beat.durationSeconds : 0);
-    const watchPercent = (watchedSeconds / beat.durationSeconds) * 100;
-    const assetComplete = watchPercent >= threshold;
+    const canonicalBeat = { ...beat, durationSeconds };
+    const assetProgress = calculateVideoWatchProgress(existing, canonicalBeat, threshold);
 
     const rowsBeforeUpdate = await getLessonVideoProgressForLesson(lessonId, profileId);
     const priorAggregate = buildAggregateWatchProgress(rowsBeforeUpdate, requiredAssetIds);
@@ -598,12 +588,12 @@ export async function updateLessonWatchProgressService(
       lessonId,
       profileId,
       assetId: beat.assetId,
-      durationSeconds: beat.durationSeconds,
-      watchedSeconds,
-      furthestSeconds,
-      lastPositionSeconds: reachedEnd ? beat.durationSeconds : positionSeconds,
-      isComplete: assetComplete,
-      completedAt: assetComplete ? new Date().toISOString() : null
+      durationSeconds,
+      watchedSeconds: assetProgress.watchedSeconds,
+      furthestSeconds: assetProgress.furthestSeconds,
+      lastPositionSeconds: assetProgress.lastPositionSeconds,
+      isComplete: assetProgress.isComplete,
+      completedAt: assetProgress.isComplete ? new Date().toISOString() : null
     });
 
     const allRows = await getLessonVideoProgressForLesson(lessonId, profileId);

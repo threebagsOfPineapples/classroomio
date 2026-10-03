@@ -2,6 +2,7 @@
   import PlusIcon from '@lucide/svelte/icons/plus';
   import debounce from 'lodash/debounce';
   import ColorPicker from 'svelte-awesome-color-picker';
+  import ColorPickerWrapper from '../components/color-picker-wrapper.svelte';
 
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
@@ -90,6 +91,20 @@
 
   let isCustomTheme = $derived($currentOrg?.theme?.includes('#'));
   let hex = $derived($currentOrg.theme?.includes('#') ? $currentOrg.theme : undefined);
+  const colorPickerTexts = $derived({
+    label: {
+      h: $t('settings.organization.organization_profile.theme.color_picker.hue'),
+      s: $t('settings.organization.organization_profile.theme.color_picker.saturation'),
+      v: $t('settings.organization.organization_profile.theme.color_picker.brightness'),
+      r: $t('settings.organization.organization_profile.theme.color_picker.red'),
+      g: $t('settings.organization.organization_profile.theme.color_picker.green'),
+      b: $t('settings.organization.organization_profile.theme.color_picker.blue'),
+      a: $t('settings.organization.organization_profile.theme.color_picker.opacity'),
+      hex: $t('settings.organization.organization_profile.theme.color_picker.hex'),
+      withoutColor: $t('settings.organization.organization_profile.theme.color_picker.without_color')
+    },
+    changeTo: $t('settings.organization.organization_profile.theme.color_picker.change_to')
+  });
 </script>
 
 <UnsavedChanges bind:hasUnsavedChanges />
@@ -174,7 +189,6 @@
             ? 'custom-theme-picker--empty'
             : ''}"
         >
-          <!-- plus icon positioned over the color picker -->
           <div
             class="pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-200"
           >
@@ -183,6 +197,8 @@
           <ColorPicker
             position="responsive"
             label=""
+            components={{ wrapper: ColorPickerWrapper }}
+            texts={colorPickerTexts}
             {hex}
             on:input={(e) => {
               console.log('hex changed', e.detail.hex);

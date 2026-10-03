@@ -3,7 +3,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { handleOpenWidget } from '$features/ui/course-landing-page/store';
   import { queryUnsplash } from './utils';
-  import { t } from '$lib/utils/functions/translations';
+  import { translateEditorMessage } from '../utils/editor-translations';
   import { uploadImage } from '$lib/utils/services/upload';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
   import { ImageUploadModal } from '@cio/ui/custom/editor';
@@ -52,6 +52,7 @@
 
 <ImageUploadModal
   editor={null}
+  translate={translateEditorMessage}
   bind:open={$handleOpenWidget.open}
   onImageUpload={handleUpload}
   onSearchUnsplash={queryUnsplash}

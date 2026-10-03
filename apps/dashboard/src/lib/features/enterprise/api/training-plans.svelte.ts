@@ -1,6 +1,9 @@
 import { t } from '$lib/utils/functions/translations';
 import { enterpriseApi } from './enterprise.svelte';
+import { ZTrainingPlanDraft } from '@cio/utils/validation/training-plan';
+import { enterpriseValidationMessage } from '../utils/enterprise-errors';
 import type {
+  AssessmentScheme,
   AvailableTrainingCourses,
   TrainingPlanDetail,
   TrainingReminderResult,
@@ -14,10 +17,14 @@ import type {
 class TrainingPlansApi {
   private organizationId: string | null = null;
   private selectionRequest = 0;
+  private assessmentRequest = 0;
   plans = $state<TrainingPlans>([]);
   courses = $state<AvailableTrainingCourses>([]);
   selected = $state<TrainingPlanDetail | null>(null);
   preview = $state<TrainingPlanPreview | null>(null);
+  assessment = $state<AssessmentScheme>(null);
+  assessmentLoading = $state(false);
+  assessmentError = $state('');
   loading = $state(false);
   busy = $state(false);
   error = $state('');
@@ -26,6 +33,10 @@ class TrainingPlansApi {
     this.selectionRequest += 1;
     this.selected = null;
     this.preview = null;
+    this.assessmentRequest += 1;
+    this.assessment = null;
+    this.assessmentLoading = false;
+    this.assessmentError = '';
   }
 
   async load(organizationId: string) {
@@ -33,8 +44,7 @@ class TrainingPlansApi {
       this.organizationId = organizationId;
       this.plans = [];
       this.courses = [];
-      this.selected = null;
-      this.preview = null;
+      this.clearSelection();
     }
 
     this.loading = true;
@@ -46,42 +56,70 @@ class TrainingPlansApi {
       ]);
       this.plans = plans;
       this.courses = courses;
-    } catch {
-      this.error = t.get('enterprise.load_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.load_failed');
     } finally {
       this.loading = false;
     }
   }
 
   async select(organizationId: string, planId: string) {
-    const request = ++this.selectionRequest;
-    this.selected = null;
-    this.preview = null;
+    this.clearSelection();
+    const request = this.selectionRequest;
     this.error = '';
     try {
       const detail = await enterpriseApi.request<TrainingPlanDetail>(organizationId, `/plans/${planId}`);
       if (request !== this.selectionRequest || this.organizationId !== organizationId) return null;
 
       this.selected = detail;
+      void this.loadAssessment(organizationId, planId);
       return detail;
-    } catch {
-      if (request === this.selectionRequest) this.error = t.get('enterprise.load_failed');
+    } catch (error) {
+      if (request === this.selectionRequest)
+        this.error = error instanceof Error ? error.message : t.get('enterprise.load_failed');
+
       return null;
     }
   }
 
+  async loadAssessment(organizationId: string, planId: string) {
+    if (this.organizationId !== organizationId || this.selected?.plan.id !== planId) return;
+
+    const request = ++this.assessmentRequest;
+    this.assessment = null;
+    this.assessmentLoading = true;
+    this.assessmentError = '';
+    const isCurrent = () =>
+      request === this.assessmentRequest && this.organizationId === organizationId && this.selected?.plan.id === planId;
+    try {
+      const assessment = await enterpriseApi.request<AssessmentScheme>(organizationId, `/plans/${planId}/assessment`);
+      if (isCurrent()) this.assessment = assessment;
+    } catch (error) {
+      if (isCurrent()) this.assessmentError = error instanceof Error ? error.message : t.get('enterprise.load_failed');
+    } finally {
+      if (isCurrent()) this.assessmentLoading = false;
+    }
+  }
+
   async save(organizationId: string, draft: TrainingPlanDraft, planId?: string) {
+    const validated = ZTrainingPlanDraft.safeParse(draft);
+    if (!validated.success) {
+      this.error = enterpriseValidationMessage(validated.error);
+      return null;
+    }
+
     this.busy = true;
     this.error = '';
     try {
       const path = planId ? `/plans/${planId}` : '/plans';
       const method = planId ? 'PUT' : 'POST';
-      this.selected = await enterpriseApi.request<TrainingPlanDetail>(organizationId, path, method, draft);
+      this.selected = await enterpriseApi.request<TrainingPlanDetail>(organizationId, path, method, validated.data);
       this.preview = null;
       await this.load(organizationId);
+      if (this.selected) void this.loadAssessment(organizationId, this.selected.plan.id);
       return this.selected;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
       return null;
     } finally {
       this.busy = false;
@@ -100,8 +138,8 @@ class TrainingPlansApi {
         selectionRequest === this.selectionRequest
       )
         this.preview = preview;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
     }
   }
 
@@ -116,8 +154,8 @@ class TrainingPlansApi {
       );
       await this.load(organizationId);
       return true;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
       return false;
     } finally {
       this.busy = false;
@@ -182,8 +220,8 @@ class TrainingPlansApi {
         supplement
       );
       return true;
-    } catch {
-      this.error = t.get('enterprise.request_failed');
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : t.get('enterprise.request_failed');
       return false;
     } finally {
       this.busy = false;

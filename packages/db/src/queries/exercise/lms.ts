@@ -6,6 +6,15 @@ export interface LMSExerciseQueryResult {
   id: string;
   title: string;
   updated_at: string;
+  isExam: boolean;
+  opensAt: string | null;
+  closesAt: string | null;
+  dueBy: string | null;
+  durationMinutes: number | null;
+  maxAttempts: number;
+  allowMakeup: boolean;
+  attempts: { expiresAt: string; submittedAt: string | null }[];
+  makeup: { opensAt: string; closesAt: string; maxAttempts: number } | null;
   questions: {
     points: number;
   }[];
@@ -75,6 +84,13 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
         id: schema.exercise.id,
         title: schema.exercise.title,
         updatedAt: schema.exercise.updatedAt,
+        isExam: schema.exercise.isExam,
+        opensAt: schema.exercise.opensAt,
+        closesAt: schema.exercise.closesAt,
+        dueBy: schema.exercise.dueBy,
+        durationMinutes: schema.exercise.durationMinutes,
+        maxAttempts: schema.exercise.maxAttempts,
+        allowMakeup: schema.exercise.allowMakeup,
         lessonId: schema.exercise.lessonId,
         lessonTitle: schema.lesson.title,
         lessonOrder: schema.lesson.order,
@@ -119,6 +135,38 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
         and(inArray(schema.submission.exerciseId, exerciseIds), inArray(schema.submission.submittedBy, groupMemberIds))
       );
 
+    const [attempts, makeups] = await Promise.all([
+      db
+        .select({
+          exerciseId: schema.examAttempt.exerciseId,
+          groupMemberId: schema.examAttempt.groupMemberId,
+          expiresAt: schema.examAttempt.expiresAt,
+          submittedAt: schema.examAttempt.submittedAt
+        })
+        .from(schema.examAttempt)
+        .where(
+          and(
+            inArray(schema.examAttempt.exerciseId, exerciseIds),
+            inArray(schema.examAttempt.groupMemberId, groupMemberIds)
+          )
+        ),
+      db
+        .select({
+          exerciseId: schema.examMakeup.exerciseId,
+          groupMemberId: schema.examMakeup.groupMemberId,
+          opensAt: schema.examMakeup.opensAt,
+          closesAt: schema.examMakeup.closesAt,
+          maxAttempts: schema.examMakeup.maxAttempts
+        })
+        .from(schema.examMakeup)
+        .where(
+          and(
+            inArray(schema.examMakeup.exerciseId, exerciseIds),
+            inArray(schema.examMakeup.groupMemberId, groupMemberIds)
+          )
+        )
+    ]);
+
     // Build the result structure matching the original interface
     const result: LMSExerciseQueryResult[] = exercises.map((exercise) => {
       const courseData = coursesWithMembership.find((c) => c.courseId === exercise.exerciseCourseId);
@@ -126,11 +174,25 @@ export async function getLMSExercises(profileId: string, orgId: string): Promise
       const exerciseSubmissions = submissions.filter((s) => s.exerciseId === exercise.id);
 
       const groupMemberId = courseData?.groupMemberId;
+      const exerciseAttempts = attempts.filter(
+        (attempt) => attempt.exerciseId === exercise.id && attempt.groupMemberId === groupMemberId
+      );
+      const makeup =
+        makeups.find((item) => item.exerciseId === exercise.id && item.groupMemberId === groupMemberId) ?? null;
 
       return {
         id: exercise.id,
         title: exercise.title,
         updated_at: exercise.updatedAt || '',
+        isExam: exercise.isExam,
+        opensAt: exercise.opensAt,
+        closesAt: exercise.closesAt,
+        dueBy: exercise.dueBy,
+        durationMinutes: exercise.durationMinutes,
+        maxAttempts: exercise.maxAttempts,
+        allowMakeup: exercise.allowMakeup,
+        attempts: exerciseAttempts,
+        makeup,
         questions: exerciseQuestions.map((q) => ({ points: q.points || 0 })),
         submission:
           exerciseSubmissions.length > 0

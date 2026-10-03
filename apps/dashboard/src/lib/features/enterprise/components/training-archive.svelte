@@ -6,6 +6,7 @@
   import { t, locale } from '$lib/utils/functions/translations';
   import { AssessmentApi } from '$lib/features/enterprise/api/assessment.svelte';
   import { trainingResultKey, trainingStatusKey } from '$lib/features/enterprise/utils/training-labels';
+  import { formatLessonLearningDuration } from '$lib/features/course/utils/lesson-learning-utils';
   import { Button } from '@cio/ui/base/button';
   import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
   import * as Page from '@cio/ui/base/page';
@@ -73,7 +74,9 @@
                 : `${assessmentApi.archiveSummary.passRate}%`}
             </p>
             <p>
-              {$t('enterprise.assessment.learning_hours')}: {assessmentApi.archiveSummary.actualLearningHours ?? '—'}
+              {$t('enterprise.assessment.effective_time')}: {formatLessonLearningDuration(
+                assessmentApi.archiveSummary.actualLearningSeconds
+              )}
             </p>
             <p>{$t('enterprise.assessment.training_points')}: {assessmentApi.archiveSummary.trainingPoints ?? '—'}</p>
             <p>

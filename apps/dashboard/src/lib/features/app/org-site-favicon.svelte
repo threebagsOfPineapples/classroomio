@@ -13,9 +13,7 @@
 </script>
 
 <svelte:head>
-  {#if faviconHref}
-    <link rel="icon" href={faviconHref} />
-    <link rel="shortcut icon" href={faviconHref} />
-    <link rel="apple-touch-icon" href={faviconHref} />
-  {/if}
+  <link rel="icon" href={faviconHref} />
+  <link rel="shortcut icon" href={faviconHref} />
+  <link rel="apple-touch-icon" href={faviconHref} />
 </svelte:head>

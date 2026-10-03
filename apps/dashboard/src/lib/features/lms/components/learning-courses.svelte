@@ -37,7 +37,11 @@
         </Button>
       {/each}
     </div>
-    <Search placeholder={$t('courses.search_placeholder')} bind:value={search} />
+    <Search
+      placeholder={$t('courses.search_placeholder')}
+      clearLabel={$t('public_courses.filters.clear_search')}
+      bind:value={search}
+    />
   </div>
   {#if search.trim() && !loading && !error}<p class="ui:text-muted-foreground text-sm" aria-live="polite">
       {$t('enterprise.ui_v2.search_count', { count: visibleCourses.length })}

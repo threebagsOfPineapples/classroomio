@@ -84,6 +84,34 @@ Components in the `custom` directory come from various sources or are built on t
 - `custom/attention-highlight/` - Prop-driven focus pulse and smooth scroll wrapper to draw user attention to specific items
 - `custom/question-type-picker/` - Question type picker modal and QuestionTypeIcon glyph/icon component
 
+### Search labels (`src/custom/search/`)
+
+`Search` accepts `placeholder`, bindable `value`, `onValueChange(value)`, and `class`.
+Pass `aria-label` to name the input; when omitted, the input uses `placeholder`.
+Pass localized `clearLabel` to name the clear button and its tooltip. It defaults
+to `Clear search`. The clear button only appears when `value` is nonempty and
+clears both the bound value and the `onValueChange` callback value.
+
+```svelte
+<Search
+  placeholder="搜索课程"
+  aria-label="搜索课程"
+  clearLabel="清除搜索"
+  bind:value={searchValue}
+/>
+```
+
+### Image cropper labels (`src/custom/image-cropper/`)
+
+Pass localized copy from the host to `ImageCropper.Dialog closeLabel`,
+`ImageCropper.Cancel label`, and `ImageCropper.Crop label`. Their defaults are
+`Close`, `Cancel`, and `Crop`. These props change the accessible close name and
+action text without changing cropping behavior.
+
+`ImageUploadModal` from `custom/editor` accepts an optional `translate(message)`
+callback when used outside an editor. It defaults to the editor translation
+context and applies to upload, link, search, close, and nested cropping controls.
+
 ### Question type icon (`src/custom/question-type-picker/question-type-icon.svelte`)
 
 Renders a question type glyph tile or Lucide icon based on `key` (QuestionTypeKey) or `typeId` (number), matching the design system from the question type picker.
@@ -254,6 +282,7 @@ Unified video player component supporting HTML5 video (direct MP4 and HLS via `h
 | `options.onTimeUpdate`    | Callback invoked as playback position advances                                                                     |
 | `options.onPlayerReady`   | Callback invoked when the underlying player SDK is initialized                                                     |
 | `options.vimeoRetryLabel` | Optional label override for the Vimeo playback retry button                                                        |
+| `options.i18n`            | Host supplied `MediaPlayerI18n` labels for Plyr controls and settings; HLS preserves `qualityLabel[0]` for automatic quality |
 
 ### Combo button (`src/custom/combo-button/`)
 
@@ -549,3 +578,23 @@ When adding a new component to this package, follow these steps:
 # Editor localization
 
 `Editor` accepts `translate: (message: string) => string`. The host supplies localized labels for toolbar actions, menus, image dialogs and embedded media controls; omission preserves the existing English labels. The dashboard maps these messages to its `editor_copy` translations. Context is forwarded to detached node views and the slash-command popup so the same labels apply throughout the editor.
+
+## Media player learning records
+
+`MediaPlayer` accepts `options.seekPolicy.mode: 'tracking'` to allow seeking while reporting actual playback through `onProgress`. Seeking flushes the preceding playback, then reports the new position with zero played seconds. `pauseOnHidden` pauses playback when the page loses focus. Playback stays at normal speed while tracking.
+
+`'locked_until_complete'` also records playback and prevents seeking beyond the watched position. The host persists positions separately from watched time and supplies saved progress when the lesson is reopened.
+
+## Mobile sidebar labels
+
+`Sidebar.Root` accepts `mobileTitle`, `mobileDescription`, and `closeLabel` for its mobile sheet. Pass translations from the host; omission preserves the English defaults for other consumers. The sheet's close icon is decorative and its accessible button name uses `closeLabel`. `Sheet.Content` also accepts `closeLabel` when it is used directly.
+
+```svelte
+<Sidebar.Root
+  mobileTitle={$t('interface_copy.menu')}
+  mobileDescription={$t('common.toggle_sidebar')}
+  closeLabel={$t('interface_copy.close_menu')}
+>
+  ...
+</Sidebar.Root>
+```

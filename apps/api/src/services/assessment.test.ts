@@ -24,7 +24,7 @@ const mocks = vi.hoisted(() => ({
   getBatchStudentCourseMembership: vi.fn(),
   getCourseTrackableContentCounts: vi.fn(),
   getCourseMemberProgressSummaries: vi.fn(),
-  countLearningMinutesForMembers: vi.fn()
+  getEffectiveLearningSecondsForMembers: vi.fn()
 }));
 
 vi.mock('@api/services/enterprise', () => ({
@@ -61,7 +61,7 @@ vi.mock('@cio/db/queries/training-plan', () => ({
   lockTrainingPlan: mocks.lockTrainingPlan,
   getTrainingPlan: mocks.getTrainingPlan,
   listTrainingPlans: mocks.listTrainingPlans,
-  countLearningMinutesForMembers: mocks.countLearningMinutesForMembers
+  getEffectiveLearningSecondsForMembers: mocks.getEffectiveLearningSecondsForMembers
 }));
 
 import {
@@ -81,7 +81,11 @@ describe('assessment publication and evaluation', () => {
     mocks.listAssessmentEnrollments.mockResolvedValue([]);
     mocks.listArchiveCourseEvidence.mockResolvedValue([]);
     mocks.listTrainingPlans.mockResolvedValue([]);
-    mocks.countLearningMinutesForMembers.mockResolvedValue(0);
+    mocks.getEffectiveLearningSecondsForMembers.mockResolvedValue({
+      readingSeconds: 0,
+      watchedSeconds: 0,
+      totalSeconds: 0
+    });
     mocks.withAssessmentTransaction.mockImplementation((callback) => callback({}));
     mocks.lockTrainingPlan.mockResolvedValue({ id: 'plan', status: 'PUBLISHED' });
     mocks.getTrainingPlan.mockResolvedValue({ id: 'plan' });
@@ -127,7 +131,8 @@ describe('assessment publication and evaluation', () => {
     expect(summary.trainingCount).toBe(0);
     expect(mocks.listAssessmentEnrollments).toHaveBeenCalledWith('org', undefined, [7]);
     expect(mocks.listArchiveCourseEvidence).toHaveBeenCalledWith('org', undefined, [7]);
-    expect(mocks.countLearningMinutesForMembers).toHaveBeenCalledWith('org', [7], []);
+    expect(mocks.getEffectiveLearningSecondsForMembers).toHaveBeenCalledWith('org', [7], []);
+    expect(summary.actualLearningSeconds).toBe(0);
   });
 
   it('counts assignments and completions in their actual Beijing months', async () => {
@@ -165,13 +170,23 @@ describe('assessment publication and evaluation', () => {
         certificateStatus: null
       }
     ]);
-    mocks.countLearningMinutesForMembers.mockResolvedValueOnce(90);
+    mocks.getEffectiveLearningSecondsForMembers.mockResolvedValueOnce({
+      readingSeconds: 1800,
+      watchedSeconds: 3600,
+      totalSeconds: 5400
+    });
     const summary = await getTrainingArchiveSummary('org', 'admin');
     expect(summary.actualLearningHours).toBe(1.5);
-    expect(mocks.countLearningMinutesForMembers).toHaveBeenLastCalledWith('org', [7], ['course']);
-    mocks.countLearningMinutesForMembers.mockResolvedValueOnce(1);
+    expect(summary.actualLearningSeconds).toBe(5400);
+    expect(mocks.getEffectiveLearningSecondsForMembers).toHaveBeenLastCalledWith('org', [7], ['course']);
+    mocks.getEffectiveLearningSecondsForMembers.mockResolvedValueOnce({
+      readingSeconds: 60,
+      watchedSeconds: 0,
+      totalSeconds: 60
+    });
     const oneMinute = await getTrainingArchiveSummary('org', 'admin');
     expect(oneMinute.actualLearningHours).toBe(0.02);
+    expect(oneMinute.actualLearningSeconds).toBe(60);
     expect(statistics.monthlyTrend).toEqual([
       { month: '2026-09', assigned: 1, completed: 0 },
       { month: '2026-10', assigned: 0, completed: 1 }
@@ -179,6 +194,7 @@ describe('assessment publication and evaluation', () => {
 
     const october = await getTrainingStatistics('org', 'admin', undefined, '2026-10-01', '2026-10-31');
     expect(october.monthlyTrend).toEqual([{ month: '2026-10', assigned: 0, completed: 1 }]);
+    expect(mocks.getEffectiveLearningSecondsForMembers).toHaveBeenLastCalledWith('org', [], []);
   });
 
   it('limits department manager statistics to visible employees and rejects regular employees', async () => {
@@ -195,6 +211,60 @@ describe('assessment publication and evaluation', () => {
     mocks.listAssessmentEnrollments.mockClear();
     await expect(getTrainingStatistics('org', 'employee')).rejects.toMatchObject({ statusCode: 403 });
     expect(mocks.listAssessmentEnrollments).not.toHaveBeenCalled();
+  });
+
+  it('summarizes cumulative seconds for the assignment cohort without repeating shared members or courses', async () => {
+    const assignments = [
+      { id: 'october-first', memberId: 7, assignedAt: '2026-10-02T00:00:00.000Z', courseId: 'shared-course' },
+      { id: 'october-second', memberId: 7, assignedAt: '2026-10-03T00:00:00.000Z', courseId: 'shared-course' },
+      { id: 'september', memberId: 8, assignedAt: '2026-09-02T00:00:00.000Z', courseId: 'older-course' }
+    ];
+    mocks.listAssessmentEnrollments.mockResolvedValue(
+      assignments.map((assignment) => ({
+        enrollment: {
+          id: assignment.id,
+          assignedAt: assignment.assignedAt,
+          completedAt: null,
+          status: 'IN_PROGRESS',
+          progressPercent: 50
+        },
+        plan: {
+          id: assignment.id,
+          name: assignment.id,
+          planType: 'MANDATORY',
+          endAt: '2026-12-31T00:00:00.000Z',
+          status: 'PUBLISHED'
+        },
+        member: { id: assignment.memberId, email: 'learner@example.com', departmentId: null },
+        score: null,
+        evaluation: null
+      }))
+    );
+    mocks.listArchiveCourseEvidence.mockResolvedValue(
+      assignments.map((assignment) => ({
+        enrollmentId: assignment.id,
+        courseId: assignment.courseId,
+        courseTitle: assignment.courseId,
+        certificateEarnedAt: null,
+        certificateIssuedAt: null,
+        certificateExpiresAt: null,
+        certificateStatus: null
+      }))
+    );
+    mocks.getEffectiveLearningSecondsForMembers.mockResolvedValueOnce({
+      readingSeconds: 61,
+      watchedSeconds: 90000,
+      totalSeconds: 90061
+    });
+
+    const statistics = await getTrainingStatistics('org', 'admin', undefined, '2026-10-01', '2026-10-31');
+
+    expect(statistics.assigned).toBe(2);
+    expect(statistics.learners).toBe(1);
+    expect(statistics.actualLearningSeconds).toBe(90061);
+    expect(statistics.actualLearningHours).toBe(25.02);
+    expect(mocks.getEffectiveLearningSecondsForMembers).toHaveBeenCalledOnce();
+    expect(mocks.getEffectiveLearningSecondsForMembers).toHaveBeenCalledWith('org', [7], ['shared-course']);
   });
 
   it('shows department managers only plans assigned to their visible employees in the matrix', async () => {

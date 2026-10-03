@@ -637,7 +637,7 @@ class OrgApi extends BaseApiWithErrors {
   /**
    * Imports users into the organization as students
    */
-  async importAudienceMembers(data: TImportAudienceMembers) {
+  async importAudienceMembers(data: TImportAudienceMembers, options = { notify: true }) {
     return this.execute<ImportAudienceRequest>({
       requestFn: () =>
         classroomio.organization.audience.import.$post({
@@ -645,22 +645,25 @@ class OrgApi extends BaseApiWithErrors {
         }),
       logContext: 'importing audience members',
       onSuccess: (response) => {
-        const d = response.data;
-        snackbar.success(
-          t.get('audience.import.snackbar_success', {
-            imported: d.imported,
-            assigned: d.assigned ?? 0,
-            pendingInvitesRenewed: d.pendingInvitesRenewed ?? 0,
-            emailsSent: d.emailsSent
-          })
-        );
+        const result = response.data;
+        if (options.notify) {
+          snackbar.success(
+            t.get('audience.import.snackbar_success', {
+              imported: result.imported,
+              assigned: result.assigned ?? 0,
+              pendingInvitesRenewed: result.pendingInvitesRenewed ?? 0,
+              emailsSent: result.emailsSent
+            })
+          );
+        }
         this.success = true;
       },
       onError: (result) => {
         if (typeof result === 'string') {
-          snackbar.error(result);
+          if (options.notify) snackbar.error(result);
           return;
         }
+
         if ('error' in result && 'field' in result) {
           this.errors[result.field as string] = result.error;
         }

@@ -3,7 +3,7 @@
   import type { Component, Snippet } from 'svelte';
   import { resolve } from '$app/paths';
   import { CourseCard } from '@cio/ui';
-  import UserIcon from '@lucide/svelte/icons/user';
+  import BookOpenIcon from '@lucide/svelte/icons/book-open';
   import CircleDotIcon from '@lucide/svelte/icons/circle-dot';
   import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
   import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
@@ -16,6 +16,8 @@
   import pluralize from 'pluralize';
 
   import { Image } from '$features/ui';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
+  import { isStudentExperience } from '$lib/utils/store/app';
   import { t, locale } from '$lib/utils/functions/translations';
   import { calcCourseProgress, calcProgressRate } from '$features/course/utils/functions';
   import {
@@ -111,7 +113,7 @@
     ['SELF_PACED']: {
       style: '',
       label: $t('course.navItem.settings.self_paced'),
-      icon: UserIcon,
+      icon: BookOpenIcon,
       iconStyle: 'custom ui:text-primary'
     },
     ['COMPLIANCE']: {
@@ -183,6 +185,7 @@
   const certificateEarnedAt = $derived(
     isCertificateView && 'certificateEarnedAt' in course ? course.certificateEarnedAt : null
   );
+  const isArchived = $derived('status' in course && course.status === 'ARCHIVED');
 
   function formatDate(value: string | null | undefined) {
     if (!value) {
@@ -232,6 +235,16 @@
       {@render actions()}
     {:else if !isOnLandingPage}
       {#if !isLMS}
+        {#if $isOrgTeamMember && !$isStudentExperience}
+          <Button
+            href={resolve(`/courses/${id}/analytics`, {})}
+            variant="secondary"
+            size="sm"
+            class="absolute top-2 left-2 z-10"
+          >
+            {$t('enterprise.course.student_progress')}
+          </Button>
+        {/if}
         <CardDropdown
           {id}
           {title}
@@ -309,6 +322,8 @@
                 </div>
               {/if}
             {/if}
+          {:else if isArchived}
+            <Badge variant="secondary">{$t('course.navItem.settings.enterprise.archived')}</Badge>
           {:else}
             <CoursePublishBadge {isPublished} />
           {/if}

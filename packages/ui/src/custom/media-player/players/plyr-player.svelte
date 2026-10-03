@@ -8,6 +8,8 @@
   import { PLYR_DEFAULT_CONTROLS } from './constants';
   import { Button } from '../../../base/button';
   import type Plyr from 'plyr';
+  import { PlaybackProgress } from './playback-progress';
+  import { getPlyrI18n } from './player-i18n';
 
   interface Props {
     src: string;
@@ -52,11 +54,6 @@
   const SEEK_BLOCK_COOLDOWN_MS = 300;
   let seekBlockLastNotifiedAt = 0;
 
-  /**
-   * Furthest watched position for the must-watch lock. Shared between the
-   * progress-bar `seek` listener (set at Plyr construction) and the playback
-   * tracker in `attachSeekEnforcement`, which advances it as the user watches.
-   */
   let seekLockFurthestSeconds = options.seekPolicy?.initialFurthestSeconds ?? 0;
 
   /**
@@ -102,10 +99,10 @@
   const isYouTube = $derived(isYoutubeUrl(src));
   const youtubeVideoId = $derived(isYouTube ? getYoutubeVideoId(src) : null);
 
-  function attachTimeUpdates(player: Plyr, element: HTMLVideoElement): () => void {
+  function attachTimeUpdates(player: Plyr, element?: HTMLVideoElement): () => void {
     const policy = options.seekPolicy;
-    if (policy?.mode === 'locked_until_complete') {
-      return attachSeekEnforcement(player, element, policy);
+    if (policy && element) {
+      return attachPlaybackTracking(player, element, policy);
     }
 
     const handler = () => options.onTimeUpdate?.(player.currentTime);
@@ -115,20 +112,19 @@
     };
   }
 
-  function attachSeekEnforcement(
+  function attachPlaybackTracking(
     player: Plyr,
     element: HTMLVideoElement,
     policy: NonNullable<MediaPlayerOptions['seekPolicy']>
   ): () => void {
     seekLockFurthestSeconds = policy.initialFurthestSeconds ?? 0;
-    let playedSeconds = 0;
-    let lastValidTime = element.currentTime;
+    const playbackProgress = new PlaybackProgress(element.currentTime);
     let isSeeking = false;
     let isReclamping = false;
     let lastHeartbeatAt = 0;
     const heartbeatIntervalMs = 15_000;
 
-    const flushProgress = (force = false) => {
+    const flushProgress = (force = false, positionSeconds = player.currentTime) => {
       const durationSeconds = element.duration;
       if (!durationSeconds || !Number.isFinite(durationSeconds)) return;
 
@@ -136,12 +132,11 @@
       if (!force && now - lastHeartbeatAt < heartbeatIntervalMs) return;
 
       lastHeartbeatAt = now;
+      const progress = playbackProgress.flush(positionSeconds);
       policy.onProgress?.({
-        positionSeconds: Math.floor(player.currentTime),
-        playedDeltaSeconds: Math.round(playedSeconds),
+        ...progress,
         durationSeconds: Math.round(durationSeconds)
       });
-      playedSeconds = 0;
     };
 
     const isAheadOfLimit = () => player.currentTime > seekLockFurthestSeconds + SEEK_TOLERANCE_SECONDS;
@@ -154,14 +149,14 @@
       policy.onSeekBlocked?.();
     };
 
-    // Backstop for seeks that bypass the progress-bar listener (keyboard
-    // shortcuts, programmatic). The progress bar itself is blocked up-front
-    // by the `seek` listener wired at construction.
     const onSeeking = () => {
+      if (!isSeeking) flushProgress(true, playbackProgress.positionSeconds);
+
       isSeeking = true;
+      playbackProgress.beginSeek();
       if (isReclamping) return;
 
-      if (isAheadOfLimit()) {
+      if (policy.mode === 'locked_until_complete' && isAheadOfLimit()) {
         notifySeekBlocked();
         player.currentTime = seekLockFurthestSeconds;
       }
@@ -171,11 +166,11 @@
       if (isReclamping) {
         isReclamping = false;
         isSeeking = false;
-        lastValidTime = player.currentTime;
+        playbackProgress.finishSeek(player.currentTime);
         return;
       }
 
-      if (isAheadOfLimit()) {
+      if (policy.mode === 'locked_until_complete' && isAheadOfLimit()) {
         isReclamping = true;
         notifySeekBlocked();
         player.currentTime = seekLockFurthestSeconds;
@@ -183,21 +178,21 @@
       }
 
       isSeeking = false;
-      lastValidTime = player.currentTime;
+      playbackProgress.finishSeek(player.currentTime);
+      options.onTimeUpdate?.(player.currentTime);
+      flushProgress(true);
     };
 
     const onTimeUpdate = () => {
       if (isSeeking) return;
 
       const current = player.currentTime;
-      const delta = current - lastValidTime;
+      const playedDelta = playbackProgress.observe(current, !player.paused);
 
-      if (delta > 0 && delta < 2) {
-        playedSeconds += delta;
+      if (playedDelta > 0) {
         seekLockFurthestSeconds = Math.max(seekLockFurthestSeconds, current);
       }
 
-      lastValidTime = current;
       options.onTimeUpdate?.(current);
       flushProgress(false);
     };
@@ -213,17 +208,18 @@
     const onEnded = () => {
       const durationSeconds = element.duration;
       if (durationSeconds && Number.isFinite(durationSeconds)) {
-        const tailSeconds = durationSeconds - lastValidTime;
-        if (tailSeconds > 0) {
-          playedSeconds += tailSeconds;
-        }
+        playbackProgress.finish(durationSeconds);
         seekLockFurthestSeconds = Math.max(seekLockFurthestSeconds, durationSeconds);
-        lastValidTime = durationSeconds;
       }
 
       flushProgress(true);
     };
 
+    const onPlay = () => {
+      playbackProgress.positionSeconds = player.currentTime;
+    };
+
+    player.on('play', onPlay);
     player.on('seeking', onSeeking);
     player.on('seeked', onSeeked);
     player.on('timeupdate', onTimeUpdate);
@@ -233,6 +229,7 @@
 
     return () => {
       flushProgress(true);
+      player.off('play', onPlay);
       player.off('seeking', onSeeking);
       player.off('seeked', onSeeked);
       player.off('timeupdate', onTimeUpdate);
@@ -393,6 +390,8 @@
     const PlyrModule = await import('plyr');
     const PlyrConstructor = PlyrModule.default;
     const controls = getPlyrControls();
+    const i18n = getPlyrI18n(options.i18n, Boolean(qualityConfig));
+    const settings = ['captions', ...(qualityConfig ? ['quality'] : []), 'speed'];
 
     try {
       // Recheck after the dynamic import resolves — the component may have
@@ -403,6 +402,7 @@
 
       playerInstance = new PlyrConstructor(videoElement, {
         controls,
+        settings,
         autoplay,
         // Match the YouTube branch: force 16:9 so non-16:9 sources (e.g.
         // screen recordings at 4:3 or 5:4) get letterboxed inside the player
@@ -410,13 +410,9 @@
         ratio: '16:9',
         iconUrl: '/plyr.svg',
         iconPrefix: 'plyr',
+        ...(i18n ? { i18n } : {}),
         ...(options.seekPolicy?.mode === 'locked_until_complete' ? { listeners: { seek: handleSeekAttempt } } : {}),
-        ...(qualityConfig
-          ? {
-              quality: qualityConfig,
-              i18n: { qualityLabel: { 0: 'Auto' } }
-            }
-          : {})
+        ...(qualityConfig ? { quality: qualityConfig } : {})
       });
       timeupdateCleanup = attachTimeUpdates(playerInstance, videoElement);
       firstPlayCleanup = attachFirstPlay(playerInstance);
@@ -474,6 +470,7 @@
     const PlyrModule = await import('plyr');
     const PlyrConstructor = PlyrModule.default;
     const controls = getPlyrControls();
+    const i18n = getPlyrI18n(options.i18n);
 
     try {
       if (!isMounted || initGeneration !== youtubeInitGeneration || !containerElement || playerInstance) {
@@ -482,10 +479,12 @@
 
       playerInstance = new PlyrConstructor(containerElement, {
         controls,
+        settings: ['captions', 'speed'],
         autoplay,
         ratio: '16:9',
         iconUrl: '/plyr.svg',
-        iconPrefix: 'plyr'
+        iconPrefix: 'plyr',
+        ...(i18n ? { i18n } : {})
       });
       timeupdateCleanup = attachTimeUpdates(playerInstance);
       firstPlayCleanup = attachFirstPlay(playerInstance);

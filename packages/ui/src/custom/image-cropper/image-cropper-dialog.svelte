@@ -6,7 +6,7 @@
   import type { ImageCropperDialogProps } from './types';
   import XIcon from '@lucide/svelte/icons/x';
 
-  let { children, class: className, ...rest }: ImageCropperDialogProps = $props();
+  let { children, class: className, closeLabel = 'Close', ...rest }: ImageCropperDialogProps = $props();
 
   const dialogState = useImageCropperDialog();
 </script>
@@ -28,7 +28,7 @@
       onclick={() => dialogState.rootState.onCancel()}
     >
       <XIcon />
-      <span class="ui:sr-only">Close</span>
+      <span class="ui:sr-only">{closeLabel}</span>
     </Button>
     <div class="ui:flex ui:flex-col ui:gap-4">
       {@render children?.()}

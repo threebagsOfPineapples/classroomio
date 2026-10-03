@@ -1,9 +1,17 @@
 <script lang="ts">
-  import Button, { type ButtonElementProps } from '../../base/button/button.svelte';
+  import Button from '../../base/button/button.svelte';
+  import type { ImageCropperActionProps } from './types';
   import { useImageCropperCrop } from './image-cropper-context.svelte';
   import CropIcon from '@lucide/svelte/icons/crop';
 
-  let { ref = $bindable(null), variant = 'default', size = 'sm', onclick, ...rest }: ButtonElementProps = $props();
+  let {
+    ref = $bindable(null),
+    variant = 'default',
+    size = 'sm',
+    label = 'Crop',
+    onclick,
+    ...rest
+  }: ImageCropperActionProps = $props();
 
   const cropState = useImageCropperCrop();
 </script>
@@ -24,5 +32,5 @@
   }}
 >
   <CropIcon />
-  <span>Crop</span>
+  <span>{label}</span>
 </Button>

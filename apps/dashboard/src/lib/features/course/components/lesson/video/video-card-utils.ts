@@ -1,5 +1,4 @@
 import {
-  dedupe,
   getVideoMediaType,
   getYoutubeVideoId,
   isValidYoutubeUrl as isYoutubeUrl,
@@ -14,6 +13,7 @@ import { mediaApi } from '$features/media/api';
 import { snackbar } from '$features/ui/snackbar/store';
 import type { LessonVideoType } from '$features/course/utils/types';
 export type { LessonVideoType };
+export { isEnforceableLessonVideo, resolveWatchEnforcedAssetIds } from '@cio/utils/functions/lesson-video';
 
 export type LessonVideo = NonNullable<import('$features/course/utils/types').Lesson['videos']>[number];
 
@@ -185,34 +185,6 @@ export function formatVideoCreatedAt(isoString: string | null | undefined): stri
   const d = new Date(isoString);
   if (Number.isNaN(d.getTime())) return null;
   return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(d);
-}
-
-export function isEnforceableLessonVideo(video: LessonVideo): boolean {
-  return video.type === 'upload' && Boolean((video as LessonVideo & { assetId?: string }).assetId);
-}
-
-export function resolveWatchEnforcedAssetIds(
-  videos: LessonVideo[] | null | undefined,
-  completionPolicy: string | null | undefined
-): string[] {
-  const lessonVideos = videos ?? [];
-  const flaggedAssetIds = lessonVideos
-    .filter((video) => video.watchEnforced && isEnforceableLessonVideo(video))
-    .map((video) => (video as LessonVideo & { assetId: string }).assetId);
-
-  if (flaggedAssetIds.length > 0) {
-    return dedupe(flaggedAssetIds);
-  }
-
-  if (completionPolicy !== 'video_watch') {
-    return [];
-  }
-
-  return dedupe(
-    lessonVideos
-      .filter((video) => isEnforceableLessonVideo(video))
-      .map((video) => (video as LessonVideo & { assetId: string }).assetId)
-  );
 }
 
 export interface CreateExternalLessonVideoOptions {

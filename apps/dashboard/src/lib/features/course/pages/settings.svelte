@@ -48,7 +48,7 @@
   import { tagApi } from '$features/tag/api';
   import { uploadImage } from '$lib/utils/services/upload';
   import { handleOpenWidget } from '$features/ui/course-landing-page/store';
-  import { currentOrgPath, isFreePlan } from '$lib/utils/store/org';
+  import { currentOrgPath } from '$lib/utils/store/org';
   import { page } from '$app/stores';
   import { ROUTE_NAME, ROUTE_SECTIONS } from '$lib/routing/routes';
 
@@ -236,7 +236,6 @@
         grading: $settings.grading,
         lessonDownload: $settings.lessonDownload,
         allowSelfEnrollment: $settings.allowSelfEnrollment,
-        allowMarkdownExport: $settings.allowMarkdownExport,
         isContentGroupingEnabled: $settings.isContentGroupingEnabled,
         progressionMode: $settings.progressionMode,
         commentsEnabled: $settings.commentsEnabled,
@@ -308,7 +307,6 @@
         tabs: course.metadata?.lessonTabsOrder || $settings.tabs,
         grading: !!course.metadata?.grading,
         lessonDownload: !!course.metadata?.lessonDownload,
-        allowMarkdownExport: !!course.metadata?.allowMarkdownExport,
         isPublished: !!course.isPublished,
         status: course.status === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE',
         difficulty:
@@ -1022,25 +1020,6 @@
 
   <SettingsCard id="access" title={$t('course.navItem.settings.access_card_title')}>
     <Field.Group>
-      <Field.Field id="markdown-export" class="scroll-mt-24" orientation="horizontal">
-        <Field.Content>
-          <Field.Label for="allow-markdown-export">
-            <a href="#markdown-export" class="hover:underline">{$t('course.navItem.settings.allow_markdown_export')}</a>
-          </Field.Label>
-          <Field.Description>{$t('course.navItem.settings.allow_markdown_export_description')}</Field.Description>
-        </Field.Content>
-        <Switch
-          id="allow-markdown-export"
-          checked={$settings.allowMarkdownExport}
-          onCheckedChange={(checked) => {
-            $settings.allowMarkdownExport = checked;
-            hasUnsavedChanges = true;
-          }}
-        />
-      </Field.Field>
-
-      <SettingsSeparator />
-
       <Field.Set id="publish" class="scroll-mt-24">
         <AttentionHighlight id="publish">
           <Field.Field orientation="horizontal">
@@ -1081,24 +1060,22 @@
 
       <SettingsSeparator />
 
-      {#if !$isFreePlan}
-        <Field.Field class="scroll-mt-24" orientation="horizontal">
-          <Field.Content>
-            <Field.Label for="lesson-download">
-              <a href="#lesson-download" class="hover:underline">{$t('course.navItem.settings.lesson_download')}</a>
-            </Field.Label>
-            <Field.Description>{$t('course.navItem.settings.available')}</Field.Description>
-          </Field.Content>
-          <Switch
-            id="lesson-download"
-            checked={$settings.lessonDownload}
-            onCheckedChange={(checked) => {
-              $settings.lessonDownload = checked;
-              hasUnsavedChanges = true;
-            }}
-          />
-        </Field.Field>
-      {/if}
+      <Field.Field class="scroll-mt-24" orientation="horizontal">
+        <Field.Content>
+          <Field.Label for="lesson-download">
+            <a href="#lesson-download" class="hover:underline">{$t('course.navItem.settings.lesson_download')}</a>
+          </Field.Label>
+          <Field.Description>{$t('course.navItem.settings.available')}</Field.Description>
+        </Field.Content>
+        <Switch
+          id="lesson-download"
+          checked={$settings.lessonDownload}
+          onCheckedChange={(checked) => {
+            $settings.lessonDownload = checked;
+            hasUnsavedChanges = true;
+          }}
+        />
+      </Field.Field>
     </Field.Group>
   </SettingsCard>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import { MediaPlayer } from '@cio/ui/custom/media-player';
+  import { MediaPlayer, type MediaPlayerI18n } from '@cio/ui/custom/media-player';
   import { presignApi } from '$features/course/api/presign.svelte';
   import { mediaApi } from '$features/media/api';
   import { jobsApi, JobPoller, type MediaJobEnvelope } from '$features/jobs';
@@ -10,10 +10,9 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { lessonApi } from '$features/course/api';
-  import { snackbar } from '$features/ui/snackbar/store';
   import type { AssetTranscriptPayload } from '$features/media/utils/types';
   import { isCourseLearnerView, canRecordCourseLearning } from '$lib/utils/store/app';
-  import { resolveWatchEnforcedAssetIds, type LessonVideo } from './video-card-utils';
+  import { isEnforceableLessonVideo, resolveWatchEnforcedAssetIds, type LessonVideo } from './video-card-utils';
   import { lessonVideoBus } from './lesson-video-bus.svelte';
   import { TRANSCRIPT_PANEL_ID } from './transcript-panel-definition';
 
@@ -106,8 +105,7 @@
   let localTranscript = $state<AssetTranscriptPayload | null>(null);
   let localTranscriptLoading = $state(false);
 
-  // The parent keys this component on the upload assetId / link, so each
-  // mount maps to a single asset; lifecycle is plain onMount/onDestroy.
+  const playbackAssetId = isEnforceableLessonVideo(video) ? (video.assetId ?? null) : null;
   const uploadAssetId =
     video.type === 'upload' ? ((video as LessonVideo & { assetId?: string }).assetId ?? null) : null;
   const uploadStorageKey =
@@ -135,13 +133,13 @@
   let localSeekFn: (seconds: number) => void = () => {};
 
   function ownsPlaybackBus(): boolean {
-    return uploadAssetId !== null && lessonVideoBus.assetId === uploadAssetId;
+    return playbackAssetId !== null && lessonVideoBus.assetId === playbackAssetId;
   }
 
   function syncPlaybackBus(): void {
-    if (!uploadAssetId) return;
+    if (!playbackAssetId) return;
 
-    lessonVideoBus.assetId = uploadAssetId;
+    lessonVideoBus.assetId = playbackAssetId;
     lessonVideoBus.setSeekFn(localSeekFn);
   }
 
@@ -225,12 +223,72 @@
   }
 
   let pendingResumeSeconds: number | null = null;
+  let loadedVideoElement: HTMLVideoElement | null = null;
+  let watchProgressRestored = false;
+  let watchProgressQueue: Promise<unknown> = Promise.resolve();
+  let watchProgressAcceptedAt: number | null = null;
+
+  function applyPendingResume() {
+    if (!loadedVideoElement || pendingResumeSeconds == null || pendingResumeSeconds <= 0) return;
+
+    loadedVideoElement.currentTime = pendingResumeSeconds;
+    pendingResumeSeconds = null;
+  }
+
+  function reportWatchProgress(payload: {
+    positionSeconds: number;
+    playedDeltaSeconds: number;
+    durationSeconds: number;
+  }) {
+    if (!$canRecordCourseLearning || !playbackAssetId) return;
+
+    const assetId = playbackAssetId;
+    watchProgressQueue = watchProgressQueue
+      .catch(() => undefined)
+      .then(async () => {
+        const playedDeltaSeconds = Math.floor(payload.playedDeltaSeconds);
+        if (playedDeltaSeconds > 0 && watchProgressAcceptedAt !== null) {
+          const elapsedMs = performance.now() - watchProgressAcceptedAt;
+          const remainingMs = playedDeltaSeconds * 1000 - elapsedMs;
+          if (remainingMs > 0)
+            await new Promise((resolveDelay) => setTimeout(resolveDelay, Math.ceil(remainingMs) + 10));
+        }
+
+        const response = await lessonApi.reportWatchProgress(courseId, lessonId, {
+          ...payload,
+          playedDeltaSeconds,
+          assetId
+        });
+        if (
+          response &&
+          'success' in response &&
+          response.success &&
+          (playedDeltaSeconds > 0 || watchProgressAcceptedAt === null)
+        ) {
+          watchProgressAcceptedAt = performance.now();
+        }
+
+        return response;
+      });
+  }
 
   function handleSourceLoaded(element: HTMLVideoElement) {
-    if (pendingResumeSeconds == null || pendingResumeSeconds <= 0) return;
+    loadedVideoElement = element;
+    applyPendingResume();
+    if (
+      !watchProgressRestored ||
+      lessonApi.lesson?.completionPolicy !== 'video_watch' ||
+      !isWatchEnforcedForVideo ||
+      !Number.isFinite(element.duration) ||
+      element.duration <= 0
+    )
+      return;
 
-    element.currentTime = pendingResumeSeconds;
-    pendingResumeSeconds = null;
+    reportWatchProgress({
+      positionSeconds: element.currentTime,
+      playedDeltaSeconds: 0,
+      durationSeconds: element.duration
+    });
   }
 
   function clearVttRefetchTimer() {
@@ -333,22 +391,20 @@
     jobPoller.start();
   }
 
-  const isEnforceableUpload = $derived(video.type === 'upload' || isHls);
-
   const isWatchEnforcedForVideo = $derived.by(() => {
     const lesson = lessonApi.lesson;
-    if (!lesson || !uploadAssetId || !isEnforceableUpload) return false;
+    if (!lesson || !playbackAssetId) return false;
 
     const enforcedAssetIds = resolveWatchEnforcedAssetIds(lesson.videos, lesson.completionPolicy);
 
-    return enforcedAssetIds.includes(uploadAssetId);
+    return enforcedAssetIds.includes(playbackAssetId);
   });
 
   const assetWatchProgress = $derived.by(() => {
     const lesson = lessonApi.lesson;
-    if (!lesson?.watchProgress?.assets || !uploadAssetId) return null;
+    if (!lesson?.watchProgress?.assets || !playbackAssetId) return null;
 
-    return lesson.watchProgress.assets.find((asset) => asset.assetId === uploadAssetId) ?? null;
+    return lesson.watchProgress.assets.find((asset) => asset.assetId === playbackAssetId) ?? null;
   });
 
   const seekPolicy = $derived.by(() => {
@@ -357,42 +413,32 @@
       return undefined;
     }
 
-    if (assetWatchProgress?.isComplete) {
-      return undefined;
-    }
-
     return {
-      mode: 'locked_until_complete' as const,
+      mode: 'tracking' as const,
       watchThresholdPercent: lesson.videoWatchThreshold ?? 95,
       initialFurthestSeconds: assetWatchProgress?.furthestSeconds ?? 0,
       pauseOnHidden: true,
-      onProgress: (payload: { positionSeconds: number; playedDeltaSeconds: number; durationSeconds: number }) => {
-        if (!$canRecordCourseLearning || !uploadAssetId) return;
-
-        void lessonApi.reportWatchProgress(courseId, lessonId, {
-          ...payload,
-          assetId: uploadAssetId
-        });
-      },
-      onSeekBlocked: () => {
-        snackbar.error('course.navItem.lessons.watch_progress.seek_blocked');
-      }
+      onProgress: reportWatchProgress
     };
   });
 
   async function restoreWatchProgress(): Promise<void> {
-    if (!$canRecordCourseLearning || !uploadAssetId) return;
+    if (!$canRecordCourseLearning || !playbackAssetId) return;
 
     const cachedAsset = assetWatchProgress;
     if (cachedAsset?.lastPositionSeconds && cachedAsset.lastPositionSeconds > 0) {
       pendingResumeSeconds = cachedAsset.lastPositionSeconds;
+      applyPendingResume();
       return;
     }
 
     const progress = await lessonApi.getWatchProgress(courseId, lessonId);
-    const assetProgress = progress?.assets?.find((asset) => asset.assetId === uploadAssetId);
+    if (!isMounted) return;
+
+    const assetProgress = progress?.assets?.find((asset) => asset.assetId === playbackAssetId);
     if (assetProgress?.lastPositionSeconds && assetProgress.lastPositionSeconds > 0) {
       pendingResumeSeconds = assetProgress.lastPositionSeconds;
+      applyPendingResume();
     }
   }
 
@@ -409,11 +455,16 @@
       });
     }
 
-    if (uploadAssetId && (lessonVideoBus.assetId === null || lessonVideoBus.assetId === uploadAssetId)) {
+    if (playbackAssetId && (lessonVideoBus.assetId === null || lessonVideoBus.assetId === playbackAssetId)) {
       syncPlaybackBus();
     }
 
-    void restoreWatchProgress();
+    void restoreWatchProgress().finally(() => {
+      if (!isMounted) return;
+
+      watchProgressRestored = true;
+      if (loadedVideoElement) handleSourceLoaded(loadedVideoElement);
+    });
 
     void (async () => {
       await loadTranscript();
@@ -425,6 +476,7 @@
 
   onDestroy(() => {
     isMounted = false;
+    loadedVideoElement = null;
     clearPlaybackRefreshTimer();
     clearVttRefetchTimer();
     stopJobPoller();
@@ -441,7 +493,7 @@
       return;
     }
 
-    if (uploadAssetId && ownsPlaybackBus()) {
+    if (playbackAssetId && ownsPlaybackBus()) {
       lessonVideoBus.assetId = null;
       lessonVideoBus.currentTimeSeconds = 0;
       lessonVideoBus.hasPlayed = false;
@@ -483,6 +535,53 @@
         }
       : undefined
   );
+
+  const playerI18n: MediaPlayerI18n = $derived({
+    restart: $t('media_player.restart'),
+    rewind: $t('media_player.rewind', { seektime: '{seektime}' }),
+    play: $t('media_player.play'),
+    pause: $t('media_player.pause'),
+    fastForward: $t('media_player.fast_forward', { seektime: '{seektime}' }),
+    seek: $t('media_player.seek'),
+    seekLabel: $t('media_player.seek_label', { currentTime: '{currentTime}', duration: '{duration}' }),
+    played: $t('media_player.played'),
+    buffered: $t('media_player.buffered'),
+    currentTime: $t('media_player.current_time'),
+    duration: $t('media_player.duration'),
+    volume: $t('media_player.volume'),
+    mute: $t('media_player.mute'),
+    unmute: $t('media_player.unmute'),
+    enableCaptions: $t('media_player.enable_captions'),
+    disableCaptions: $t('media_player.disable_captions'),
+    download: $t('media_player.download'),
+    enterFullscreen: $t('media_player.enter_fullscreen'),
+    exitFullscreen: $t('media_player.exit_fullscreen'),
+    frameTitle: $t('media_player.frame_title', { title: '{title}' }),
+    captions: $t('media_player.captions'),
+    settings: $t('media_player.settings'),
+    pip: $t('media_player.pip'),
+    airplay: $t('media_player.airplay'),
+    menuBack: $t('media_player.menu_back'),
+    speed: $t('media_player.speed'),
+    normal: $t('media_player.normal'),
+    quality: $t('media_player.quality'),
+    loop: $t('media_player.loop'),
+    start: $t('media_player.start'),
+    end: $t('media_player.end'),
+    all: $t('media_player.all'),
+    reset: $t('media_player.reset'),
+    disabled: $t('media_player.disabled'),
+    enabled: $t('media_player.enabled'),
+    advertisement: $t('media_player.advertisement'),
+    qualityLabel: { 0: $t('media_player.auto') },
+    qualityBadge: {
+      1440: $t('media_player.quality_hd'),
+      1080: $t('media_player.quality_hd'),
+      720: $t('media_player.quality_hd'),
+      576: $t('media_player.quality_sd'),
+      480: $t('media_player.quality_sd')
+    }
+  });
 </script>
 
 <div class="w-full">
@@ -499,6 +598,7 @@
       width: '100%',
       controls: true,
       playsinline: true,
+      i18n: playerI18n,
       isLearnerView: $isCourseLearnerView,
       vimeoPrivacyErrorTitle: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_title'),
       vimeoPrivacyErrorDescription: $t(

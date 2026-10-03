@@ -22,6 +22,7 @@
   import type { CourseContent, CourseContentItem } from '$features/course/utils/types';
   import { contentCreateStoreUtils, contentEditingStore } from '$features/course/components/content/store';
   import { getCourseContent } from '$features/course/utils/content';
+  import { getSavedLessonLearningSeconds } from '$features/course/utils/content-navigation';
   import { ContentType } from '@cio/utils/constants/content';
   import ContentRow from './content-row.svelte';
   import ContentActions from './content-actions.svelte';
@@ -594,7 +595,9 @@
                       <span class={metaChipClass}>
                         {item.isComplete
                           ? $t('course.navItem.lessons.complete')
-                          : $t('course.navItem.lessons.incomplete')}
+                          : getSavedLessonLearningSeconds(courseApi.course, item.contentId) > 0
+                            ? $t('course.navItem.lessons.watch_progress.in_progress')
+                            : $t('course.navItem.lessons.incomplete')}
                       </span>
                     {/if}
                   </div>

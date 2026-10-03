@@ -12,6 +12,9 @@
     collapsible = 'offcanvas',
     class: className,
     mobileOverlayClass,
+    mobileTitle = 'Sidebar',
+    mobileDescription = 'Displays the mobile sidebar.',
+    closeLabel = 'Close',
     children,
     ...restProps
   }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
@@ -19,6 +22,9 @@
     variant?: 'sidebar' | 'floating' | 'inset';
     collapsible?: 'offcanvas' | 'icon' | 'none';
     mobileOverlayClass?: string;
+    mobileTitle?: string;
+    mobileDescription?: string;
+    closeLabel?: string;
   } = $props();
 
   const sidebar = useSidebar();
@@ -42,6 +48,7 @@
       data-slot="sidebar"
       data-mobile="true"
       overlayClass={mobileOverlayClass}
+      {closeLabel}
       class={cn(
         'ui:bg-sidebar ui:text-sidebar-foreground ui:w-(--sidebar-width) ui:p-0 ui:[&>button]:hidden',
         className
@@ -49,9 +56,9 @@
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
       {side}
     >
-      <Sheet.Header class="sr-only">
-        <Sheet.Title>Sidebar</Sheet.Title>
-        <Sheet.Description>Displays the mobile sidebar.</Sheet.Description>
+      <Sheet.Header class="ui:sr-only">
+        <Sheet.Title>{mobileTitle}</Sheet.Title>
+        <Sheet.Description>{mobileDescription}</Sheet.Description>
       </Sheet.Header>
       <div class="ui:flex ui:h-full ui:w-full ui:flex-col">
         {@render children?.()}

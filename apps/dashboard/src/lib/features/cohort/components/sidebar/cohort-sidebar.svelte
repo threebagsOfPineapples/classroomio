@@ -30,7 +30,13 @@
 {#if !isOrgLoaded}
   <SidebarSkeleton />
 {:else}
-  <Sidebar.Root collapsible="icon" class="ui:z-app-bar-elevated">
+  <Sidebar.Root
+    collapsible="icon"
+    class="ui:z-app-bar-elevated"
+    mobileTitle={$t('interface_copy.menu')}
+    mobileDescription={$t('common.toggle_sidebar')}
+    closeLabel={$t('interface_copy.close_menu')}
+  >
     <Sidebar.Header>
       <OrgLogo />
     </Sidebar.Header>
