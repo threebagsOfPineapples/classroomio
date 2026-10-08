@@ -7,10 +7,13 @@ node_modules
 
 # testing
 coverage
+.nyc_output/
 e2e/test-results/
 e2e/playwright-report/
 playwright-report/
 test-results/
+blob-report/
+playwright/.cache/
 .github/demo-runs/pr-*.spec.ts
 
 # next.js
@@ -20,31 +23,48 @@ build
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
+*.key
+*.p12
+*.pfx
+*.swp
+*.swo
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.log
+*.log.*
 
 # local env files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.*.example
 
 # turbo
 .turbo
 
 # vercel
 .vercel
+.netlify/
+.wrangler/
+.output/
+.cache/
+.vite/
+.eslintcache
 
 vite.config.ts*.mjs
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
-.pnpm-store/*
+.pnpm-store/
 
-**/dist/*
+dist/
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
@@ -63,10 +83,20 @@ storybook-static
 
 company/
 
-# Claude Code local artifacts
-.claude/skills
-.claude/scheduled_tasks.lock
-.claude/settings.local.json
+# Local development tools
+/.agents/
+/.claude/
+/.cursor/
+/.cursorignore
+/.vscode/
+/.idea/
+.impeccable/
+/skills-lock.json
+/.codex-tmp/
+
+# Design prototypes and legacy scaffolding
+/prototypes/
+/_template/
 
 # Local db-agent playground (not committed)
 apps/db-agent
@@ -80,5 +110,10 @@ output.css
 /reports
 
 .dev.vars
+.dev.vars.*
+!.dev.vars.example
 .local-infra/
 .playwright-cli/
+/output/
+*.sql.gz
+*.dump
