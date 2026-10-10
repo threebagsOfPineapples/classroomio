@@ -5,6 +5,7 @@ x-app-environment: &app-environment
   PUBLIC_IS_SELFHOSTED: 'true'
   DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL for the external train database}
   DATABASE_POOL_MAX: '5'
+  NODE_EXTRA_CA_CERTS: /run/zz-train-certs/database-ca.pem
   REDIS_URL: redis://redis:6379
   PUBLIC_SERVER_URL: ${DASHBOARD_ORIGIN}/proxy
   DASHBOARD_ORIGIN: ${DASHBOARD_ORIGIN:?set DASHBOARD_ORIGIN}
@@ -63,6 +64,10 @@ services:
     command: ['sh', '/app/docker/entrypoint-api.sh']
     mem_limit: 768m
     cpus: 0.75
+    extra_hosts:
+      - 'zzdata:10.60.6.199'
+    volumes:
+      - ./certs/database-ca.pem:/run/zz-train-certs/database-ca.pem:ro
     environment:
       <<: *app-environment
       PORT: '3081'
@@ -109,7 +114,7 @@ services:
       PRIVATE_APP_HOST: ${APP_HOST:?set APP_HOST}
       PRIVATE_APP_SUBDOMAINS: app
       UPLOAD_MAX_DOCUMENT_MB: '30'
-      BODY_SIZE_LIMIT: 50M
+      BODY_SIZE_LIMIT: '52428800'
       CSP_CONNECT_SRC_DOMAINS: ${OBJECT_STORAGE_PUBLIC_ENDPOINT}
       CSP_MEDIA_SRC_DOMAINS: ${OBJECT_STORAGE_PUBLIC_ENDPOINT}
     depends_on:
@@ -136,6 +141,10 @@ services:
     command: ['node', 'apps/jobs/dist/index.js']
     mem_limit: 512m
     cpus: 0.5
+    extra_hosts:
+      - 'zzdata:10.60.6.199'
+    volumes:
+      - ./certs/database-ca.pem:/run/zz-train-certs/database-ca.pem:ro
     environment:
       <<: *app-environment
       NODE_OPTIONS: --max-old-space-size=320

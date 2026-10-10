@@ -2,6 +2,9 @@ import * as Sentry from '@sentry/sveltekit';
 import { dev } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { handleErrorWithSentry } from '@sentry/sveltekit';
+import { ensureRandomUuid } from '$lib/utils/ensure-random-uuid';
+
+export const init = ensureRandomUuid;
 
 const dsn = env.PUBLIC_SENTRY_DSN?.trim();
 const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
