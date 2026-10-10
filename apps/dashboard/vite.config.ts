@@ -51,6 +51,7 @@ export default ({ mode }) => {
     ssr: {
       // svelte-motion uses directory imports without `/index.js`; Node ESM fails unless bundled for SSR.
       noExternal: [
+        /^d3-/,
         'svelte-sonner',
         'layerchart',
         'svelte-toolbelt',

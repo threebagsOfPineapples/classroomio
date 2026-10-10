@@ -1,0 +1,50 @@
+FROM node:20.19.3-bookworm-slim AS base
+
+ARG DEBIAN_MIRROR=http://deb.debian.org
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
+RUN sed -i "s|http://deb.debian.org|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV CI=true \
+    PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH
+
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+
+FROM base AS build
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
+COPY pnpm-lock.yaml ./
+RUN npm_config_registry="${NPM_REGISTRY}" pnpm fetch --store-dir /pnpm/store
+
+COPY . .
+
+RUN pnpm install --offline --frozen-lockfile --ignore-scripts --shamefully-hoist \
+    --store-dir /pnpm/store --filter @cio/dashboard... --filter @cio/jobs-worker...
+RUN find . -name 'tsconfig.tsbuildinfo' -delete
+RUN NODE_OPTIONS=--max-old-space-size=5120 \
+    DASHBOARD_SOURCEMAP=false \
+    PUBLIC_IS_SELFHOSTED=true \
+    pnpm -r --workspace-concurrency=1 --filter @cio/dashboard... --filter @cio/jobs-worker... build
+RUN test -f apps/api/dist/index.js \
+    && test -f apps/dashboard/build/index.js \
+    && test -f apps/jobs/dist/index.js
+
+FROM base
+COPY --from=build /app /app
+
+ENV NODE_ENV=production \
+    PUBLIC_IS_SELFHOSTED=true \
+    PORT=3082
+
+WORKDIR /app/apps/dashboard
+ARG SOURCE_REVISION
+LABEL org.opencontainers.image.title="zz_train" \
+    org.opencontainers.image.revision="${SOURCE_REVISION}"
+EXPOSE 3082
+CMD ["node", "build/index.js"]

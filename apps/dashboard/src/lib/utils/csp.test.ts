@@ -1,7 +1,39 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { parseCspDomains } from './csp';
+import { applyCspExtensions, parseCspDomains } from './csp';
 import { getCspDomains } from './csp-domains.js';
+
+afterEach(() => vi.unstubAllEnvs());
+
+describe('self-hosted transport policy', () => {
+  it('supports an explicitly configured HTTP origin without upgrading its resources', () => {
+    vi.stubEnv('PUBLIC_IS_SELFHOSTED', 'true');
+    vi.stubEnv('ORIGIN', 'http://10.60.6.101:3082');
+    const response = new Response('', {
+      headers: { 'content-security-policy': "default-src 'self'; upgrade-insecure-requests; object-src 'none'" }
+    });
+
+    applyCspExtensions(response);
+
+    expect(response.headers.get('content-security-policy')).toBe("default-src 'self'; object-src 'none'");
+  });
+
+  it.each([
+    ['true', 'https://train.example.com'],
+    ['false', 'http://10.60.6.101:3082'],
+    ['true', '']
+  ])('preserves HTTPS upgrades for self-hosted=%s and origin=%s', (selfHosted, origin) => {
+    vi.stubEnv('PUBLIC_IS_SELFHOSTED', selfHosted);
+    vi.stubEnv('ORIGIN', origin);
+    const response = new Response('', {
+      headers: { 'content-security-policy': "default-src 'self'; upgrade-insecure-requests" }
+    });
+
+    applyCspExtensions(response);
+
+    expect(response.headers.get('content-security-policy')).toContain('upgrade-insecure-requests');
+  });
+});
 
 it('allows the feedback SDK stylesheet only in the SaaS defaults', () => {
   expect(getCspDomains(false, undefined).styleSrc).toContain('https://cdn.userjot.com');

@@ -65,11 +65,12 @@ function getExtensions(): Record<string, string[]> {
   return cachedExtensions;
 }
 
-function extendHeader(header: string, extensions: Record<string, string[]>): string {
+function extendHeader(header: string, extensions: Record<string, string[]>, allowHttp: boolean): string {
   return header
     .split(';')
     .map((d) => d.trim())
     .filter(Boolean)
+    .filter((directive) => !allowHttp || directive !== 'upgrade-insecure-requests')
     .map((directive) => {
       const spaceIdx = directive.indexOf(' ');
       const name = spaceIdx === -1 ? directive : directive.substring(0, spaceIdx);
@@ -81,12 +82,13 @@ function extendHeader(header: string, extensions: Record<string, string[]>): str
 
 export function applyCspExtensions(response: Response): Response {
   const extensions = getExtensions();
-  if (Object.keys(extensions).length === 0) return response;
+  const allowHttp = process.env.PUBLIC_IS_SELFHOSTED === 'true' && process.env.ORIGIN?.startsWith('http://') === true;
+  if (Object.keys(extensions).length === 0 && !allowHttp) return response;
 
   for (const name of ['content-security-policy', 'content-security-policy-report-only']) {
     const header = response.headers.get(name);
     if (header) {
-      response.headers.set(name, extendHeader(header, extensions));
+      response.headers.set(name, extendHeader(header, extensions, allowHttp));
     }
   }
 
