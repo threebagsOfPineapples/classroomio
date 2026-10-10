@@ -89,4 +89,15 @@ describe('enterprise access', () => {
     ).rejects.toMatchObject({ statusCode: 403 });
     expect(queries.updateEnterpriseEmployee).not.toHaveBeenCalled();
   });
+
+  it('prevents HR from changing identities used for external login', async () => {
+    vi.mocked(queries.listEnterpriseRoles).mockResolvedValue([{ role: 'HR' }]);
+    vi.mocked(queries.getEnterpriseMember).mockResolvedValue([
+      { id: 9, roleId: ROLE.STUDENT, status: 'ACTIVE', externalSource: null, externalId: null }
+    ] as never);
+    await expect(
+      editEnterpriseEmployee('org-a', 'profile-a', 9, { externalSource: 'dingtalk:company-a', externalId: 'staff-a' })
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(queries.updateEnterpriseEmployee).not.toHaveBeenCalled();
+  });
 });

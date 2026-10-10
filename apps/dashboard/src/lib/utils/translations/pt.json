@@ -6098,7 +6098,54 @@
         "member_inactive": "Esta conta de treinamento não está disponível.",
         "reauth_required": "Entre novamente antes de associar DingTalk."
       },
-      "paused_hint": "O login com DingTalk ainda não está ativado. Entre com seu e-mail e senha."
+      "paused_hint": "O login com DingTalk ainda não está ativado. Entre com seu e-mail e senha.",
+      "directory": {
+        "title": "Sincronização DingTalk",
+        "description": "Revise departamentos e funcionários antes de importar.",
+        "preview": "Ler e revisar",
+        "sync": "Confirmar sincronização",
+        "connection": "Conexão de acesso",
+        "enabled": "O acesso DingTalk está ativado.",
+        "callback": "Retorno de acesso",
+        "admin_only": "Somente administradores podem sincronizar o diretório.",
+        "selected": "Funcionários selecionados",
+        "rules": "Novos funcionários serão alunos. Permissões e histórico são preservados. Escolha o departamento principal quando houver vários; ausentes não são removidos automaticamente.",
+        "search": "Buscar nome ou matrícula",
+        "select_ready": "Selecionar ou limpar funcionários prontos",
+        "choose": "Seleção",
+        "choose_employee": "Selecionar {name}",
+        "primary_department": "Departamento principal de {name}",
+        "choose_department": "Escolher departamento principal",
+        "action": "Alteração",
+        "check": "Revisão",
+        "page": "Página {page} de {pages}",
+        "confirm": "Sincronizar {departments} departamentos e {employees} funcionários selecionados? Permissões e histórico serão preservados.",
+        "completed": "Criados: {departmentsCreated} departamentos, {employeesCreated} funcionários. Atualizados: {departmentsUpdated} departamentos, {employeesUpdated} funcionários.",
+        "previous": "Anterior",
+        "next": "Próxima",
+        "cancel": "Cancelar",
+        "actions": {
+          "create": "Novo funcionário",
+          "update": "Atualizar funcionário"
+        },
+        "status": {
+          "ready": "Pronto",
+          "department_required": "Escolher departamento principal",
+          "inactive": "Conta inativa; ignorada",
+          "employee_no_conflict": "Matrícula em conflito",
+          "email_conflict": "E-mail pertence a outra conta",
+          "field_invalid": "Corrigir dados do funcionário",
+          "department_missing": "Departamento indisponível"
+        },
+        "errors": {
+          "disabled": "DingTalk não está configurado para esta organização.",
+          "permissions": "Ative as permissões de leitura de departamentos e membros no DingTalk.",
+          "provider_error": "Não foi possível ler o DingTalk. Tente novamente.",
+          "invalid_directory": "Diretório incompleto ou com departamentos inativos. Verifique antes de importar.",
+          "expired": "A prévia expirou. Leia novamente.",
+          "changed": "Dados ou permissões mudaram. Leia uma nova prévia."
+        }
+      }
     },
     "platform_description": "Gerencie treinamentos de funcionários, cursos, avaliações, registros de aprendizagem e certificados.",
     "navigation": {

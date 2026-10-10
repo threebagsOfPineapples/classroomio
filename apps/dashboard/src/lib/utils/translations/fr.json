@@ -6098,7 +6098,54 @@
         "member_inactive": "Ce compte de formation n’est pas disponible.",
         "reauth_required": "Reconnectez-vous avant d’associer DingTalk."
       },
-      "paused_hint": "La connexion avec DingTalk n’est pas encore activée. Connectez-vous avec votre e-mail et votre mot de passe."
+      "paused_hint": "La connexion avec DingTalk n’est pas encore activée. Connectez-vous avec votre e-mail et votre mot de passe.",
+      "directory": {
+        "title": "Synchronisation DingTalk",
+        "description": "Vérifiez les services et les employés avant l’import.",
+        "preview": "Lire et vérifier",
+        "sync": "Confirmer la synchronisation",
+        "connection": "Connexion d’authentification",
+        "enabled": "La connexion DingTalk est activée.",
+        "callback": "Retour de connexion",
+        "admin_only": "Seul un administrateur peut synchroniser l’annuaire.",
+        "selected": "Employés sélectionnés",
+        "rules": "Les nouveaux employés deviennent apprenants. Les rôles et l’historique sont conservés. Choisissez un service principal si nécessaire ; les absents ne sont pas supprimés automatiquement.",
+        "search": "Rechercher un nom ou matricule",
+        "select_ready": "Sélectionner ou désélectionner les employés prêts",
+        "choose": "Sélection",
+        "choose_employee": "Sélectionner {name}",
+        "primary_department": "Service principal de {name}",
+        "choose_department": "Choisir le service principal",
+        "action": "Modification",
+        "check": "Vérification",
+        "page": "Page {page} sur {pages}",
+        "confirm": "Synchroniser {departments} services et {employees} employés sélectionnés ? Les rôles et l’historique sont conservés.",
+        "completed": "Créés : {departmentsCreated} services, {employeesCreated} employés. Mis à jour : {departmentsUpdated} services, {employeesUpdated} employés.",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "cancel": "Annuler",
+        "actions": {
+          "create": "Nouvel employé",
+          "update": "Mettre à jour l’employé"
+        },
+        "status": {
+          "ready": "Prêt",
+          "department_required": "Choisir le service principal",
+          "inactive": "Compte inactif ; ignoré",
+          "employee_no_conflict": "Matricule en conflit",
+          "email_conflict": "L’adresse appartient à un autre compte",
+          "field_invalid": "Corriger les données de l’employé",
+          "department_missing": "Service indisponible"
+        },
+        "errors": {
+          "disabled": "DingTalk n’est pas configuré pour cette organisation.",
+          "permissions": "Activez les permissions de lecture des services et membres dans DingTalk.",
+          "provider_error": "Impossible de lire DingTalk. Réessayez.",
+          "invalid_directory": "L’annuaire est incomplet ou contient des services inactifs. Vérifiez avant l’import.",
+          "expired": "L’aperçu a expiré. Rechargez-le.",
+          "changed": "Les données ou permissions ont changé. Rechargez l’aperçu."
+        }
+      }
     },
     "platform_description": "Gérez la formation des employés, les cours, les évaluations, les dossiers d’apprentissage et les certificats.",
     "navigation": {

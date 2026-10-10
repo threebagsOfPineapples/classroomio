@@ -1,5 +1,21 @@
 import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
 
+export type DingtalkDirectoryStatusRequest = typeof classroomio.enterprise.dingtalk.$get;
+export type DingtalkDirectoryPreviewRequest = typeof classroomio.enterprise.dingtalk.preview.$post;
+export type DingtalkDirectorySyncRequest = typeof classroomio.enterprise.dingtalk.sync.$post;
+export type DingtalkDirectoryStatus = Extract<
+  InferResponseType<DingtalkDirectoryStatusRequest>,
+  { success: true }
+>['data'];
+export type DingtalkDirectoryPreview = Extract<
+  InferResponseType<DingtalkDirectoryPreviewRequest>,
+  { success: true }
+>['data'];
+export type DingtalkDirectoryResult = Extract<
+  InferResponseType<DingtalkDirectorySyncRequest>,
+  { success: true }
+>['data'];
+
 export type EnterpriseOverviewRequest = typeof classroomio.enterprise.overview.$get;
 export type EnterpriseEmployeesRequest = typeof classroomio.enterprise.employees.$get;
 export type EnterpriseGradingQueueRequest = (typeof classroomio.enterprise)['grading-queue']['$get'];

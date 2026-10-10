@@ -6098,7 +6098,54 @@
         "member_inactive": "Tài khoản đào tạo này không khả dụng.",
         "reauth_required": "Đăng nhập lại trước khi liên kết DingTalk."
       },
-      "paused_hint": "Đăng nhập bằng DingTalk chưa được bật. Vui lòng đăng nhập bằng email và mật khẩu."
+      "paused_hint": "Đăng nhập bằng DingTalk chưa được bật. Vui lòng đăng nhập bằng email và mật khẩu.",
+      "directory": {
+        "title": "Đồng bộ DingTalk",
+        "description": "Kiểm tra phòng ban và nhân viên trước khi nhập.",
+        "preview": "Đọc và xem trước",
+        "sync": "Xác nhận đồng bộ",
+        "connection": "Kết nối đăng nhập",
+        "enabled": "Đã bật đăng nhập DingTalk.",
+        "callback": "Địa chỉ trả về đăng nhập",
+        "admin_only": "Chỉ quản trị viên hệ thống được đồng bộ danh bạ.",
+        "selected": "Nhân viên đã chọn",
+        "rules": "Nhân viên mới là học viên. Giữ nguyên quyền và lịch sử học. Chọn phòng ban chính nếu có nhiều phòng ban; không tự động xóa nhân viên vắng mặt.",
+        "search": "Tìm tên hoặc mã nhân viên",
+        "select_ready": "Chọn hoặc bỏ chọn nhân viên sẵn sàng",
+        "choose": "Lựa chọn",
+        "choose_employee": "Chọn {name}",
+        "primary_department": "Phòng ban chính của {name}",
+        "choose_department": "Chọn phòng ban chính",
+        "action": "Thay đổi",
+        "check": "Kiểm tra",
+        "page": "Trang {page} / {pages}",
+        "confirm": "Đồng bộ {departments} phòng ban và {employees} nhân viên đã chọn? Giữ nguyên quyền và lịch sử học.",
+        "completed": "Đã tạo {departmentsCreated} phòng ban, {employeesCreated} nhân viên; cập nhật {departmentsUpdated} phòng ban, {employeesUpdated} nhân viên.",
+        "previous": "Trước",
+        "next": "Tiếp",
+        "cancel": "Hủy",
+        "actions": {
+          "create": "Nhân viên mới",
+          "update": "Cập nhật nhân viên"
+        },
+        "status": {
+          "ready": "Sẵn sàng",
+          "department_required": "Chọn phòng ban chính",
+          "inactive": "Tài khoản không hoạt động; bỏ qua",
+          "employee_no_conflict": "Trùng mã nhân viên",
+          "email_conflict": "Email thuộc tài khoản khác",
+          "field_invalid": "Cần sửa thông tin nhân viên",
+          "department_missing": "Phòng ban không khả dụng"
+        },
+        "errors": {
+          "disabled": "Chưa cấu hình DingTalk cho tổ chức này.",
+          "permissions": "Bật quyền đọc phòng ban và thành viên trong DingTalk.",
+          "provider_error": "Không đọc được DingTalk. Vui lòng thử lại.",
+          "invalid_directory": "Danh bạ chưa đầy đủ hoặc có phòng ban ngừng hoạt động. Kiểm tra trước khi nhập.",
+          "expired": "Bản xem trước hết hạn. Đọc lại.",
+          "changed": "Dữ liệu hoặc quyền đã thay đổi. Đọc bản xem trước mới."
+        }
+      }
     },
     "platform_description": "Quản lý đào tạo nhân viên, khóa học, đánh giá, hồ sơ học tập và chứng chỉ.",
     "navigation": {

@@ -6098,7 +6098,54 @@
         "member_inactive": "Denne uddannelseskonto er ikke tilgængelig.",
         "reauth_required": "Log ind igen før tilknytning."
       },
-      "paused_hint": "DingTalk-login er endnu ikke aktiveret. Log ind med din e-mail og adgangskode."
+      "paused_hint": "DingTalk-login er endnu ikke aktiveret. Log ind med din e-mail og adgangskode.",
+      "directory": {
+        "title": "DingTalk-synkronisering",
+        "description": "Gennemgå afdelinger og medarbejdere før import.",
+        "preview": "Læs og gennemgå",
+        "sync": "Bekræft synkronisering",
+        "connection": "Loginforbindelse",
+        "enabled": "DingTalk-login er aktiveret.",
+        "callback": "Loginreturadresse",
+        "admin_only": "Kun systemadministratorer kan synkronisere kataloget.",
+        "selected": "Valgte medarbejdere",
+        "rules": "Nye medarbejdere bliver kursister. Roller og læringshistorik bevares. Vælg hovedafdeling ved flere afdelinger. Manglende medarbejdere fjernes ikke automatisk.",
+        "search": "Søg navn eller medarbejdernummer",
+        "select_ready": "Vælg eller fravælg klare medarbejdere",
+        "choose": "Valg",
+        "choose_employee": "Vælg {name}",
+        "primary_department": "Hovedafdeling for {name}",
+        "choose_department": "Vælg hovedafdeling",
+        "action": "Ændring",
+        "check": "Kontrol",
+        "page": "Side {page} af {pages}",
+        "confirm": "Synkroniser {departments} afdelinger og {employees} valgte medarbejdere? Roller og læringshistorik bevares.",
+        "completed": "Oprettet: {departmentsCreated} afdelinger, {employeesCreated} medarbejdere. Opdateret: {departmentsUpdated} afdelinger, {employeesUpdated} medarbejdere.",
+        "previous": "Forrige",
+        "next": "Næste",
+        "cancel": "Annuller",
+        "actions": {
+          "create": "Ny medarbejder",
+          "update": "Opdater medarbejder"
+        },
+        "status": {
+          "ready": "Klar",
+          "department_required": "Vælg hovedafdeling",
+          "inactive": "Inaktiv konto; springes over",
+          "employee_no_conflict": "Konflikt i medarbejdernummer",
+          "email_conflict": "E-mail tilhører en anden konto",
+          "field_invalid": "Medarbejderoplysninger skal rettes",
+          "department_missing": "Afdeling utilgængelig"
+        },
+        "errors": {
+          "disabled": "DingTalk er ikke konfigureret for denne organisation.",
+          "permissions": "Aktiver læserettigheder til afdelinger og medlemmer i DingTalk.",
+          "provider_error": "DingTalk kunne ikke læses. Prøv igen.",
+          "invalid_directory": "Kataloget er ufuldstændigt eller har inaktive afdelinger. Kontroller før import.",
+          "expired": "Forhåndsvisningen er udløbet. Læs igen.",
+          "changed": "Data eller rettigheder ændret. Hent en ny forhåndsvisning."
+        }
+      }
     },
     "platform_description": "Administrer medarbejderuddannelse, kurser, vurderinger, læringshistorik og certifikater.",
     "navigation": {

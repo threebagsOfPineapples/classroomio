@@ -6082,7 +6082,54 @@
         "member_inactive": "This training account is unavailable. Contact an administrator.",
         "reauth_required": "Please sign in again before linking your DingTalk account."
       },
-      "paused_hint": "DingTalk sign-in is not enabled yet. Please sign in with your email and password."
+      "paused_hint": "DingTalk sign-in is not enabled yet. Please sign in with your email and password.",
+      "directory": {
+        "title": "DingTalk sync",
+        "description": "Read departments and employees, then review before importing.",
+        "preview": "Read and preview",
+        "sync": "Confirm sync",
+        "connection": "Login connection",
+        "enabled": "DingTalk login is enabled.",
+        "callback": "Login callback",
+        "admin_only": "Only a system administrator can sync the directory.",
+        "selected": "Selected employees",
+        "rules": "New employees become learners. Existing roles and learning records are preserved. Choose a primary department for employees in multiple departments; absent employees are not removed automatically.",
+        "search": "Search name or employee ID",
+        "select_ready": "Select or clear ready employees",
+        "choose": "Selection",
+        "choose_employee": "Select {name}",
+        "primary_department": "Primary department for {name}",
+        "choose_department": "Choose a primary department",
+        "action": "Change",
+        "check": "Review",
+        "page": "Page {page} of {pages}",
+        "confirm": "Sync {departments} departments and {employees} selected employees? Existing roles and learning records are preserved.",
+        "completed": "Created {departmentsCreated} departments and {employeesCreated} employees; updated {departmentsUpdated} departments and {employeesUpdated} employees.",
+        "previous": "Previous",
+        "next": "Next",
+        "cancel": "Cancel",
+        "actions": {
+          "create": "New employee",
+          "update": "Update employee"
+        },
+        "status": {
+          "ready": "Ready",
+          "department_required": "Choose primary department",
+          "inactive": "Inactive account; skipped",
+          "employee_no_conflict": "Employee ID conflict",
+          "email_conflict": "Email belongs to another account",
+          "field_invalid": "Employee details need correction",
+          "department_missing": "Department unavailable"
+        },
+        "errors": {
+          "disabled": "DingTalk is not configured for this organization.",
+          "permissions": "Enable the department and department-member read permissions in DingTalk.",
+          "provider_error": "DingTalk could not be read. Please try again.",
+          "invalid_directory": "The directory is incomplete or has inactive departments. Check it before importing.",
+          "expired": "The preview expired. Read it again.",
+          "changed": "Data or permissions changed. Read a new preview before syncing."
+        }
+      }
     },
     "platform_description": "Manage employee training, courses, assessments, learning records, and certificates.",
     "navigation": {

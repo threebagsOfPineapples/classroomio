@@ -5,6 +5,11 @@ import {
   ZDingtalkPersonalInfo,
   ZDingtalkToken,
   ZDingtalkUserId,
+  ZDingtalkDirectory,
+  ZDingtalkRawRootDepartment,
+  ZDingtalkRawDepartments,
+  ZDingtalkRawEmployeePage,
+  type TDingtalkRawEmployee,
   type TDingtalkConfig,
   type TDingtalkError
 } from '@cio/utils/validation/auth/dingtalk';
@@ -73,7 +78,7 @@ async function requestDingtalk(url: string, options: RequestInit): Promise<unkno
   }
 }
 
-async function postDingtalk(url: string, fields: Record<string, string>) {
+async function postDingtalk(url: string, fields: Record<string, unknown>) {
   const body = JSON.stringify(fields);
   return requestDingtalk(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
 }
@@ -151,4 +156,110 @@ export async function getDingtalkIdentity(config: TDingtalkConfig, code: string)
   if (employee.unionId !== personal.data.unionId) throw new DingtalkError('provider_error');
 
   return employee;
+}
+
+export class DingtalkDirectoryError extends Error {
+  constructor(public readonly code: 'permissions' | 'provider_error' | 'invalid_directory') {
+    super(code);
+  }
+}
+
+async function readDirectoryApi(config: TDingtalkConfig, path: string, fields: Record<string, unknown>) {
+  const token = await getAppToken(config);
+  const url = new URL(path, 'https://oapi.dingtalk.com');
+  url.searchParams.set('access_token', token);
+  const response = await postDingtalk(url.href, fields);
+  if (!response || typeof response !== 'object' || !('errcode' in response) || response.errcode !== 0) {
+    const message = response && typeof response === 'object' && 'errmsg' in response ? String(response.errmsg) : '';
+    const missingPermission = message.includes('requiredScopes') || message.includes('60011');
+    throw new DingtalkDirectoryError(missingPermission ? 'permissions' : 'provider_error');
+  }
+
+  if (!('result' in response)) throw new DingtalkDirectoryError('invalid_directory');
+
+  return response.result;
+}
+
+export async function getDingtalkDirectory(config: TDingtalkConfig) {
+  const rootResponse = await readDirectoryApi(config, '/topapi/v2/department/get', { dept_id: 1, language: 'zh_CN' });
+  const parsedRoot = ZDingtalkRawRootDepartment.safeParse(rootResponse);
+  if (!parsedRoot.success) throw new DingtalkDirectoryError('invalid_directory');
+
+  const root = { ...parsedRoot.data, parent_id: 0 };
+  if (root.dept_id !== 1) throw new DingtalkDirectoryError('invalid_directory');
+
+  const departmentRows = [root];
+  const knownDepartmentIds = new Set([root.dept_id]);
+  const employeeRows = new Map<string, TDingtalkRawEmployee>();
+  const deadline = Date.now() + 90_000;
+  for (const departmentRow of departmentRows) {
+    if (Date.now() > deadline || departmentRows.length > 1000) throw new DingtalkDirectoryError('invalid_directory');
+
+    const childrenResponse = await readDirectoryApi(config, '/topapi/v2/department/listsub', {
+      dept_id: departmentRow.dept_id,
+      language: 'zh_CN'
+    });
+    const parsedChildren = ZDingtalkRawDepartments.safeParse(childrenResponse);
+    if (!parsedChildren.success) throw new DingtalkDirectoryError('invalid_directory');
+
+    const children = parsedChildren.data;
+    for (const child of children) {
+      if (knownDepartmentIds.has(child.dept_id) || child.parent_id !== departmentRow.dept_id)
+        throw new DingtalkDirectoryError('invalid_directory');
+
+      knownDepartmentIds.add(child.dept_id);
+      departmentRows.push(child);
+    }
+
+    let cursor = 0;
+    const visitedCursors = new Set<number>();
+    while (true) {
+      if (Date.now() > deadline || visitedCursors.has(cursor)) throw new DingtalkDirectoryError('invalid_directory');
+
+      visitedCursors.add(cursor);
+      const pageResponse = await readDirectoryApi(config, '/topapi/v2/user/list', {
+        dept_id: departmentRow.dept_id,
+        cursor,
+        size: 100,
+        contain_access_limit: false,
+        language: 'zh_CN'
+      });
+      const parsedPage = ZDingtalkRawEmployeePage.safeParse(pageResponse);
+      if (!parsedPage.success) throw new DingtalkDirectoryError('invalid_directory');
+
+      const page = parsedPage.data;
+      for (const employee of page.list) {
+        const previous = employeeRows.get(employee.userid);
+        if (previous && JSON.stringify(previous) !== JSON.stringify(employee))
+          throw new DingtalkDirectoryError('invalid_directory');
+
+        if (!employee.dept_id_list.includes(departmentRow.dept_id))
+          throw new DingtalkDirectoryError('invalid_directory');
+
+        employeeRows.set(employee.userid, employee);
+        if (employeeRows.size > 10000) throw new DingtalkDirectoryError('invalid_directory');
+      }
+
+      if (!page.has_more) break;
+
+      if (page.next_cursor === undefined || page.next_cursor <= cursor)
+        throw new DingtalkDirectoryError('invalid_directory');
+
+      cursor = page.next_cursor;
+    }
+  }
+
+  const departments = departmentRows.map((row) => ({
+    id: row.dept_id,
+    parentId: row.dept_id === 1 ? 0 : row.parent_id,
+    name: row.name,
+    sort: row.order ?? 0
+  }));
+  const employees = [...employeeRows.values()].map((row) => {
+    const employeeNo = row.job_number?.trim() || null;
+    const position = row.title?.trim() || null;
+    const companyEmail = row.org_email?.trim().toLowerCase() || null;
+    return { userId: row.userid, name: row.name, employeeNo, position, companyEmail, departmentIds: row.dept_id_list };
+  });
+  return ZDingtalkDirectory.parse({ departments, employees });
 }

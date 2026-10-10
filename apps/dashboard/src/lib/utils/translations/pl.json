@@ -6098,7 +6098,54 @@
         "member_inactive": "To konto szkoleniowe jest niedostępne.",
         "reauth_required": "Zaloguj się ponownie przed połączeniem DingTalk."
       },
-      "paused_hint": "Logowanie przez DingTalk nie jest jeszcze włączone. Zaloguj się za pomocą adresu e-mail i hasła."
+      "paused_hint": "Logowanie przez DingTalk nie jest jeszcze włączone. Zaloguj się za pomocą adresu e-mail i hasła.",
+      "directory": {
+        "title": "Synchronizacja DingTalk",
+        "description": "Sprawdź działy i pracowników przed importem.",
+        "preview": "Odczytaj i sprawdź",
+        "sync": "Potwierdź synchronizację",
+        "connection": "Połączenie logowania",
+        "enabled": "Logowanie DingTalk jest włączone.",
+        "callback": "Adres zwrotny logowania",
+        "admin_only": "Tylko administrator systemu może synchronizować katalog.",
+        "selected": "Wybrani pracownicy",
+        "rules": "Nowi pracownicy zostają uczniami. Role i historia nauki pozostają bez zmian. Przy wielu działach wybierz główny. Nieobecni pracownicy nie są automatycznie usuwani.",
+        "search": "Szukaj nazwiska lub numeru",
+        "select_ready": "Zaznacz lub odznacz gotowych pracowników",
+        "choose": "Wybór",
+        "choose_employee": "Wybierz {name}",
+        "primary_department": "Główny dział osoby {name}",
+        "choose_department": "Wybierz główny dział",
+        "action": "Zmiana",
+        "check": "Weryfikacja",
+        "page": "Strona {page} z {pages}",
+        "confirm": "Synchronizować {departments} działów i {employees} wybranych pracowników? Role i historia zostaną zachowane.",
+        "completed": "Utworzono: {departmentsCreated} działów, {employeesCreated} pracowników. Zaktualizowano: {departmentsUpdated} działów, {employeesUpdated} pracowników.",
+        "previous": "Poprzednia",
+        "next": "Następna",
+        "cancel": "Anuluj",
+        "actions": {
+          "create": "Nowy pracownik",
+          "update": "Aktualizuj pracownika"
+        },
+        "status": {
+          "ready": "Gotowy",
+          "department_required": "Wybierz główny dział",
+          "inactive": "Konto nieaktywne; pominięto",
+          "employee_no_conflict": "Konflikt numeru pracownika",
+          "email_conflict": "E-mail należy do innego konta",
+          "field_invalid": "Popraw dane pracownika",
+          "department_missing": "Dział niedostępny"
+        },
+        "errors": {
+          "disabled": "DingTalk nie jest skonfigurowany dla tej organizacji.",
+          "permissions": "Włącz odczyt działów i członków w DingTalk.",
+          "provider_error": "Nie można odczytać DingTalk. Spróbuj ponownie.",
+          "invalid_directory": "Katalog jest niepełny lub zawiera nieaktywne działy. Sprawdź przed importem.",
+          "expired": "Podgląd wygasł. Odczytaj ponownie.",
+          "changed": "Dane lub uprawnienia zmieniły się. Odczytaj nowy podgląd."
+        }
+      }
     },
     "platform_description": "Zarządzaj szkoleniami pracowników, kursami, ocenami, zapisami nauki i certyfikatami.",
     "navigation": {

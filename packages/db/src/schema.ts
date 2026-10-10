@@ -2145,6 +2145,8 @@ export const department = pgTable(
     parentId: uuid('parent_id'),
     name: varchar({ length: 160 }).notNull(),
     code: varchar({ length: 64 }).notNull(),
+    externalSource: varchar('external_source', { length: 64 }),
+    externalId: varchar('external_id', { length: 128 }),
     leaderMemberId: bigint('leader_member_id', { mode: 'number' }),
     sort: integer().default(0).notNull(),
     status: departmentStatus().default('ACTIVE').notNull(),
@@ -2164,6 +2166,9 @@ export const department = pgTable(
     }),
     unique('department_org_id_unique').on(table.organizationId, table.id),
     unique('department_org_code_unique').on(table.organizationId, table.code),
+    uniqueIndex('department_org_external_id_unique')
+      .on(table.organizationId, table.externalSource, table.externalId)
+      .where(sql`${table.externalSource} IS NOT NULL AND ${table.externalId} IS NOT NULL`),
     index('idx_department_org_parent').on(table.organizationId, table.parentId),
     index('idx_department_org_leader').on(table.organizationId, table.leaderMemberId),
     check('department_no_self_parent', sql`${table.parentId} IS NULL OR ${table.parentId} <> ${table.id}`)

@@ -3645,7 +3645,54 @@
         "member_inactive": "当前培训账号不可用，请联系管理员。",
         "reauth_required": "绑定前请重新登录培训账号，以确认账号归属。"
       },
-      "paused_hint": "钉钉登录暂未启用，请先使用邮箱和密码登录。"
+      "paused_hint": "钉钉登录暂未启用，请先使用邮箱和密码登录。",
+      "directory": {
+        "title": "钉钉同步",
+        "description": "读取部门和员工，确认后同步到培训系统。",
+        "preview": "读取并预览",
+        "sync": "确认同步",
+        "connection": "登录接入",
+        "enabled": "钉钉登录已启用。",
+        "callback": "登录回调",
+        "admin_only": "仅系统管理员可以同步通讯录。",
+        "selected": "已选择员工",
+        "rules": "新员工默认为普通学员；保留已有权限和学习记录。多部门员工需选择主要部门，钉钉中未出现的员工不会自动删除。",
+        "search": "搜索姓名或工号",
+        "select_ready": "选择／取消可同步员工",
+        "choose": "选择",
+        "choose_employee": "选择 {name}",
+        "primary_department": "{name} 的主要部门",
+        "choose_department": "选择主要部门",
+        "action": "变更",
+        "check": "校验结果",
+        "page": "第 {page} / {pages} 页",
+        "confirm": "同步 {departments} 个部门及已选择的 {employees} 名员工？已有权限和学习记录会保留。",
+        "completed": "已新增 {departmentsCreated} 个部门、{employeesCreated} 名员工；更新 {departmentsUpdated} 个部门、{employeesUpdated} 名员工。",
+        "previous": "上一页",
+        "next": "下一页",
+        "cancel": "取消",
+        "actions": {
+          "create": "新增员工",
+          "update": "更新员工"
+        },
+        "status": {
+          "ready": "可同步",
+          "department_required": "待选择主要部门",
+          "inactive": "账号已停用，跳过",
+          "employee_no_conflict": "工号重复，需处理",
+          "email_conflict": "邮箱已有账号，需先绑定",
+          "field_invalid": "资料格式或长度需修正",
+          "department_missing": "部门不可用，需处理"
+        },
+        "errors": {
+          "disabled": "当前组织尚未配置钉钉。",
+          "permissions": "请在钉钉开通部门信息和部门成员读取权限。",
+          "provider_error": "暂时无法读取钉钉，请稍后重试。",
+          "invalid_directory": "通讯录不完整或含停用部门，请检查后重新读取。",
+          "expired": "预览已过期，请重新读取。",
+          "changed": "数据或权限已变化，请重新预览后同步。"
+        }
+      }
     },
     "platform_description": "统一管理员工培训、课程学习、考核、学习档案与证书。",
     "navigation": {

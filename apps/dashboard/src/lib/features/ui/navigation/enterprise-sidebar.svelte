@@ -9,6 +9,7 @@
   import ClipboardCheck from '@lucide/svelte/icons/clipboard-check';
   import Grid from '@lucide/svelte/icons/grid-2x2';
   import Chart from '@lucide/svelte/icons/chart-no-axes-combined';
+  import RefreshCw from '@lucide/svelte/icons/refresh-cw';
   import { currentOrgPath } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { SidebarFooterMenu } from '$features/ui/sidebar/footer';
@@ -19,7 +20,8 @@
       key: 'enterprise.navigation.organization',
       links: [
         { key: 'enterprise.departments', href: '/admin?view=departments', icon: Building },
-        { key: 'enterprise.employees', href: '/admin?view=employees', icon: Users }
+        { key: 'enterprise.employees', href: '/admin?view=employees', icon: Users },
+        { key: 'enterprise.dingtalk.directory.title', href: '/admin/dingtalk', icon: RefreshCw }
       ]
     },
     {

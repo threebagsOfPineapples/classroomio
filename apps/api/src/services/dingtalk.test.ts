@@ -163,6 +163,30 @@ describe('DingTalk company identity and account permissions', () => {
     expect(getDingtalkConfig(testConfig)).not.toBeNull();
   });
 
+  it('permits same-origin private network HTTP callbacks and rejects public HTTP callbacks', () => {
+    for (const hostname of ['10.60.6.101', '172.16.0.1', '172.31.255.254', '192.168.1.2']) {
+      const dashboardOrigin = `http://${hostname}:3082`;
+      expect(
+        getDingtalkConfig({
+          ...testConfig,
+          DASHBOARD_ORIGIN: dashboardOrigin,
+          DINGTALK_REDIRECT_URI: `${dashboardOrigin}/proxy/api/auth/dingtalk/callback`
+        })
+      ).not.toBeNull();
+    }
+
+    for (const hostname of ['example.com', '8.8.8.8', '172.15.0.1', '172.32.0.1', '192.169.1.2', '10.example.com']) {
+      const dashboardOrigin = `http://${hostname}:3082`;
+      expect(
+        getDingtalkConfig({
+          ...testConfig,
+          DASHBOARD_ORIGIN: dashboardOrigin,
+          DINGTALK_REDIRECT_URI: `${dashboardOrigin}/proxy/api/auth/dingtalk/callback`
+        })
+      ).toBeNull();
+    }
+  });
+
   it('reads company details, leaves missing values unavailable and never substitutes personal email', async () => {
     const employee = await getDingtalkIdentity(getDingtalkConfig(testConfig)!, 'test-code');
     expect(employee).toMatchObject({

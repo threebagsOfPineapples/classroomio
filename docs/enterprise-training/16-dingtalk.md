@@ -6,11 +6,11 @@
 
 参考用户 GitHub 项目 [threebagsOfPineapples/boot](https://github.com/threebagsOfPineapples/boot) 中 `DingtalkAccountChoiceService` 的原账号绑定与受限授权原则。培训系统没有经核验的手机号字段，因此首次绑定要求先用原账号登录，不按姓名、工号或邮箱自动合并，也不静默创建新员工。
 
-系统角色、部门归属、课程记录、成绩和证书保留。钉钉管理员、部门负责人身份不会自动变成培训管理员。新员工先由培训管理员开通账号和权限，再自行绑定。
+系统角色、部门归属、课程记录、成绩和证书保留。钉钉管理员、部门负责人身份不会自动变成培训管理员。已有账号先自行绑定；新员工可由系统管理员在“钉钉同步”中预览、确认导入，默认普通学员。
 
 当前读取本人姓名、工号、职位、手机号、企业邮箱和钉钉部门编号；手机号、企业邮箱缺少授权或未填写时显示“—”。部门编号用于核对来源，不冒充培训系统的部门名称。资料实时读取，不自动覆盖培训系统档案，也不将钉钉登录当作邮箱验证。
 
-全员批量导入、部门树同步、离职事件订阅和钉钉客户端免登尚未实现。本轮不需要这些能力即可使用网页扫码登录。
+已实现部门树和员工的手动批量同步：后台“组织 → 钉钉同步”，先读取预览，再选择员工并确认。多部门员工需选择主要部门；工号、邮箱冲突和停用账号会提示处理。按 CorpId + userid 更新已有绑定，保留权限及学习记录，不按姓名或邮箱自动合并。预览十分钟有效，确认使用事务，重复确认相同预览不重复导入。离职事件订阅和钉钉客户端免登尚未实现。
 
 ## 企业管理员准备
 
@@ -38,7 +38,9 @@ DASHBOARD_ORIGIN=https://培训系统域名
 DINGTALK_REDIRECT_URI=https://培训系统域名/api/auth/dingtalk/callback
 ```
 
-云代理部署也可使用 `/proxy/api/auth/dingtalk/callback`。回调地址必须与 `DASHBOARD_ORIGIN` 同源；正式环境要求 HTTPS，只有 `localhost` 允许 HTTP。本地示例回调为 `http://localhost:4173/api/auth/dingtalk/callback`。
+云代理部署也可使用 `/proxy/api/auth/dingtalk/callback`。回调地址必须与 `DASHBOARD_ORIGIN` 同源；支持 HTTPS，以及 localhost 和 RFC1918 内网 IPv4 的 HTTP。钉钉官方允许 HTTP/HTTPS 回调；公网入口应使用 HTTPS。内网 HTTP 不加密，只适合可信内网试用。[官方统一授权登录说明](https://open.dingtalk.com/document/orgapp-server/use-dingtalk-account-to-log-on-to-third-party-websites-1)。
+
+当前 101 内网回调为 `http://10.60.6.101:3082/proxy/api/auth/dingtalk/callback`。复用既有应用时保留原回调，只追加培训回调。密钥仅注入 API 容器，部门读取使用 `qyapi_get_department_list`，部门成员读取使用 `qyapi_get_department_member`，逐部门分页去重，不额外读取员工手机号。[获取部门列表](https://open.dingtalk.com/document/orgapp/obtain-the-department-list-v2)、[获取部门用户详情](https://open.dingtalk.com/document/orgapp/queries-the-complete-information-of-a-department-user)。
 
 `DINGTALK_ORGANIZATION_ID` 指培训系统数据库中的组织 UUID，不能填 Corp ID。当前为一个部署绑定一家企业，不支持多企业动态配置。设置完成后重启 API；关闭时设置 `DINGTALK_ENABLED=false` 并重启，登录按钮显示为暂未启用。
 

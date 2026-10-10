@@ -6098,7 +6098,54 @@
         "member_inactive": "Dieses Schulungskonto ist nicht verfügbar.",
         "reauth_required": "Melden Sie sich vor der Verknüpfung erneut an."
       },
-      "paused_hint": "Die DingTalk-Anmeldung ist noch nicht aktiviert. Melden Sie sich mit E-Mail und Passwort an."
+      "paused_hint": "Die DingTalk-Anmeldung ist noch nicht aktiviert. Melden Sie sich mit E-Mail und Passwort an.",
+      "directory": {
+        "title": "DingTalk-Synchronisierung",
+        "description": "Abteilungen und Mitarbeitende vor dem Import prüfen.",
+        "preview": "Lesen und prüfen",
+        "sync": "Synchronisieren",
+        "connection": "Anmeldeverbindung",
+        "enabled": "DingTalk-Anmeldung ist aktiviert.",
+        "callback": "Anmelderückruf",
+        "admin_only": "Nur Systemadministratoren können das Verzeichnis synchronisieren.",
+        "selected": "Ausgewählte Mitarbeitende",
+        "rules": "Neue Mitarbeitende werden Lernende. Rollen und Lernverlauf bleiben erhalten. Bei mehreren Abteilungen die Hauptabteilung wählen. Fehlende Mitarbeitende werden nicht automatisch entfernt.",
+        "search": "Name oder Personalnummer suchen",
+        "select_ready": "Bereite Mitarbeitende auswählen/abwählen",
+        "choose": "Auswahl",
+        "choose_employee": "{name} auswählen",
+        "primary_department": "Hauptabteilung für {name}",
+        "choose_department": "Hauptabteilung wählen",
+        "action": "Änderung",
+        "check": "Prüfung",
+        "page": "Seite {page} von {pages}",
+        "confirm": "{departments} Abteilungen und {employees} ausgewählte Mitarbeitende synchronisieren? Rollen und Lernverlauf bleiben erhalten.",
+        "completed": "Erstellt: {departmentsCreated} Abteilungen, {employeesCreated} Mitarbeitende. Aktualisiert: {departmentsUpdated} Abteilungen, {employeesUpdated} Mitarbeitende.",
+        "previous": "Zurück",
+        "next": "Weiter",
+        "cancel": "Abbrechen",
+        "actions": {
+          "create": "Neue Mitarbeitende",
+          "update": "Mitarbeitende aktualisieren"
+        },
+        "status": {
+          "ready": "Bereit",
+          "department_required": "Hauptabteilung wählen",
+          "inactive": "Inaktives Konto; übersprungen",
+          "employee_no_conflict": "Personalnummer doppelt",
+          "email_conflict": "E-Mail gehört zu anderem Konto",
+          "field_invalid": "Mitarbeiterdaten korrigieren",
+          "department_missing": "Abteilung nicht verfügbar"
+        },
+        "errors": {
+          "disabled": "DingTalk ist für diese Organisation nicht konfiguriert.",
+          "permissions": "Lesezugriff auf Abteilungen und Mitglieder in DingTalk aktivieren.",
+          "provider_error": "DingTalk konnte nicht gelesen werden. Erneut versuchen.",
+          "invalid_directory": "Verzeichnis unvollständig oder mit inaktiven Abteilungen. Vor dem Import prüfen.",
+          "expired": "Vorschau abgelaufen. Erneut lesen.",
+          "changed": "Daten oder Berechtigungen geändert. Neue Vorschau laden."
+        }
+      }
     },
     "platform_description": "Verwalten Sie Mitarbeiterschulungen, Kurse, Prüfungen, Lernnachweise und Zertifikate.",
     "navigation": {

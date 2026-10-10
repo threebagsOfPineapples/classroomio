@@ -61,6 +61,7 @@ import {
   publishTrainingPlan,
   supplementTrainingPlan
 } from '@api/services/training-plan';
+import { enterpriseDingtalkRouter } from './enterprise-dingtalk';
 
 function enterpriseRequest(c: {
   req: { header: (name: string) => string | undefined; param: (name: string) => string };
@@ -121,6 +122,7 @@ function dateParam(raw: string | undefined) {
 
 export const enterpriseRouter = new Hono()
   .use('*', authMiddleware)
+  .route('/dingtalk', enterpriseDingtalkRouter)
   .get('/grading-queue', async (c) => {
     try {
       const { organizationId, profileId } = enterpriseRequest(c);

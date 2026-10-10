@@ -193,6 +193,10 @@ export async function editEnterpriseEmployee(
 
   const nextSource = values.externalSource === undefined ? target.externalSource : values.externalSource;
   const nextExternalId = values.externalId === undefined ? target.externalId : values.externalId;
+  if (!context.isSuperAdmin && (nextSource !== target.externalSource || nextExternalId !== target.externalId)) {
+    throw new AppError('Organization admin access required', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
+  }
+
   if (Boolean(nextSource) !== Boolean(nextExternalId)) {
     throw new AppError('External source and ID must be set together', ErrorCodes.VALIDATION_ERROR, 400);
   }
