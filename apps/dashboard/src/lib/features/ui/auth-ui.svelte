@@ -7,6 +7,9 @@
   import { currentOrg } from '$lib/utils/store/org';
   import Dingtalk from '$features/auth/components/dingtalk.svelte';
   import * as Card from '@cio/ui/base/card';
+  import * as Collapsible from '@cio/ui/base/collapsible';
+  import { Button } from '@cio/ui/base/button';
+  import ChevronDown from '@lucide/svelte/icons/chevron-down';
   import { Separator } from '@cio/ui/base/separator';
   import { preventDefault } from '$lib/utils/functions/svelte';
   import { ROUTE } from '$lib/utils/constants/routes';
@@ -34,6 +37,7 @@
   }: Props = $props();
 
   const authBackgroundUrl = $derived($currentOrg.customization.auth?.backgroundImage?.trim() ?? '');
+  let passwordLoginOpen = $state(page.url.searchParams.get('method') === 'admin' || page.url.searchParams.has('email'));
 </script>
 
 <div class="auth-ui-background relative flex min-h-screen w-full items-center justify-center overflow-hidden p-4">
@@ -70,23 +74,59 @@
     {/if}
 
     <Card.Content>
-      <form onsubmit={preventDefault(handleSubmit)}>
-        {@render children?.()}
-      </form>
-
-      {#if !showOnlyContent}
-        <div class="mt-6 flex flex-col gap-6">
-          <div class="relative flex items-center justify-center">
-            <Separator />
-            <span class="ui:bg-card ui:text-muted-foreground absolute px-2 text-sm">{$t('login.continue_with')}</span>
+      {#if isLogin && !showOnlyContent}
+        <div class="space-y-6">
+          <div class="space-y-4">
+            <p class="ui:text-muted-foreground text-center text-sm">{$t('enterprise.dingtalk.login_description')}</p>
+            <Dingtalk primary disabled={isLoading} />
           </div>
-
-          {#if getPasswordAuthAlternative}
-            {@render getPasswordAuthAlternative()}
-          {:else}
-            <Dingtalk disabled={isLoading} />
-          {/if}
+          <Separator />
+          <Collapsible.Root bind:open={passwordLoginOpen}>
+            <Collapsible.Trigger>
+              {#snippet child({ props })}
+                <Button
+                  {...props}
+                  type="button"
+                  variant="ghost"
+                  class="w-full justify-between"
+                  disabled={isLoading}
+                  testId="auth-admin-login-toggle"
+                >
+                  {$t('enterprise.dingtalk.admin_login')}
+                  <ChevronDown class={passwordLoginOpen ? 'size-4 rotate-180' : 'size-4'} aria-hidden="true" />
+                </Button>
+              {/snippet}
+            </Collapsible.Trigger>
+            <Collapsible.Content class="mt-4 space-y-4">
+              <p class="ui:text-muted-foreground text-sm">{$t('enterprise.dingtalk.admin_login_help')}</p>
+              <form onsubmit={preventDefault(handleSubmit)}>
+                {@render children?.()}
+              </form>
+              {#if getPasswordAuthAlternative}
+                {@render getPasswordAuthAlternative()}
+              {/if}
+            </Collapsible.Content>
+          </Collapsible.Root>
         </div>
+      {:else}
+        <form onsubmit={preventDefault(handleSubmit)}>
+          {@render children?.()}
+        </form>
+
+        {#if !showOnlyContent}
+          <div class="mt-6 flex flex-col gap-6">
+            <div class="relative flex items-center justify-center">
+              <Separator />
+              <span class="ui:bg-card ui:text-muted-foreground absolute px-2 text-sm">{$t('login.continue_with')}</span>
+            </div>
+
+            {#if getPasswordAuthAlternative}
+              {@render getPasswordAuthAlternative()}
+            {:else}
+              <Dingtalk disabled={isLoading} />
+            {/if}
+          </div>
+        {/if}
       {/if}
     </Card.Content>
     {#if !showOnlyContent}

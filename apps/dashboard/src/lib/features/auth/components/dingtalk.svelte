@@ -6,8 +6,13 @@
   import { currentOrg } from '$lib/utils/store/org';
   import { DingtalkApi } from '../api/dingtalk.svelte';
   import { ZDingtalkError } from '@cio/utils/validation/auth/dingtalk';
+  import QrCode from '@lucide/svelte/icons/qr-code';
 
-  let { intent = 'login', disabled = false }: { intent?: 'login' | 'link'; disabled?: boolean } = $props();
+  let {
+    intent = 'login',
+    disabled = false,
+    primary = false
+  }: { intent?: 'login' | 'link'; disabled?: boolean; primary?: boolean } = $props();
   const api = new DingtalkApi();
   const callbackCode = $derived(ZDingtalkError.safeParse(page.url.searchParams.get('dingtalk_error')));
   const callbackError = $derived(callbackCode.success ? `enterprise.dingtalk.errors.${callbackCode.data}` : '');
@@ -42,7 +47,7 @@
         {/if}
       </div>
       {#if (api.errorKey || callbackError).endsWith('.reauth_required')}
-        <Button size="sm" variant="outline" href="/login?redirect=%2Flms%2Fsettings%2Fintegrations">
+        <Button size="sm" variant="outline" href="/login?method=admin&redirect=%2Flms%2Fsettings%2Fintegrations">
           {$t('login.login')}
         </Button>
       {/if}
@@ -75,12 +80,14 @@
     {:else if intent === 'login' || (api.enabled && !api.errorKey)}
       <Button
         type="button"
-        variant="outline"
+        variant={primary ? 'default' : 'outline'}
         class="w-full"
+        testId={intent === 'login' ? 'auth-dingtalk-login' : undefined}
         loading={api.loading}
         disabled={disabled || api.loading || !api.enabled}
         onclick={() => api.start($currentOrg.id, intent)}
       >
+        {#if primary}<QrCode class="size-5" aria-hidden="true" />{/if}
         {$t(intent === 'login' ? 'enterprise.dingtalk.login' : 'enterprise.dingtalk.link')}
       </Button>
       {#if intent === 'link'}

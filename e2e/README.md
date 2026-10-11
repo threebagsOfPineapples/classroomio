@@ -19,6 +19,8 @@ These ship in the app shell or shared UI and do not require call-site props.
 | `auth-login-email` | Login email input |
 | `auth-login-password` | Login password input |
 | `auth-login-submit` | Login submit button |
+| `auth-admin-login-toggle` | Expand or collapse administrator account sign-in |
+| `auth-dingtalk-login` | DingTalk sign-in button |
 | `org-nav-{path}` | Org sidebar links (derived from route path, e.g. `org-nav-courses`) |
 | `org-switcher-trigger` | Org / workspace switcher |
 | `app-sidebar-trigger` | Collapse sidebar |
