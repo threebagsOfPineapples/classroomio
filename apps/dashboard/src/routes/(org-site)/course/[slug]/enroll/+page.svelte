@@ -7,13 +7,14 @@
   import { setTheme } from '$lib/utils/functions/theme';
   import { courseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
-  import { profile } from '$lib/utils/store/user';
+  import { profile, user } from '$lib/utils/store/user';
   import { snackbar } from '$features/ui/snackbar/store';
   import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { resolve } from '$app/paths';
   import { authClient } from '$lib/utils/services/auth/client';
   import { appInitApi } from '$features/app/init.svelte';
   import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
+  import { requiresEmailVerification } from '$features/onboarding/utils/requires-email-verification';
 
   let { data } = $props();
 
@@ -29,6 +30,9 @@
   const sessionUser = $derived($session.data?.user ?? null);
   const isLoggedIn = $derived(sessionReady && Boolean(sessionUser));
   const isEmailVerified = $derived(Boolean($profile.isEmailVerified || sessionUser?.emailVerified));
+  const verificationRequired = $derived(
+    requiresEmailVerification(isEmailVerified, $currentOrg.id, $user.dingtalkOrganizationId)
+  );
 
   async function sendVerificationEmail() {
     const email = $profile.email || sessionUser?.email;
@@ -136,7 +140,7 @@
         already_joined: result.data.alreadyJoined
       });
 
-      if (!isEmailVerified) {
+      if (verificationRequired) {
         enrolledPendingVerification = true;
 
         if (!verificationEmailSent) {

@@ -4,7 +4,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg } from '$lib/utils/store/org';
-  import { profile } from '$lib/utils/store/user';
+  import { profile, user } from '$lib/utils/store/user';
   import { authClient } from '$lib/utils/services/auth/client';
   import { logout } from '$lib/utils/functions/logout';
   import { classroomio } from '$lib/utils/services/api';
@@ -13,6 +13,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
   import { setupDOMProtection, updateBodyClass } from '../utils/dom-protection';
+  import { requiresEmailVerification } from '../utils/requires-email-verification';
   import { LogOut } from '@lucide/svelte';
 
   const WAIT_SEC = 120; // 2 minutes
@@ -28,7 +29,10 @@
   const session = authClient.useSession();
   const sessionUser = $derived($session.data?.user ?? null);
   const isEmailVerified = $derived(Boolean($profile.isEmailVerified || sessionUser?.emailVerified));
-  const open = $derived(Boolean(!isEmailVerified && !!$profile.id && !!$currentOrg.id));
+  const verificationRequired = $derived(
+    requiresEmailVerification(isEmailVerified, $currentOrg.id, $user.dingtalkOrganizationId)
+  );
+  const open = $derived(Boolean(verificationRequired && !!$profile.id && !!$currentOrg.id));
 
   const formattedCountdown = $derived.by(() => {
     const minutes = Math.floor(countDown / 60);
@@ -123,7 +127,7 @@
 
   onMount(() => {
     if (browser && $profile.id) {
-      domProtectionCleanup = setupDOMProtection(() => isEmailVerified);
+      domProtectionCleanup = setupDOMProtection(() => !verificationRequired);
     }
   });
 
@@ -135,9 +139,9 @@
   });
 
   $effect(() => {
-    if (browser) updateBodyClass(isEmailVerified);
+    if (browser) updateBodyClass(!verificationRequired);
 
-    if (browser && !isEmailVerified && $profile.id) {
+    if (browser && verificationRequired && $profile.id) {
       console.warn(
         '%c🔒 SECURITY WARNING: Email verification required',
         'color: red; font-weight: bold; font-size: 16px;',

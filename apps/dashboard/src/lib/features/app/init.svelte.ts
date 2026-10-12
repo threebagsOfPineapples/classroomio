@@ -218,10 +218,12 @@ class AppInitApi extends BaseApi {
       return;
     }
 
+    const dingtalkOrganizationId = this.data.dingtalkOrganizationId ?? null;
     user.update((_user) => ({
       ..._user,
       fetchingUser: false,
       isLoggedIn: true,
+      dingtalkOrganizationId,
       currentSession: (this.session?.user as unknown as TUser) || undefined
     }));
 

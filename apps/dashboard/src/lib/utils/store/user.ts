@@ -8,6 +8,7 @@ interface UserStore {
   isLoggedIn: boolean;
   currentSession: TUser | undefined;
   expiresAt: number;
+  dingtalkOrganizationId: string | null;
 }
 
 // Using TProfile type from @cio/utils/types with optional id for store initialization
@@ -20,7 +21,8 @@ export const defaultUserState: UserStore = {
   fetchingUser: true,
   isLoggedIn: false,
   currentSession: undefined,
-  expiresAt: 0
+  expiresAt: 0,
+  dingtalkOrganizationId: null
 };
 
 export const defaultProfileState: TProfile = {

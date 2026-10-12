@@ -19,11 +19,14 @@ import type { TProfile } from '@cio/db/types';
 import type { TUpdateProfile } from '@cio/utils/validation/account';
 import { env } from '@cio/core/config/env';
 import { getLicenseStatus } from '@api/services/license';
+import { getDingtalkConfig, isActiveDingtalkMember } from '@cio/db/auth/dingtalk';
+import { getDingtalkMember } from '@cio/db/queries/auth/dingtalk';
 
 export type GetAccountDataResult = {
   profile: TProfile;
   organizations: OrganizationWithMemberAndPlans[];
   licenseFeatures: string[];
+  dingtalkOrganizationId: string | null;
 };
 
 /**
@@ -34,11 +37,13 @@ export type GetAccountDataResult = {
  */
 export async function getAccountData(userId: string): Promise<GetAccountDataResult> {
   const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
+  const dingtalkConfig = getDingtalkConfig();
 
-  let [profile, organizations, licenseStatus] = await Promise.all([
+  let [profile, organizations, licenseStatus, dingtalkMembers] = await Promise.all([
     getProfileById(userId),
     getOrganizationByProfileId(userId),
-    isSelfHosted ? getLicenseStatus() : Promise.resolve({ valid: true, features: [] as string[] })
+    isSelfHosted ? getLicenseStatus() : Promise.resolve({ valid: true, features: [] as string[] }),
+    dingtalkConfig ? getDingtalkMember(dingtalkConfig.organizationId, userId) : Promise.resolve([])
   ]);
 
   if (!profile) {
@@ -46,6 +51,15 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
   }
 
   profile = (await syncProfileEmailVerificationFromAuthUser(userId)) ?? profile;
+
+  const [dingtalkMember] = dingtalkMembers;
+  const dingtalkOrganizationId =
+    dingtalkConfig &&
+    dingtalkMember?.member.externalSource === `dingtalk:${dingtalkConfig.corpId}` &&
+    dingtalkMember.member.externalId &&
+    isActiveDingtalkMember(dingtalkMember)
+      ? dingtalkConfig.organizationId
+      : null;
 
   // Self-hosted: auto-add user as student to the single org if they are not a member.
   // Skip if they already have membership (by profileId) or a pending invite (by email).
@@ -86,7 +100,8 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
   return {
     profile,
     organizations,
-    licenseFeatures: isSelfHosted ? licenseStatus.features : []
+    licenseFeatures: isSelfHosted ? licenseStatus.features : [],
+    dingtalkOrganizationId
   };
 }
 
