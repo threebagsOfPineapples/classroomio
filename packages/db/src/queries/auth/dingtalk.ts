@@ -1,9 +1,10 @@
-import { db } from '@db/drizzle';
-import { organizationmember, user, verification } from '@db/schema';
+import { db, type DbOrTxClient } from '@db/drizzle';
+import { department, organization, organizationmember, profile, user, verification } from '@db/schema';
 import { and, eq, gt } from 'drizzle-orm';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { TDingtalkState } from '@cio/utils/validation/auth/dingtalk';
-import { isActiveDingtalkMember } from '../../auth/dingtalk';
+import { ROLE } from '@cio/utils/constants';
+import { directoryAccountKey, isActiveDingtalkMember, type getDingtalkEmployee } from '../../auth/dingtalk';
 
 function stateIdentifier(state: string) {
   return `dingtalk:${createHash('sha256').update(state).digest('hex')}`;
@@ -34,9 +35,9 @@ export function getDingtalkMember(organizationId: string, profileId: string) {
     .limit(1);
 }
 
-export function findDingtalkMember(organizationId: string, corpId: string, userId: string) {
+export function findDingtalkMember(organizationId: string, corpId: string, userId: string, client: DbOrTxClient = db) {
   const source = `dingtalk:${corpId}`;
-  return db
+  return client
     .select({ member: organizationmember, user })
     .from(organizationmember)
     .innerJoin(user, eq(organizationmember.profileId, user.id))
@@ -48,6 +49,74 @@ export function findDingtalkMember(organizationId: string, corpId: string, userI
       )
     )
     .limit(1);
+}
+
+export async function provisionDingtalkMember(
+  organizationId: string,
+  corpId: string,
+  employee: Awaited<ReturnType<typeof getDingtalkEmployee>>,
+  client: DbOrTxClient = db
+) {
+  return client.transaction(async (transaction) => {
+    const [workspace] = await transaction
+      .select({ id: organization.id })
+      .from(organization)
+      .where(eq(organization.id, organizationId))
+      .for('update');
+    if (!workspace) return;
+
+    const [existing] = await findDingtalkMember(organizationId, corpId, employee.userId, transaction);
+    if (existing) return existing;
+
+    const source = `dingtalk:${corpId}`;
+    const accountKey = directoryAccountKey(corpId, employee.userId);
+    const profileId = randomUUID();
+    const email = employee.companyEmail ?? `${accountKey}@zz-train.invalid`;
+    const [employeeDepartment] =
+      employee.departmentIds.length === 1
+        ? await transaction
+            .select({ id: department.id })
+            .from(department)
+            .where(
+              and(
+                eq(department.organizationId, organizationId),
+                eq(department.externalSource, source),
+                eq(department.externalId, String(employee.departmentIds[0])),
+                eq(department.status, 'ACTIVE')
+              )
+            )
+            .limit(1)
+        : [];
+    const [createdUser] = await transaction
+      .insert(user)
+      .values({ id: profileId, name: employee.name, email, emailVerified: false, isAnonymous: false })
+      .returning();
+    await transaction.insert(profile).values({
+      id: profileId,
+      fullname: employee.name,
+      username: `dd-${accountKey}`,
+      email: employee.companyEmail,
+      source,
+      locale: 'zh',
+      canAddCourse: false
+    });
+    const [member] = await transaction
+      .insert(organizationmember)
+      .values({
+        organizationId,
+        profileId,
+        roleId: ROLE.STUDENT,
+        email: employee.companyEmail,
+        employeeNo: employee.employeeNo,
+        position: employee.position,
+        departmentId: employeeDepartment?.id ?? null,
+        externalSource: source,
+        externalId: employee.userId,
+        employmentStatus: 'ACTIVE'
+      })
+      .returning();
+    return { member, user: createdUser };
+  });
 }
 
 export async function bindDingtalkMember(organizationId: string, profileId: string, corpId: string, userId: string) {

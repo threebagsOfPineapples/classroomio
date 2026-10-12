@@ -4,6 +4,8 @@ import type { readDingtalkDirectoryState } from '@cio/db/queries/enterprise/ding
 import { isImportableEmail } from '@cio/utils/validation/organization';
 import { isActiveDingtalkMember } from '@cio/db/auth/dingtalk';
 
+export { directoryAccountKey } from '@cio/db/auth/dingtalk';
+
 export type DirectoryState = Awaited<ReturnType<typeof readDingtalkDirectoryState>>;
 
 export function directoryRevision(state: DirectoryState) {
@@ -14,10 +16,6 @@ export function directoryEmailAddresses(directory: TDingtalkDirectory) {
   return [
     ...new Set(directory.employees.flatMap((employee) => (employee.companyEmail ? [employee.companyEmail] : [])))
   ];
-}
-
-export function directoryAccountKey(corpId: string, userId: string) {
-  return createHash('sha256').update(`${corpId}:${userId}`).digest('hex');
 }
 
 export function planDingtalkDirectory(directory: TDingtalkDirectory, state: DirectoryState, corpId: string) {

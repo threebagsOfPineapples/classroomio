@@ -3,11 +3,13 @@ import { setSessionCookie } from 'better-auth/cookies';
 import type { BetterAuthPlugin } from 'better-auth';
 import { randomBytes } from 'node:crypto';
 import { ZDingtalkStart, ZDingtalkState, type TDingtalkError } from '@cio/utils/validation/auth/dingtalk';
+import { isImportableEmail } from '@cio/utils/validation/organization';
 import {
   bindDingtalkMember,
   consumeDingtalkState,
   findDingtalkMember,
   getDingtalkMember,
+  provisionDingtalkMember,
   saveDingtalkState
 } from '../../queries/auth/dingtalk';
 import {
@@ -166,7 +168,19 @@ export function dingtalk() {
 
             destination += '?dingtalk_linked=1';
           } else {
-            const [record] = await findDingtalkMember(config.organizationId, config.corpId, employee.userId);
+            let record: Awaited<ReturnType<typeof provisionDingtalkMember>>;
+            [record] = await findDingtalkMember(config.organizationId, config.corpId, employee.userId);
+            if (!record && process.env.PUBLIC_IS_SELFHOSTED === 'true') {
+              if (
+                (employee.employeeNo?.length ?? 0) > 64 ||
+                (employee.position?.length ?? 0) > 128 ||
+                (employee.companyEmail && !isImportableEmail(employee.companyEmail))
+              ) {
+                throw new DingtalkError('provider_error');
+              }
+
+              record = await provisionDingtalkMember(config.organizationId, config.corpId, employee);
+            }
             if (!record) throw new DingtalkError('link_required');
 
             requireActiveMember(record);

@@ -18,6 +18,7 @@ vi.mock('@cio/db/queries/auth/dingtalk', () => ({
   consumeDingtalkState: vi.fn(),
   findDingtalkMember: vi.fn(),
   getDingtalkMember: vi.fn(),
+  provisionDingtalkMember: vi.fn(),
   saveDingtalkState: vi.fn()
 }));
 
@@ -210,6 +211,7 @@ describe('DingTalk company identity and account permissions', () => {
     });
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(queries.bindDingtalkMember).not.toHaveBeenCalled();
+    expect(queries.provisionDingtalkMember).not.toHaveBeenCalled();
   });
 
   it('rejects provider errors, missing identity and inconsistent union IDs', async () => {
@@ -282,11 +284,103 @@ describe('DingTalk company identity and account permissions', () => {
     expect(database.account).toHaveLength(1);
     expect(database.user[0]).toMatchObject({ emailVerified: false });
     expect(queries.bindDingtalkMember).not.toHaveBeenCalled();
+    expect(queries.provisionDingtalkMember).not.toHaveBeenCalled();
   });
+
+  it('creates a learner session on the first company scan without requiring an existing training account', async () => {
+    vi.stubEnv('PUBLIC_IS_SELFHOSTED', 'true');
+    const { auth, context, database, record } = await createTestAuth();
+    vi.mocked(queries.findDingtalkMember).mockResolvedValue([]);
+    const employeeUser = await context.internalAdapter.createUser({
+      id: crypto.randomUUID(),
+      name: 'Employee',
+      email: 'employee-first-login@zz-train.invalid',
+      emailVerified: false
+    });
+    const employeeMember = { ...record.member, id: 8, profileId: employeeUser.id, roleId: 3 };
+    vi.mocked(queries.provisionDingtalkMember).mockResolvedValue({
+      member: employeeMember,
+      user: employeeUser
+    } as never);
+    const start = await startLogin(auth);
+    const response = await auth.handler(
+      request(`/dingtalk/callback?authCode=test-code&state=${start.state}`, undefined, start.cookie)
+    );
+    expect(response.headers.get('location')).toBe(`${origin}/lms`);
+    expect(database.session).toHaveLength(1);
+    expect(database.session[0].userId).toBe(employeeUser.id);
+    expect(database.user[0]).toMatchObject({ id: profileId, email: 'dingtalk-test@example.test' });
+    expect(record.member.roleId).toBe(1);
+    expect(queries.bindDingtalkMember).not.toHaveBeenCalled();
+    expect(queries.provisionDingtalkMember).toHaveBeenCalledWith(
+      organizationId,
+      'test-company',
+      expect.objectContaining({ userId: 'staff-7', name: 'Employee' })
+    );
+  });
+
+  it.each(['conflict', 'unavailable', 'inactive'])(
+    'does not grant a first-scan session when provisioning is %s',
+    async (failure) => {
+      vi.stubEnv('PUBLIC_IS_SELFHOSTED', 'true');
+      const { auth, database, record } = await createTestAuth();
+      vi.mocked(queries.findDingtalkMember).mockResolvedValue([]);
+      if (failure === 'conflict') {
+        vi.mocked(queries.provisionDingtalkMember).mockRejectedValue({ cause: { code: '23505' } });
+      } else if (failure === 'unavailable') {
+        vi.mocked(queries.provisionDingtalkMember).mockRejectedValue(new Error('database unavailable'));
+      } else {
+        const inactive = structuredClone(record);
+        inactive.member.status = 'DEACTIVATED';
+        vi.mocked(queries.provisionDingtalkMember).mockResolvedValue(inactive as never);
+      }
+      const start = await startLogin(auth);
+      const response = await auth.handler(
+        request(`/dingtalk/callback?authCode=test-code&state=${start.state}`, undefined, start.cookie)
+      );
+      const error =
+        failure === 'conflict' ? 'account_conflict' : failure === 'inactive' ? 'member_inactive' : 'provider_error';
+      expect(response.headers.get('location')).toBe(`${origin}/login?dingtalk_error=${error}`);
+      expect(database.session).toHaveLength(0);
+      expect(database.user).toHaveLength(1);
+      expect(record.member.roleId).toBe(1);
+    }
+  );
+
+  it.each([{ job_number: 'X'.repeat(65) }, { title: 'X'.repeat(129) }, { org_email: 'invalid-email' }])(
+    'rejects invalid company fields before creating an account: %j',
+    async (fields) => {
+      vi.stubEnv('PUBLIC_IS_SELFHOSTED', 'true');
+      const { auth, database } = await createTestAuth();
+      vi.mocked(queries.findDingtalkMember).mockResolvedValue([]);
+      const companyFetch = fetch;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (input, options) => {
+          if (String(input).includes('/topapi/v2/user/get')) {
+            return Response.json({
+              errcode: 0,
+              result: { userid: 'staff-7', unionid: 'union-7', name: 'Employee', ...fields }
+            });
+          }
+
+          return companyFetch(input, options);
+        })
+      );
+      const start = await startLogin(auth);
+      const response = await auth.handler(
+        request(`/dingtalk/callback?authCode=test-code&state=${start.state}`, undefined, start.cookie)
+      );
+      expect(response.headers.get('location')).toBe(`${origin}/login?dingtalk_error=provider_error`);
+      expect(database.session).toHaveLength(0);
+      expect(queries.provisionDingtalkMember).not.toHaveBeenCalled();
+    }
+  );
 
   it.each(['unlinked', 'deactivated', 'terminated', 'banned', 'anonymous'])(
     'does not grant a session to a %s account',
     async (status) => {
+      vi.stubEnv('PUBLIC_IS_SELFHOSTED', status === 'unlinked' ? 'false' : 'true');
       const { auth, database, record } = await createTestAuth();
       const changed = structuredClone(record);
       if (status === 'deactivated') changed.member.status = 'DEACTIVATED';
@@ -304,6 +398,7 @@ describe('DingTalk company identity and account permissions', () => {
       expect(database.session).toHaveLength(0);
       expect(database.user).toHaveLength(1);
       expect(queries.bindDingtalkMember).not.toHaveBeenCalled();
+      expect(queries.provisionDingtalkMember).not.toHaveBeenCalled();
     }
   );
 

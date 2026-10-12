@@ -22,6 +22,10 @@ export class DingtalkError extends Error {
   }
 }
 
+export function directoryAccountKey(corpId: string, userId: string) {
+  return createHash('sha256').update(`${corpId}:${userId}`).digest('hex');
+}
+
 export function isActiveDingtalkMember(record: Awaited<ReturnType<typeof getDingtalkMember>>[number] | undefined) {
   if (!record) return false;
 
