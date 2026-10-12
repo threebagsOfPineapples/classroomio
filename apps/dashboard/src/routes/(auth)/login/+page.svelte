@@ -91,7 +91,7 @@
 
       const { error } = await authClient.signIn.email(
         {
-          email: fields.email,
+          email: fields.email.trim(),
           password: fields.password
         },
         {
