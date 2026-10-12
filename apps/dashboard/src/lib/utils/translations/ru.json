@@ -4445,7 +4445,10 @@
     "show_password": "Показать пароль",
     "hide_password": "Скрыть пароль",
     "logging_out": "Выход из системы…",
-    "invalid_credentials": "Неверный адрес электронной почты или пароль. Попробуйте ещё раз."
+    "invalid_credentials": "Неверный аккаунт или пароль. Попробуйте снова.",
+    "identifier": "Аккаунт / почта",
+    "identifier_placeholder": "Введите аккаунт или почту",
+    "invalid_identifier": "Введите действующий аккаунт или почту."
   },
   "app": {
     "search": {

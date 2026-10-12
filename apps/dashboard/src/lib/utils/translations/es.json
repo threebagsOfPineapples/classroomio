@@ -4445,7 +4445,10 @@
     "show_password": "Mostrar contraseña",
     "hide_password": "Ocultar contraseña",
     "logging_out": "Cerrando sesión…",
-    "invalid_credentials": "Correo o contraseña incorrectos. Inténtalo de nuevo."
+    "invalid_credentials": "Cuenta o contraseña incorrecta. Inténtalo de nuevo.",
+    "identifier": "Cuenta / correo",
+    "identifier_placeholder": "Introduce tu cuenta o correo",
+    "invalid_identifier": "Introduce una cuenta o correo válido."
   },
   "app": {
     "search": {

@@ -10,6 +10,7 @@ import {
 } from './auth/email-verification';
 
 import { betterAuth } from 'better-auth/minimal';
+import { createAuthMiddleware } from 'better-auth/api';
 import { createProfileHook } from './auth/hooks/create-profile';
 import { customSession } from 'better-auth/plugins/custom-session';
 import { db } from '@db/drizzle';
@@ -25,6 +26,7 @@ import { tokenExchange } from './auth/plugins/token-exchange';
 import { dingtalk } from './auth/plugins/dingtalk';
 import { trackLoginHook } from './auth/hooks/track-login';
 import { syncProfileEmailVerificationFromAuthUser } from './queries/auth/profile';
+import { resolveLoginUsername } from './auth/hooks/login-username';
 
 export { mintLoginLinkToken } from './auth/login-link';
 export type DingtalkPlugin = ReturnType<typeof dingtalk>;
@@ -52,6 +54,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     // debugLogs: true
   }),
   emailAndPassword: emailAndPassword,
+  hooks: { before: createAuthMiddleware(resolveLoginUsername) },
   disabledPaths:
     process.env.PUBLIC_IS_SELFHOSTED === 'true' ? ['/change-email', '/send-verification-email', '/verify-email'] : [],
   user: {

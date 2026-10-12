@@ -4445,7 +4445,10 @@
     "show_password": "Hiện mật khẩu",
     "hide_password": "Ẩn mật khẩu",
     "logging_out": "Đang đăng xuất…",
-    "invalid_credentials": "Email hoặc mật khẩu không đúng. Vui lòng thử lại."
+    "invalid_credentials": "Tài khoản hoặc mật khẩu không đúng. Hãy thử lại.",
+    "identifier": "Tài khoản / email",
+    "identifier_placeholder": "Nhập tài khoản hoặc email",
+    "invalid_identifier": "Nhập tài khoản hoặc email hợp lệ."
   },
   "app": {
     "search": {

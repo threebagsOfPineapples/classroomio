@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AuthUI } from '$features/ui';
+  import { env } from '$env/dynamic/public';
   import { LOGIN_FIELDS } from '$lib/utils/constants/authentication';
   import { t } from '$lib/utils/functions/translations';
   import { authValidation } from '$lib/utils/functions/validator';
@@ -20,6 +21,7 @@
 
   const emailFromUrl = page.url.searchParams.get('email') ?? '';
   const isEmailPrefilled = !!emailFromUrl;
+  const allowUsername = env.PUBLIC_IS_SELFHOSTED === 'true';
 
   let fields = $state(Object.assign({}, LOGIN_FIELDS, emailFromUrl ? { email: emailFromUrl } : {}));
 
@@ -77,7 +79,7 @@
       return;
     }
 
-    const validationRes = authValidation(fields, { skipPassword: true });
+    const validationRes = authValidation(fields, { skipPassword: true, allowUsername });
 
     if (Object.keys(validationRes).length) {
       errors = Object.assign(errors, validationRes);
@@ -152,15 +154,15 @@
 >
   <div class="flex flex-col gap-6">
     <Field.Field>
-      <Field.Label for="email">{$t('login.email')}</Field.Label>
+      <Field.Label for="email">{$t(allowUsername ? 'login.identifier' : 'login.email')}</Field.Label>
       <Field.Content>
         <Input
           id="email"
-          type="email"
+          type={allowUsername ? 'text' : 'email'}
           bind:value={fields.email}
           data-testid="auth-login-email"
           oninput={handleEmailChange}
-          placeholder="you@domain.com"
+          placeholder={allowUsername ? $t('login.identifier_placeholder') : 'you@domain.com'}
           disabled={loading || isEmailPrefilled}
           readonly={isEmailPrefilled}
           autofocus

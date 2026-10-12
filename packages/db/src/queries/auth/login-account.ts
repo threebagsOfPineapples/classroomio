@@ -2,6 +2,16 @@ import { db, type DbOrTxClient, type TxClient } from '@db/drizzle';
 import { account, cohortMember, groupmember, organizationmember, profile, programMember, user } from '@db/schema';
 import { and, desc, eq, isNotNull, ne, sql } from 'drizzle-orm';
 
+export async function getLoginEmailByUsername(username: string): Promise<string | undefined> {
+  const [loginUser] = await db
+    .select({ email: user.email })
+    .from(profile)
+    .innerJoin(user, eq(user.id, profile.id))
+    .where(eq(profile.username, username))
+    .limit(1);
+  return loginUser?.email;
+}
+
 export function withLoginAccountTransaction<T>(action: (client: TxClient) => Promise<T>) {
   return db.transaction(action, { isolationLevel: 'serializable' });
 }

@@ -4445,7 +4445,10 @@
     "show_password": "Afficher le mot de passe",
     "hide_password": "Masquer le mot de passe",
     "logging_out": "Déconnexion en cours…",
-    "invalid_credentials": "Adresse e-mail ou mot de passe incorrect. Réessayez."
+    "invalid_credentials": "Compte ou mot de passe incorrect. Réessayez.",
+    "identifier": "Compte / e-mail",
+    "identifier_placeholder": "Saisissez votre compte ou e-mail",
+    "invalid_identifier": "Saisissez un compte ou e-mail valide."
   },
   "app": {
     "search": {

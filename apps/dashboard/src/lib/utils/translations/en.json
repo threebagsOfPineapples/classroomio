@@ -451,7 +451,10 @@
     "show_password": "Show password",
     "hide_password": "Hide password",
     "logging_out": "Signing out…",
-    "invalid_credentials": "Incorrect email or password. Please try again."
+    "invalid_credentials": "Incorrect account or password. Please try again.",
+    "identifier": "Account / email",
+    "identifier_placeholder": "Enter your account or email",
+    "invalid_identifier": "Enter a valid account or email."
   },
   "profileMenu": {
     "profile": "PROFILE",

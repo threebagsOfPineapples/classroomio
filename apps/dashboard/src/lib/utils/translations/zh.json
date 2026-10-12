@@ -322,7 +322,10 @@
     "show_password": "显示密码",
     "hide_password": "隐藏密码",
     "logging_out": "正在退出登录…",
-    "invalid_credentials": "邮箱或密码错误，请重新输入。"
+    "invalid_credentials": "账号或密码错误，请重新输入。",
+    "identifier": "账号 / 邮箱",
+    "identifier_placeholder": "请输入账号或邮箱",
+    "invalid_identifier": "请输入有效的账号或邮箱。"
   },
   "profileMenu": {
     "profile": "个人资料",

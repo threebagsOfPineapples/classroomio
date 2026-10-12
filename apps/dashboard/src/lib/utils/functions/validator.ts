@@ -67,11 +67,22 @@ export const processErrors = (error, mapToId?: boolean) => {
   return errors;
 };
 
-export const authValidation = (fields = {}, { skipPassword = false }: { skipPassword?: boolean } = {}) => {
+export const authValidation = (
+  fields = {},
+  { skipPassword = false, allowUsername = false }: { skipPassword?: boolean; allowUsername?: boolean } = {}
+) => {
+  const emailSchema = allowUsername
+    ? z
+        .string()
+        .trim()
+        .min(1, { message: 'login.invalid_identifier' })
+        .max(256, { message: 'login.invalid_identifier' })
+        .refine((identifier) => !identifier.includes('@') || validateEmail(identifier), {
+          message: 'login.invalid_identifier'
+        })
+    : z.string().email({ message: 'validations.auth.email.invalid_email' });
   const schema = z.object({
-    email: z.string().email({
-      message: 'validations.auth.email.invalid_email'
-    }),
+    email: emailSchema,
     ...(skipPassword ? {} : { password: ZPassword })
   });
 

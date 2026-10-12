@@ -4445,7 +4445,10 @@
     "show_password": "पासवर्ड दिखाएँ",
     "hide_password": "पासवर्ड छिपाएँ",
     "logging_out": "साइन आउट किया जा रहा है…",
-    "invalid_credentials": "ईमेल या पासवर्ड गलत है। कृपया फिर से प्रयास करें।"
+    "invalid_credentials": "खाता या पासवर्ड गलत है। फिर से कोशिश करें।",
+    "identifier": "खाता / ईमेल",
+    "identifier_placeholder": "अपना खाता या ईमेल दर्ज करें",
+    "invalid_identifier": "मान्य खाता या ईमेल दर्ज करें।"
   },
   "app": {
     "search": {

@@ -4445,7 +4445,10 @@
     "show_password": "Passwort anzeigen",
     "hide_password": "Passwort ausblenden",
     "logging_out": "Abmeldung läuft…",
-    "invalid_credentials": "E-Mail-Adresse oder Passwort falsch. Bitte versuchen Sie es erneut."
+    "invalid_credentials": "Konto oder Passwort falsch. Bitte erneut versuchen.",
+    "identifier": "Konto / E-Mail",
+    "identifier_placeholder": "Konto oder E-Mail eingeben",
+    "invalid_identifier": "Geben Sie ein gültiges Konto oder eine E-Mail ein."
   },
   "app": {
     "search": {
