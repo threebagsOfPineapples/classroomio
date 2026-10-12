@@ -219,11 +219,13 @@ class AppInitApi extends BaseApi {
     }
 
     const dingtalkOrganizationId = this.data.dingtalkOrganizationId ?? null;
+    const hasCredentialPassword = this.data.hasCredentialPassword ?? false;
     user.update((_user) => ({
       ..._user,
       fetchingUser: false,
       isLoggedIn: true,
       dingtalkOrganizationId,
+      hasCredentialPassword,
       currentSession: (this.session?.user as unknown as TUser) || undefined
     }));
 

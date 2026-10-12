@@ -26,8 +26,8 @@ export async function consumeDingtalkState(state: string): Promise<string | null
   return rows[0]?.value ?? null;
 }
 
-export function getDingtalkMember(organizationId: string, profileId: string) {
-  return db
+export function getDingtalkMember(organizationId: string, profileId: string, client: DbOrTxClient = db) {
+  return client
     .select({ member: organizationmember, user })
     .from(organizationmember)
     .innerJoin(user, eq(organizationmember.profileId, user.id))

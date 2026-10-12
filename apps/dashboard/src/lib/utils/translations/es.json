@@ -4090,7 +4090,25 @@
         "unsupported_type": "Tipo de archivo no compatible: {type}",
         "crop": "Recortar"
       },
-      "page_subtitle": "Tu nombre, correo electrónico y cómo apareces donde trabajas en ClassroomIO."
+      "page_subtitle": "Tu nombre, correo electrónico y cómo apareces donde trabajas en ClassroomIO.",
+      "login_account": {
+        "email": "Correo de acceso",
+        "description": "Este correo solo es un identificador de acceso. No requiere verificación por correo.",
+        "current_password": "Contraseña actual",
+        "new_password": "Contraseña de acceso",
+        "confirm_password": "Confirmar contraseña",
+        "first_password": "Para configurar el acceso por primera vez, introduzca al menos 8 caracteres y confirme la contraseña.",
+        "saved": "Correo de acceso guardado. No requiere verificación.",
+        "incorrect_password": "La contraseña actual es incorrecta.",
+        "email_exists": "Este correo de acceso ya está en uso. Elija otro.",
+        "identity_required": "Inicie sesión con una identidad activa de DingTalk de la empresa o contacte con un administrador.",
+        "password_required": "Introduzca su contraseña.",
+        "use_current_password": "Confirme su contraseña actual para cambiar el correo de acceso.",
+        "retry": "La cuenta acaba de cambiar. Actualice la página e inténtelo de nuevo.",
+        "rate_limit": "Demasiados intentos. Inténtelo más tarde.",
+        "reserved_email": "Introduzca su propio correo de acceso. No se permiten direcciones provisionales del sistema.",
+        "password_too_long": "La contraseña es demasiado larga. Utilice una más corta."
+      }
     },
     "tabs": {
       "profile_tab": "Perfil",

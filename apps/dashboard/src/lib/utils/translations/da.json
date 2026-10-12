@@ -4090,7 +4090,25 @@
         "unsupported_type": "Filtypen understøttes ikke: {type}",
         "crop": "Beskær"
       },
-      "page_subtitle": "Dit navn, din e-mail og hvordan du fremstår, uanset hvor du arbejder i ClassroomIO."
+      "page_subtitle": "Dit navn, din e-mail og hvordan du fremstår, uanset hvor du arbejder i ClassroomIO.",
+      "login_account": {
+        "email": "Login-e-mail",
+        "description": "Denne e-mail bruges kun som login-id. E-mailbekræftelse er ikke påkrævet.",
+        "current_password": "Nuværende adgangskode",
+        "new_password": "Login-adgangskode",
+        "confirm_password": "Bekræft adgangskode",
+        "first_password": "Ved første opsætning skal du indtaste mindst 8 tegn og bekræfte adgangskoden.",
+        "saved": "Login-e-mail gemt. E-mailbekræftelse er ikke påkrævet.",
+        "incorrect_password": "Den nuværende adgangskode er forkert.",
+        "email_exists": "Denne login-e-mail bruges allerede. Vælg en anden.",
+        "identity_required": "Log ind med en aktiv DingTalk-firmaidentitet, eller kontakt en administrator.",
+        "password_required": "Indtast din adgangskode.",
+        "use_current_password": "Bekræft din nuværende adgangskode for at ændre login-e-mailen.",
+        "retry": "Kontoen er netop ændret. Genindlæs siden, og prøv igen.",
+        "rate_limit": "For mange forsøg. Prøv igen senere.",
+        "reserved_email": "Indtast din egen login-e-mail. Systemets midlertidige adresser er ikke tilladt.",
+        "password_too_long": "Adgangskoden er for lang. Brug en kortere adgangskode."
+      }
     },
     "tabs": {
       "profile_tab": "Profil",

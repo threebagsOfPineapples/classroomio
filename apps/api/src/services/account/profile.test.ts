@@ -5,6 +5,7 @@ import { getDingtalkMember } from '@cio/db/queries/auth/dingtalk';
 import { getOrganizationByProfileId } from '@cio/db/queries/organization';
 
 vi.mock('@cio/db/queries/auth', () => ({
+  getCredentialAccount: vi.fn(),
   getProfileById: vi.fn(),
   getProfileByEmail: vi.fn(),
   syncProfileEmailVerificationFromAuthUser: vi.fn(),
@@ -67,7 +68,7 @@ describe('DingTalk identity in account data', () => {
     expect(employeeProfile.isEmailVerified).toBe(false);
   });
 
-  it('requires email verification for a native account without a DingTalk identity', async () => {
+  it('does not claim a DingTalk identity for a native account', async () => {
     vi.mocked(getDingtalkMember).mockResolvedValue([]);
     expect(await getAccountData(profileId)).toMatchObject({ dingtalkOrganizationId: null });
   });

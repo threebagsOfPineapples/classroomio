@@ -523,7 +523,25 @@
       },
       "heading": "Profile",
       "update_profile": "Update Profile",
-      "logout": "Log out"
+      "logout": "Log out",
+      "login_account": {
+        "email": "Login email",
+        "description": "This email is only a login identifier. No email verification is required.",
+        "current_password": "Current password",
+        "new_password": "Login password",
+        "confirm_password": "Confirm password",
+        "first_password": "To set up password login for the first time, enter at least 8 characters and confirm the password.",
+        "saved": "Login email saved. No email verification is required.",
+        "incorrect_password": "The current password is incorrect.",
+        "email_exists": "This login email is already in use. Choose another email.",
+        "identity_required": "Sign in with an active company DingTalk identity or contact an administrator.",
+        "password_required": "Enter your password.",
+        "use_current_password": "Confirm your current password to change the login email.",
+        "retry": "The account has just changed. Refresh and try again.",
+        "rate_limit": "Too many attempts. Please try again later.",
+        "reserved_email": "Enter your own login email. System placeholder addresses are not allowed.",
+        "password_too_long": "The password is too long. Use a shorter password."
+      }
     },
     "notifications": {
       "heading": "Notifications",

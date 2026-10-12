@@ -1,24 +1,17 @@
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import type { TLocale, TProfile } from '@cio/db/types';
-import { ZChangeEmail, ZProfileUpdateForm } from '@cio/utils/validation/account';
+import { ZChangeEmail, ZChangeLoginEmail, ZProfileUpdateForm } from '@cio/utils/validation/account';
 
-import type { TProfileUpdateForm as TProfileUpdateFormSchema } from '@cio/utils/validation/account';
+import type { ChangeLoginEmailRequest, TChangeEmailForm, TProfileUpdateForm } from '../utils/types';
+import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
+import { get } from 'svelte/store';
 import { authClient } from '$lib/utils/services/auth/client';
 import { handleLocaleChange } from '$lib/utils/functions/translations';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
-import { profile as profileStore } from '$lib/utils/store/user';
+import { profile as profileStore, user } from '$lib/utils/store/user';
 import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
 import { uploadImage } from '$lib/utils/services/upload';
-
-export interface TProfileUpdateForm extends Omit<TProfileUpdateFormSchema, 'avatarUrl'> {
-  avatar?: string | File | undefined;
-}
-
-export interface TChangeEmailForm {
-  newEmail: string;
-  callbackURL?: string;
-}
 
 export class ProfileApi extends BaseApiWithErrors {
   private validateForm(fields: TProfileUpdateForm): boolean {
@@ -138,9 +131,58 @@ export class ProfileApi extends BaseApiWithErrors {
   }
 
   async changeEmail(fields: TChangeEmailForm) {
-    // Validate email format
+    this.success = false;
+    this.errors = {};
+
+    if (PUBLIC_IS_SELFHOSTED === 'true') {
+      const result = ZChangeLoginEmail.safeParse(fields);
+      if (!result.success) {
+        this.errors = mapZodErrorsToTranslations(result.error);
+        for (const issue of result.error.issues) {
+          if (issue.message.startsWith('settings.') || issue.message.startsWith('validations.')) {
+            this.errors[issue.path.join('.')] = t.get(issue.message);
+          }
+        }
+        return;
+      }
+
+      const hasPassword = get(user).hasCredentialPassword;
+      const passwordField = hasPassword ? 'currentPassword' : 'newPassword';
+      if (!result.data[passwordField]) {
+        this.errors[passwordField] = 'settings.profile.login_account.password_required';
+        return;
+      }
+
+      await this.execute<ChangeLoginEmailRequest>({
+        requestFn: async () => {
+          const response = await classroomio.account['login-email'].$put({ json: result.data });
+          if (response.status === 429) {
+            throw new Error('settings.profile.login_account.rate_limit');
+          }
+
+          return response;
+        },
+        logContext: 'updating login email',
+        onSuccess: async (response) => {
+          profileStore.set(response.data.profile);
+          user.update((currentUser) => ({
+            ...currentUser,
+            hasCredentialPassword: response.data.hasCredentialPassword
+          }));
+          await authClient.getSession({ query: { disableCookieCache: true } });
+          snackbar.success('settings.profile.login_account.saved');
+        },
+        onError: (error) => {
+          const message = typeof error === 'string' ? error : error.error;
+          const field = typeof error === 'string' ? 'general' : error.field || 'general';
+          this.errors[field] = message;
+          snackbar.error(message);
+        }
+      });
+      return;
+    }
+
     const result = ZChangeEmail.safeParse({ newEmail: fields.newEmail });
-    console.log('result', result);
     if (!result.success) {
       this.errors = mapZodErrorsToTranslations(result.error);
       return;

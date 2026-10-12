@@ -1,18 +1,19 @@
 import {
   createViewAsStudentToken,
+  changeLoginEmail,
   getAccountData,
   listPendingInvitesForAccount,
   updateUser
 } from '@api/services/account';
 
 import { Hono } from '@api/utils/hono';
-import { ZUpdateProfile } from '@cio/utils/validation/account';
+import { ZChangeLoginEmail, ZUpdateProfile } from '@cio/utils/validation/account';
 import { accountWorkspacesRouter } from '@api/routes/account/workspaces';
 import { authMiddleware } from '@api/middlewares/auth';
 import { createRateLimiter } from '@api/middlewares/rate-limiter';
 import { extractClientIp } from '@api/utils/redis/key-generators';
 import { getProfileById } from '@cio/db/queries/auth';
-import { handleError } from '@api/utils/errors';
+import { handleError, handlePublicApiError } from '@api/utils/errors';
 import { zValidator } from '@hono/zod-validator';
 
 const pendingInvitesRateLimit = createRateLimiter({
@@ -23,6 +24,13 @@ const pendingInvitesRateLimit = createRateLimiter({
     const user = c.get('user');
     return `account_invites:${user?.id ?? extractClientIp(c)}`;
   }
+});
+
+const loginEmailRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  maxRequests: 5,
+  message: 'settings.profile.login_account.rate_limit',
+  keyGenerator: (context) => `account_email:${context.get('user')?.id ?? extractClientIp(context)}`
 });
 
 export const accountRouter = new Hono()
@@ -42,7 +50,8 @@ export const accountRouter = new Hono()
           profile: accountData.profile,
           organizations: accountData.organizations,
           licenseFeatures: accountData.licenseFeatures,
-          dingtalkOrganizationId: accountData.dingtalkOrganizationId
+          dingtalkOrganizationId: accountData.dingtalkOrganizationId,
+          hasCredentialPassword: accountData.hasCredentialPassword
         },
         200
       );
@@ -50,6 +59,28 @@ export const accountRouter = new Hono()
       return handleError(c, error, 'Failed to fetch account data');
     }
   })
+  .put(
+    '/login-email',
+    authMiddleware,
+    loginEmailRateLimit,
+    zValidator('json', ZChangeLoginEmail, (result, context) => {
+      if (!result.success) {
+        return handlePublicApiError(context, result.error);
+      }
+    }),
+    async (c) => {
+      const user = c.get('user')!;
+
+      try {
+        const data = c.req.valid('json');
+        const result = await changeLoginEmail(user.id, data);
+        c.header('Cache-Control', 'no-store');
+        return c.json({ success: true, data: result }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to update login email');
+      }
+    }
+  )
   .put('/profile', authMiddleware, zValidator('json', ZUpdateProfile), async (c) => {
     const user = c.get('user')!;
 

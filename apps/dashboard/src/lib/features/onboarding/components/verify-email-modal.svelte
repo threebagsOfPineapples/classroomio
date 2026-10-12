@@ -12,6 +12,7 @@
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
   import { browser } from '$app/environment';
+  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
   import { setupDOMProtection, updateBodyClass } from '../utils/dom-protection';
   import { requiresEmailVerification } from '../utils/requires-email-verification';
   import { LogOut } from '@lucide/svelte';
@@ -30,7 +31,12 @@
   const sessionUser = $derived($session.data?.user ?? null);
   const isEmailVerified = $derived(Boolean($profile.isEmailVerified || sessionUser?.emailVerified));
   const verificationRequired = $derived(
-    requiresEmailVerification(isEmailVerified, $currentOrg.id, $user.dingtalkOrganizationId)
+    requiresEmailVerification(
+      isEmailVerified,
+      $currentOrg.id,
+      $user.dingtalkOrganizationId,
+      PUBLIC_IS_SELFHOSTED === 'true'
+    )
   );
   const open = $derived(Boolean(verificationRequired && !!$profile.id && !!$currentOrg.id));
 

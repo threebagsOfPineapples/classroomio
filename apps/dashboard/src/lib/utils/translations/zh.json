@@ -374,7 +374,25 @@
         "email_change_verification_note": "验证邮件已发送至原邮箱，确认后新邮箱才会生效。",
         "email_change_verification_sent": "验证邮件已发送至新邮箱，请查收并完成验证。"
       },
-      "update_profile": "更新个人资料"
+      "update_profile": "更新个人资料",
+      "login_account": {
+        "email": "邮箱账号",
+        "description": "邮箱仅作为登录账号使用，无需接收或验证邮件。",
+        "current_password": "当前密码",
+        "new_password": "登录密码",
+        "confirm_password": "确认密码",
+        "first_password": "首次设置需填写至少 8 位密码，并再次输入确认。",
+        "saved": "邮箱账号已保存，无需邮件验证。",
+        "incorrect_password": "当前密码不正确，请重新输入。",
+        "email_exists": "该邮箱账号已被使用，请更换。",
+        "identity_required": "请先使用有效的公司钉钉身份登录，或联系管理员。",
+        "password_required": "请输入密码。",
+        "use_current_password": "修改邮箱账号时请确认当前密码。",
+        "retry": "账号刚刚发生变更，请刷新后重试。",
+        "rate_limit": "尝试次数过多，请稍后重试。",
+        "reserved_email": "请填写自己的邮箱账号，不可使用系统占位地址。",
+        "password_too_long": "密码过长，请缩短后重试。"
+      }
     },
     "notifications": {
       "heading": "通知设置",

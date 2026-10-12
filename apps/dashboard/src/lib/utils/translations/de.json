@@ -4090,7 +4090,25 @@
         "unsupported_type": "Nicht unterstützter Dateityp: {type}",
         "crop": "Zuschneiden"
       },
-      "page_subtitle": "Ihr Name, Ihre E-Mail und wie Sie überall in ClassroomIO erscheinen."
+      "page_subtitle": "Ihr Name, Ihre E-Mail und wie Sie überall in ClassroomIO erscheinen.",
+      "login_account": {
+        "email": "Anmelde-E-Mail",
+        "description": "Diese E-Mail dient nur als Anmeldename. Eine E-Mail-Bestätigung ist nicht erforderlich.",
+        "current_password": "Aktuelles Passwort",
+        "new_password": "Anmeldepasswort",
+        "confirm_password": "Passwort bestätigen",
+        "first_password": "Geben Sie beim ersten Einrichten mindestens 8 Zeichen ein und bestätigen Sie das Passwort.",
+        "saved": "Anmelde-E-Mail gespeichert. Keine E-Mail-Bestätigung erforderlich.",
+        "incorrect_password": "Das aktuelle Passwort ist falsch.",
+        "email_exists": "Diese Anmelde-E-Mail wird bereits verwendet. Wählen Sie eine andere.",
+        "identity_required": "Melden Sie sich mit einer aktiven Firmenidentität bei DingTalk an oder kontaktieren Sie einen Administrator.",
+        "password_required": "Geben Sie Ihr Passwort ein.",
+        "use_current_password": "Bestätigen Sie Ihr aktuelles Passwort, um die Anmelde-E-Mail zu ändern.",
+        "retry": "Das Konto wurde gerade geändert. Laden Sie die Seite neu und versuchen Sie es erneut.",
+        "rate_limit": "Zu viele Versuche. Bitte versuchen Sie es später erneut.",
+        "reserved_email": "Geben Sie Ihre eigene Anmelde-E-Mail ein. Systemplatzhalter sind nicht erlaubt.",
+        "password_too_long": "Das Passwort ist zu lang. Verwenden Sie ein kürzeres Passwort."
+      }
     },
     "tabs": {
       "profile_tab": "Profil",

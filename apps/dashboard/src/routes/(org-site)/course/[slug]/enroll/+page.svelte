@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
   import { page } from '$app/state';
   import { Button } from '@cio/ui/base/button';
   import { AuthUI } from '$features/ui';
@@ -31,7 +32,12 @@
   const isLoggedIn = $derived(sessionReady && Boolean(sessionUser));
   const isEmailVerified = $derived(Boolean($profile.isEmailVerified || sessionUser?.emailVerified));
   const verificationRequired = $derived(
-    requiresEmailVerification(isEmailVerified, $currentOrg.id, $user.dingtalkOrganizationId)
+    requiresEmailVerification(
+      isEmailVerified,
+      $currentOrg.id,
+      $user.dingtalkOrganizationId,
+      PUBLIC_IS_SELFHOSTED === 'true'
+    )
   );
 
   async function sendVerificationEmail() {

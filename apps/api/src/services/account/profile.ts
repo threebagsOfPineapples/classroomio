@@ -9,6 +9,7 @@ import { getPlanLimit, toResourceUsage } from '@cio/utils/plans';
 import {
   getProfileByEmail,
   getProfileById,
+  getCredentialAccount,
   syncProfileEmailVerificationFromAuthUser,
   updateProfile
 } from '@cio/db/queries/auth';
@@ -27,6 +28,7 @@ export type GetAccountDataResult = {
   organizations: OrganizationWithMemberAndPlans[];
   licenseFeatures: string[];
   dingtalkOrganizationId: string | null;
+  hasCredentialPassword: boolean;
 };
 
 /**
@@ -39,11 +41,12 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
   const isSelfHosted = env.PUBLIC_IS_SELFHOSTED === 'true';
   const dingtalkConfig = getDingtalkConfig();
 
-  let [profile, organizations, licenseStatus, dingtalkMembers] = await Promise.all([
+  let [profile, organizations, licenseStatus, dingtalkMembers, credential] = await Promise.all([
     getProfileById(userId),
     getOrganizationByProfileId(userId),
     isSelfHosted ? getLicenseStatus() : Promise.resolve({ valid: true, features: [] as string[] }),
-    dingtalkConfig ? getDingtalkMember(dingtalkConfig.organizationId, userId) : Promise.resolve([])
+    dingtalkConfig ? getDingtalkMember(dingtalkConfig.organizationId, userId) : Promise.resolve([]),
+    getCredentialAccount(userId)
   ]);
 
   if (!profile) {
@@ -101,7 +104,8 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
     profile,
     organizations,
     licenseFeatures: isSelfHosted ? licenseStatus.features : [],
-    dingtalkOrganizationId
+    dingtalkOrganizationId,
+    hasCredentialPassword: Boolean(credential?.password)
   };
 }
 

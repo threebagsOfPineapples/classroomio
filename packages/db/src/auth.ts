@@ -52,17 +52,21 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     // debugLogs: true
   }),
   emailAndPassword: emailAndPassword,
+  disabledPaths:
+    process.env.PUBLIC_IS_SELFHOSTED === 'true' ? ['/change-email', '/send-verification-email', '/verify-email'] : [],
   user: {
     changeEmail: {
-      enabled: true,
+      enabled: process.env.PUBLIC_IS_SELFHOSTED !== 'true',
       sendChangeEmailConfirmation
     }
   },
-  emailVerification: {
-    enabled: true,
-    sendVerificationEmail,
-    afterEmailVerification: sendWelcomeEmailAfterVerification
-  },
+  emailVerification:
+    process.env.PUBLIC_IS_SELFHOSTED === 'true'
+      ? undefined
+      : {
+          sendVerificationEmail,
+          afterEmailVerification: sendWelcomeEmailAfterVerification
+        },
   trustedOrigins: (request) => {
     const origins = [...CONSTANTS.TRUSTED_ORIGINS];
     const originHeader = request?.headers.get('origin');

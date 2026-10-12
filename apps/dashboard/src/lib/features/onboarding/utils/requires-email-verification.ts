@@ -1,7 +1,8 @@
 export function requiresEmailVerification(
   emailVerified: boolean,
   organizationId: string,
-  dingtalkOrganizationId: string | null
+  dingtalkOrganizationId: string | null,
+  isSelfHosted: boolean
 ) {
-  return !emailVerified && (!organizationId || organizationId !== dingtalkOrganizationId);
+  return !isSelfHosted && !emailVerified && (!organizationId || organizationId !== dingtalkOrganizationId);
 }

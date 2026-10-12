@@ -4090,7 +4090,25 @@
         "unsupported_type": "Nieobsługiwany typ pliku: {type}",
         "crop": "Przytnij"
       },
-      "page_subtitle": "Twoje imię, e-mail i sposób, w jaki jesteś widoczny w ClassroomIO."
+      "page_subtitle": "Twoje imię, e-mail i sposób, w jaki jesteś widoczny w ClassroomIO.",
+      "login_account": {
+        "email": "E-mail logowania",
+        "description": "Ten e-mail służy tylko jako identyfikator logowania. Weryfikacja e-mail nie jest wymagana.",
+        "current_password": "Obecne hasło",
+        "new_password": "Hasło logowania",
+        "confirm_password": "Potwierdź hasło",
+        "first_password": "Przy pierwszej konfiguracji wpisz co najmniej 8 znaków i potwierdź hasło.",
+        "saved": "E-mail logowania zapisany. Weryfikacja nie jest wymagana.",
+        "incorrect_password": "Obecne hasło jest nieprawidłowe.",
+        "email_exists": "Ten e-mail logowania jest już używany. Wybierz inny.",
+        "identity_required": "Zaloguj się aktywną tożsamością firmową DingTalk lub skontaktuj się z administratorem.",
+        "password_required": "Wpisz swoje hasło.",
+        "use_current_password": "Potwierdź obecne hasło, aby zmienić e-mail logowania.",
+        "retry": "Konto właśnie się zmieniło. Odśwież stronę i spróbuj ponownie.",
+        "rate_limit": "Zbyt wiele prób. Spróbuj ponownie później.",
+        "reserved_email": "Wpisz własny e-mail logowania. Adresy zastępcze systemu są niedozwolone.",
+        "password_too_long": "Hasło jest zbyt długie. Użyj krótszego."
+      }
     },
     "tabs": {
       "profile_tab": "Profil",

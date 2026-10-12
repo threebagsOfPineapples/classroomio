@@ -4090,7 +4090,25 @@
         "unsupported_type": "Loại tệp không được hỗ trợ: {type}",
         "crop": "Cắt ảnh"
       },
-      "page_subtitle": "Tên, email và cách bạn xuất hiện ở mọi nơi bạn làm việc trong ClassroomIO."
+      "page_subtitle": "Tên, email và cách bạn xuất hiện ở mọi nơi bạn làm việc trong ClassroomIO.",
+      "login_account": {
+        "email": "Email đăng nhập",
+        "description": "Email này chỉ là tên đăng nhập. Không cần xác minh email.",
+        "current_password": "Mật khẩu hiện tại",
+        "new_password": "Mật khẩu đăng nhập",
+        "confirm_password": "Xác nhận mật khẩu",
+        "first_password": "Khi thiết lập lần đầu, nhập ít nhất 8 ký tự và xác nhận mật khẩu.",
+        "saved": "Đã lưu email đăng nhập. Không cần xác minh email.",
+        "incorrect_password": "Mật khẩu hiện tại không đúng.",
+        "email_exists": "Email đăng nhập này đã được sử dụng. Hãy chọn email khác.",
+        "identity_required": "Đăng nhập bằng danh tính DingTalk đang hoạt động của công ty hoặc liên hệ quản trị viên.",
+        "password_required": "Nhập mật khẩu của bạn.",
+        "use_current_password": "Xác nhận mật khẩu hiện tại để thay đổi email đăng nhập.",
+        "retry": "Tài khoản vừa thay đổi. Hãy tải lại trang và thử lại.",
+        "rate_limit": "Quá nhiều lần thử. Vui lòng thử lại sau.",
+        "reserved_email": "Nhập email đăng nhập của bạn. Không được dùng địa chỉ giữ chỗ của hệ thống.",
+        "password_too_long": "Mật khẩu quá dài. Hãy dùng mật khẩu ngắn hơn."
+      }
     },
     "tabs": {
       "profile_tab": "Hồ sơ",

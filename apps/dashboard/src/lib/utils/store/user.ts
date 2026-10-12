@@ -9,6 +9,7 @@ interface UserStore {
   currentSession: TUser | undefined;
   expiresAt: number;
   dingtalkOrganizationId: string | null;
+  hasCredentialPassword: boolean;
 }
 
 // Using TProfile type from @cio/utils/types with optional id for store initialization
@@ -22,7 +23,8 @@ export const defaultUserState: UserStore = {
   isLoggedIn: false,
   currentSession: undefined,
   expiresAt: 0,
-  dingtalkOrganizationId: null
+  dingtalkOrganizationId: null,
+  hasCredentialPassword: false
 };
 
 export const defaultProfileState: TProfile = {
