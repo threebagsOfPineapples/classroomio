@@ -1,0 +1,170 @@
+name: zz_train_test119
+
+x-application: &application
+  image: ${ZZ_TRAIN_IMAGE:?set the verified zz_train image tag}
+  working_dir: /app
+  restart: unless-stopped
+  cpus: 2
+  mem_limit: 1g
+
+x-environment: &environment
+  NODE_ENV: production
+  NODE_OPTIONS: --max-old-space-size=640
+  PUBLIC_IS_SELFHOSTED: 'true'
+  DATABASE_URL: postgresql://zz_train_test:${TRAINING_DB_PASSWORD:?required}@postgres:5432/train_test119
+  DATABASE_POOL_MAX: '5'
+  REDIS_URL: redis://redis:6379
+  PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?required}
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?required}
+  HLS_SIGNING_SECRET: ${HLS_SIGNING_SECRET:?required}
+  DASHBOARD_ORIGIN: http://10.60.2.119:3082
+  PUBLIC_SERVER_URL: http://10.60.2.119:3082/proxy
+  TRUSTED_ORIGINS: http://10.60.2.119:3082
+  DINGTALK_ENABLED: 'false'
+  OBJECT_STORAGE_ENDPOINT: http://minio:9000
+  OBJECT_STORAGE_PUBLIC_ENDPOINT: http://10.60.2.119:3084
+  OBJECT_STORAGE_REGION: us-east-1
+  OBJECT_STORAGE_ACCESS_KEY_ID: zz_train_test
+  OBJECT_STORAGE_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:?required}
+  OBJECT_STORAGE_FORCE_PATH_STYLE: 'true'
+  OBJECT_STORAGE_BUCKET_VIDEOS: videos
+  OBJECT_STORAGE_BUCKET_DOCUMENTS: documents
+  OBJECT_STORAGE_BUCKET_MEDIA: media
+  OBJECT_STORAGE_MEDIA_PUBLIC_BASE_URL: http://10.60.2.119:3084/media
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    cpus: 1
+    mem_limit: 768m
+    environment:
+      POSTGRES_DB: train_test119
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      TRAINING_DB_PASSWORD: ${TRAINING_DB_PASSWORD:?required}
+    ports:
+      - '127.0.0.1:55432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-test-db.sh:/docker-entrypoint-initdb.d/10-training.sh:ro
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U postgres -d train_test119 && psql -U postgres -d train_test119 -tAc "SELECT 1"']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    cpus: 0.5
+    mem_limit: 192m
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory', '128mb', '--maxmemory-policy', 'noeviction']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: zz_train_storage:test119
+    restart: unless-stopped
+    cpus: 1
+    mem_limit: 512m
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: zz_train_test
+      MINIO_ROOT_PASSWORD: ${STORAGE_PASSWORD:?required}
+    ports:
+      - '3084:9000'
+      - '127.0.0.1:3085:9001'
+    volumes:
+      - storage-data:/data
+
+  storage-init:
+    <<: *application
+    restart: 'no'
+    command: ['node', '/app/scripts/init-test-storage.mjs']
+    environment:
+      <<: *environment
+    depends_on:
+      minio:
+        condition: service_started
+
+  api:
+    <<: *application
+    command: ['sh', '/app/docker/entrypoint-api.sh']
+    environment:
+      <<: *environment
+      PORT: '3081'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 90s
+
+  dashboard:
+    <<: *application
+    working_dir: /app/apps/dashboard
+    command: ['node', 'build/index.js']
+    environment:
+      <<: *environment
+      HOST: 0.0.0.0
+      PORT: '3082'
+      ORIGIN: http://10.60.2.119:3082
+      PRIVATE_SERVER_URL: http://api:3081
+      PRIVATE_APP_HOST: 10.60.2.119
+      BODY_SIZE_LIMIT: '209715200'
+      CSP_CONNECT_SRC_DOMAINS: http://10.60.2.119:3084
+      CSP_MEDIA_SRC_DOMAINS: http://10.60.2.119:3084
+    ports:
+      - '3082:3082'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3082/proxy/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  jobs:
+    <<: *application
+    command: ['node', 'apps/jobs/dist/index.js']
+    environment:
+      <<: *environment
+      MEDIA_WORKER_CONCURRENCY: '1'
+      TRANSCRIBE_WORKER_CONCURRENCY: '1'
+      EMAIL_WORKER_CONCURRENCY: '1'
+      AGENT_COURSE_GENERATION_WORKER_CONCURRENCY: '1'
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:

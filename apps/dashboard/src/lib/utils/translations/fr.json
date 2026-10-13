@@ -5909,6 +5909,7 @@
       "description": "Description",
       "courses": "Cours",
       "targets": "Public visé",
+      "target_rules": "Une correspondance avec un des départements ou postes sélectionnés suffit dans chaque groupe. Si les deux groupes sont sélectionnés, les employés doivent correspondre aux deux. Les employés sélectionnés explicitement sont ajoutés manuellement, mais doivent rester dans le périmètre de formation autorisé. Les employés rattachés à plusieurs départements ne reçoivent qu’une seule affectation.",
       "include_descendants": "Inclure les sous-services",
       "add": "Ajouter",
       "save_draft": "Enregistrer le brouillon",

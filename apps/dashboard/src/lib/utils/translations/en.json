@@ -5964,6 +5964,7 @@
       "description": "Description",
       "courses": "Courses",
       "targets": "Training audience",
+      "target_rules": "Selected departments match any selected department, and selected positions match any selected position. When both are selected, employees must match both groups. Explicitly selected employees are added manually but must remain within the eligible training scope. Employees with multiple department affiliations receive one assignment.",
       "include_descendants": "Include subdepartments",
       "add": "Add",
       "save_draft": "Save draft",

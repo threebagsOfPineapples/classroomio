@@ -5909,6 +5909,7 @@
       "description": "Descripción",
       "courses": "Cursos",
       "targets": "Destinatarios",
+      "target_rules": "Basta con coincidir con cualquiera de los departamentos o puestos seleccionados dentro de cada grupo. Si se seleccionan ambos grupos, los empleados deben cumplir ambos. Los empleados seleccionados explícitamente se añaden manualmente, pero deben estar dentro del ámbito de formación permitido. Los empleados que pertenecen a varios departamentos reciben una sola asignación.",
       "include_descendants": "Incluir subdepartamentos",
       "add": "Añadir",
       "save_draft": "Guardar borrador",

@@ -19,6 +19,7 @@ import {
   trainingPlanTarget
 } from '@db/schema';
 import { and, asc, count, desc, eq, gte, inArray, isNotNull, isNull, lt, ne, notExists, or, sql } from 'drizzle-orm';
+import { listActiveTrainingMembers } from '../enterprise/access';
 
 export function withTrainingPlanTransaction<T>(callback: (transaction: DbOrTxClient) => Promise<T>) {
   return db.transaction(callback);
@@ -170,22 +171,7 @@ export function getPlanItems(planId: string, client: DbOrTxClient = db) {
 }
 
 export function getEligibleTrainingMembers(organizationId: string, client: DbOrTxClient = db) {
-  return client
-    .select({
-      id: organizationmember.id,
-      profileId: organizationmember.profileId,
-      email: organizationmember.email,
-      departmentId: organizationmember.departmentId,
-      position: organizationmember.position
-    })
-    .from(organizationmember)
-    .where(
-      and(
-        eq(organizationmember.organizationId, organizationId),
-        eq(organizationmember.status, 'ACTIVE'),
-        or(isNull(organizationmember.employmentStatus), ne(organizationmember.employmentStatus, 'TERMINATED'))
-      )
-    );
+  return listActiveTrainingMembers(organizationId, client);
 }
 
 export function getOrgTrainingCourses(organizationId: string, courseIds: string[], client: DbOrTxClient = db) {

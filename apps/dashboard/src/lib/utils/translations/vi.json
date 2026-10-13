@@ -5909,6 +5909,7 @@
       "description": "Mô tả",
       "courses": "Khóa học",
       "targets": "Đối tượng đào tạo",
+      "target_rules": "Trong mỗi nhóm, chỉ cần khớp với một trong các phòng ban hoặc vị trí đã chọn. Khi chọn cả hai nhóm, nhân viên phải đáp ứng cả hai. Nhân viên được chọn trực tiếp được thêm thủ công nhưng vẫn phải thuộc phạm vi đào tạo hợp lệ. Nhân viên thuộc nhiều phòng ban chỉ nhận một lần phân công.",
       "include_descendants": "Bao gồm phòng ban cấp dưới",
       "add": "Thêm",
       "save_draft": "Lưu bản nháp",

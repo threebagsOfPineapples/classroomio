@@ -5909,6 +5909,7 @@
       "description": "Beschreibung",
       "courses": "Kurse",
       "targets": "Zielgruppe",
+      "target_rules": "Bei mehreren ausgewählten Abteilungen oder Positionen genügt eine Übereinstimmung innerhalb der jeweiligen Gruppe. Sind beide Gruppen ausgewählt, müssen Mitarbeitende beide erfüllen. Ausdrücklich ausgewählte Mitarbeitende werden manuell ergänzt, müssen aber zum zulässigen Schulungsbereich gehören. Mitarbeitende mit mehreren Abteilungszugehörigkeiten erhalten nur eine Zuweisung.",
       "include_descendants": "Unterabteilungen einschließen",
       "add": "Hinzufügen",
       "save_draft": "Entwurf speichern",

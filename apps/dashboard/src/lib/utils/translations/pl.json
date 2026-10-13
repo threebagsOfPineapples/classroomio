@@ -5909,6 +5909,7 @@
       "description": "Opis",
       "courses": "Kursy",
       "targets": "Grupa docelowa",
+      "target_rules": "W każdej grupie wystarczy zgodność z jednym z wybranych działów lub stanowisk. Jeśli wybrano obie grupy, pracownicy muszą spełniać warunki obu. Pracownicy wskazani bezpośrednio są dodawani ręcznie, ale muszą należeć do dozwolonego zakresu szkolenia. Pracownicy należący do kilku działów otrzymują tylko jeden przydział.",
       "include_descendants": "Uwzględnij poddziały",
       "add": "Dodaj",
       "save_draft": "Zapisz szkic",

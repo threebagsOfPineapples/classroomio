@@ -5909,6 +5909,7 @@
       "description": "Beskrivelse",
       "courses": "Kurser",
       "targets": "Målgruppe",
+      "target_rules": "Inden for hver gruppe er et match med en af de valgte afdelinger eller stillinger nok. Når begge grupper er valgt, skal medarbejderne opfylde begge. Medarbejdere, der vælges direkte, tilføjes manuelt, men skal stadig være inden for den tilladte uddannelsesgruppe. Medarbejdere med tilknytning til flere afdelinger får kun én tildeling.",
       "include_descendants": "Medtag underafdelinger",
       "add": "Tilføj",
       "save_draft": "Gem kladde",

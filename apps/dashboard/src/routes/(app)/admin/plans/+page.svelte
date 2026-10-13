@@ -743,6 +743,7 @@
 
                 <Field.Set id="plan-targets" class="scroll-mt-24">
                   <Field.Legend>{$t('enterprise.plans.targets')}</Field.Legend>
+                  <Field.Description>{$t('enterprise.plans.target_rules')}</Field.Description>
                   <Field.Group class="space-y-3">
                     <p class="text-sm font-medium">{$t('enterprise.departments')}</p>
                     {#each enterpriseApi.overview.departments.filter((department) => department.status === 'ACTIVE') as department (department.id)}

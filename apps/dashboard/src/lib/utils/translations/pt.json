@@ -5909,6 +5909,7 @@
       "description": "Descrição",
       "courses": "Cursos",
       "targets": "Público-alvo",
+      "target_rules": "Basta corresponder a qualquer um dos departamentos ou cargos selecionados em cada grupo. Quando ambos os grupos são selecionados, os funcionários devem corresponder aos dois. Os funcionários selecionados explicitamente são adicionados manualmente, mas devem permanecer no âmbito de treinamento permitido. Funcionários vinculados a vários departamentos recebem apenas uma atribuição.",
       "include_descendants": "Incluir subdepartamentos",
       "add": "Adicionar",
       "save_draft": "Guardar rascunho",

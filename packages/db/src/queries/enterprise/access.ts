@@ -22,6 +22,7 @@ export async function getTrainingHeadquartersMemberIds(organizationId: string, c
   ];
   if (!sources.length) return null;
 
+  const activeDepartmentIds = new Set(departments.filter((item) => item.status === 'ACTIVE').map((item) => item.id));
   const allowedDepartmentIds = new Set<string>();
   for (const source of sources) {
     const sourceDepartments = departments.map((item) => ({
@@ -29,7 +30,9 @@ export async function getTrainingHeadquartersMemberIds(organizationId: string, c
       externalId: item.externalSource === source ? item.externalId : null
     }));
     const scope = resolveDingtalkHeadquartersScope(sourceDepartments);
-    for (const departmentId of scope.departmentIds) allowedDepartmentIds.add(departmentId);
+    for (const departmentId of scope.departmentIds) {
+      if (activeDepartmentIds.has(departmentId)) allowedDepartmentIds.add(departmentId);
+    }
   }
 
   const members = await listEnterpriseScopedMemberIds(organizationId, [...allowedDepartmentIds], [], client);
@@ -188,13 +191,22 @@ export async function listActiveTrainingMembers(organizationId: string, client: 
     .select({
       id: organizationmember.id,
       profileId: organizationmember.profileId,
-      departmentId: organizationmember.departmentId,
+      email: organizationmember.email,
+      departmentId: department.id,
       position: organizationmember.position,
       fullname: profile.fullname,
       employeeNo: organizationmember.employeeNo
     })
     .from(organizationmember)
     .leftJoin(profile, eq(profile.id, organizationmember.profileId))
+    .leftJoin(
+      department,
+      and(
+        eq(department.id, organizationmember.departmentId),
+        eq(department.organizationId, organizationId),
+        eq(department.status, 'ACTIVE')
+      )
+    )
     .where(
       and(
         eq(organizationmember.organizationId, organizationId),

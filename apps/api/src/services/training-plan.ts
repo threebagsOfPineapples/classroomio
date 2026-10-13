@@ -6,7 +6,7 @@ import { assertCourseCompletionReady } from '@cio/core/services/course/completio
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getEnterpriseOverview } from '@api/services/enterprise';
 import { resolveTrainingRecipients } from './training-plan-scope';
-import { listEnterpriseDepartments } from '@cio/db/queries/enterprise';
+import { getEnterpriseMember, listEnterpriseDepartments } from '@cio/db/queries/enterprise';
 import {
   createTrainingPlan,
   remindTrainingEnrollments,
@@ -54,16 +54,20 @@ function toStoredTargets(planId: string, targets: TTrainingPlanTarget[]) {
 }
 
 async function validateDraftReferences(organizationId: string, ownerMemberId: number, values: TTrainingPlanDraft) {
-  const [departments, members, courses] = await Promise.all([
+  const [departments, members, courses, [owner]] = await Promise.all([
     listEnterpriseDepartments(organizationId),
     getEligibleTrainingMembers(organizationId),
-    getOrgTrainingCourses(organizationId, values.courseIds)
+    getOrgTrainingCourses(organizationId, values.courseIds),
+    getEnterpriseMember(organizationId, ownerMemberId)
   ]);
   const activeDepartmentIds = new Set(departments.filter((item) => item.status === 'ACTIVE').map((item) => item.id));
   const activeMemberIds = new Set(members.map((item) => item.id));
   const uniqueCourseIds = new Set(values.courseIds);
 
-  if (!activeMemberIds.has(ownerMemberId)) invalidPlan('Plan owner must be an active employee');
+  if (!owner || owner.status !== 'ACTIVE' || owner.employmentStatus === 'TERMINATED') {
+    invalidPlan('Plan owner must be an active employee');
+  }
+
   if (values.departmentId && !activeDepartmentIds.has(values.departmentId)) invalidPlan('Plan department is invalid');
   if (uniqueCourseIds.size !== values.courseIds.length || courses.length !== uniqueCourseIds.size) {
     invalidPlan('Plan courses must be published courses in this organization');

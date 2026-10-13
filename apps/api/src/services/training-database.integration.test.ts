@@ -106,6 +106,91 @@ integration('phase one training on isolated PostgreSQL', () => {
     ).rejects.toMatchObject({ cause: { code: '23503' } });
   });
 
+  it('shares the legal headquarters candidate set with legacy plans and rejects foreign, terminated and deactivated members', async () => {
+    const plans = await import('@cio/db/queries/training-plan');
+    const extraMembers =
+      await connection`insert into organizationmember (organization_id, role_id, department_id, status, employment_status) values
+      (${organizationId}, 3, ${firstTeamId}, 'DEACTIVATED', null),
+      (${organizationId}, 3, ${firstTeamId}, 'ACTIVE', 'TERMINATED'),
+      (${foreignOrganizationId}, 3, ${foreignDepartmentId}, 'ACTIVE', null) returning id`;
+    const [deactivatedMemberId, terminatedMemberId, foreignMemberId] = extraMembers.map((member) => Number(member.id));
+    try {
+      const candidates = await plans.getEligibleTrainingMembers(organizationId);
+      const sharedCandidates = await access.listActiveTrainingMembers(organizationId);
+      const candidateIds = candidates.map((member) => member.id).sort((first, second) => first - second);
+      const expectedIds = [adminMemberId, learnerMemberId, managerMemberId].sort((first, second) => first - second);
+      expect(candidateIds).toEqual(expectedIds);
+      expect(candidates).toEqual(sharedCandidates);
+      const learners = candidates.filter((member) => member.id === learnerMemberId);
+      expect(learners).toHaveLength(1);
+      expect(learners[0].departmentId).toBeNull();
+      expect(learners[0].departmentIds.sort()).toEqual([firstTeamId, secondTeamId].sort());
+    } finally {
+      await connection`delete from organizationmember where id in (${deactivatedMemberId}, ${terminatedMemberId}, ${foreignMemberId})`;
+    }
+  });
+
+  it('matches multiple real department relationships once and stops using an inactive primary department', async () => {
+    const plans = await import('@cio/db/queries/training-plan');
+    const { resolveTrainingRecipients } = await import('./training-plan-scope');
+    await connection`update organizationmember set department_id = ${firstTeamId}, position = 'Analyst' where id = ${learnerMemberId}`;
+    const targets = [
+      {
+        id: 'first-team',
+        targetType: 'DEPARTMENT' as const,
+        departmentId: firstTeamId,
+        position: null,
+        memberId: null,
+        includeDescendants: false
+      },
+      {
+        id: 'second-team',
+        targetType: 'DEPARTMENT' as const,
+        departmentId: secondTeamId,
+        position: null,
+        memberId: null,
+        includeDescendants: false
+      },
+      {
+        id: 'analyst',
+        targetType: 'POSITION' as const,
+        departmentId: null,
+        position: 'Analyst',
+        memberId: null,
+        includeDescendants: false
+      },
+      {
+        id: 'excluded-user',
+        targetType: 'USER' as const,
+        departmentId: null,
+        position: null,
+        memberId: excludedMemberId,
+        includeDescendants: false
+      }
+    ];
+    try {
+      const departments = await employees.listEnterpriseDepartments(organizationId);
+      const members = await plans.getEligibleTrainingMembers(organizationId);
+      const recipients = resolveTrainingRecipients(departments, members, targets);
+      expect(recipients.map((recipient) => recipient.memberId)).toEqual([learnerMemberId]);
+      expect(recipients[0].matchedTargetIds).toEqual(['first-team', 'second-team', 'analyst']);
+
+      await connection`update department set status = 'INACTIVE' where id = ${firstTeamId}`;
+      const activeDepartments = await employees.listEnterpriseDepartments(organizationId);
+      const activeMembers = await plans.getEligibleTrainingMembers(organizationId);
+      const learner = activeMembers.find((member) => member.id === learnerMemberId);
+      expect(learner?.departmentId).toBeNull();
+      expect(learner?.departmentIds).toEqual([secondTeamId]);
+      expect(activeMembers.some((member) => member.id === managerMemberId)).toBe(false);
+      const activeRecipients = resolveTrainingRecipients(activeDepartments, activeMembers, targets);
+      expect(activeRecipients.map((recipient) => recipient.memberId)).toEqual([learnerMemberId]);
+      expect(activeRecipients[0].matchedTargetIds).toEqual(['second-team', 'analyst']);
+    } finally {
+      await connection`update department set status = 'ACTIVE' where id = ${firstTeamId}`;
+      await connection`update organizationmember set department_id = null, position = null where id = ${learnerMemberId}`;
+    }
+  });
+
   it('submits one anonymous response under simultaneous retries and freezes a deduplicated recipient list', async () => {
     const questionId = randomUUID();
     const template = await surveys.saveSurveyTemplate(organizationId, adminProfileId, {
