@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { page } from '$app/state';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
@@ -10,9 +11,22 @@
   import Grid from '@lucide/svelte/icons/grid-2x2';
   import Chart from '@lucide/svelte/icons/chart-no-axes-combined';
   import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-  import { currentOrgPath } from '$lib/utils/store/org';
+  import ClipboardList from '@lucide/svelte/icons/clipboard-list';
+  import Presentation from '@lucide/svelte/icons/presentation';
+  import Handshake from '@lucide/svelte/icons/handshake';
+  import { currentOrg, currentOrgPath } from '$lib/utils/store/org';
+  import { enterpriseAccessApi } from '$features/enterprise/api/enterprise-access.svelte';
   import { t } from '$lib/utils/functions/translations';
   import { SidebarFooterMenu } from '$features/ui/sidebar/footer';
+
+  const canViewTraining = $derived(
+    enterpriseAccessApi.organizationId === $currentOrg.id && enterpriseAccessApi.canViewTraining
+  );
+
+  $effect(() => {
+    const organizationId = $currentOrg.id;
+    untrack(() => void enterpriseAccessApi.load(organizationId));
+  });
 
   const groups = $derived([
     { key: '', links: [{ key: 'enterprise.interface.workbench', href: '/admin', icon: LayoutDashboard }] },
@@ -29,7 +43,14 @@
       links: [
         { key: 'org_navigation.courses', href: `${$currentOrgPath}/courses`, icon: BookOpen },
         { key: 'enterprise.plans.title', href: '/admin/plans', icon: Calendar },
-        { key: 'enterprise.assessment.title', href: '/admin/assessment', icon: ClipboardCheck }
+        { key: 'enterprise.assessment.title', href: '/admin/assessment', icon: ClipboardCheck },
+        ...(canViewTraining
+          ? [
+              { key: 'enterprise.training_navigation.surveys', href: '/admin/surveys', icon: ClipboardList },
+              { key: 'enterprise.training_navigation.sessions', href: '/admin/sessions', icon: Presentation },
+              { key: 'enterprise.training_navigation.mentorships', href: '/admin/mentorships', icon: Handshake }
+            ]
+          : [])
       ]
     },
     {

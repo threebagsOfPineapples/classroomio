@@ -10,6 +10,9 @@ import {
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
+import ClipboardList from '@lucide/svelte/icons/clipboard-list';
+import Presentation from '@lucide/svelte/icons/presentation';
+import Handshake from '@lucide/svelte/icons/handshake';
 
 export interface NavItem {
   title: string;
@@ -55,6 +58,27 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/training',
     icon: GoalIcon,
     matchPattern: '^/lms/training(?!/archive)(/.*)?$'
+  },
+  {
+    titleKey: 'enterprise.training_navigation.surveys',
+    path: '/surveys',
+    icon: ClipboardList,
+    matchPattern: '^/lms/surveys(/.*)?$',
+    supportsDynamicSegment: true
+  },
+  {
+    titleKey: 'enterprise.training_navigation.sessions',
+    path: '/sessions',
+    icon: Presentation,
+    matchPattern: '^/lms/sessions(/.*)?$',
+    supportsDynamicSegment: true
+  },
+  {
+    titleKey: 'enterprise.training_navigation.mentorships',
+    path: '/mentorships',
+    icon: Handshake,
+    matchPattern: '^/lms/mentorships(/.*)?$',
+    supportsDynamicSegment: true
   },
   {
     titleKey: 'lms_navigation.explore',

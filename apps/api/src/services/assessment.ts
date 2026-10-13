@@ -65,6 +65,7 @@ async function requireAssessmentReportReader(organizationId: string, profileId: 
 }
 
 async function requireVisibleEnrollment(organizationId: string, profileId: string, enrollmentId: string) {
+  await getEnterpriseOverview(organizationId, profileId);
   const row = await getAssessmentEnrollment(organizationId, enrollmentId);
   if (!row) assessmentError('Training enrollment not found', 404);
   if (row.member.profileId === profileId) return row;

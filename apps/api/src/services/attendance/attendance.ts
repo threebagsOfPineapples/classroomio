@@ -1,5 +1,7 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import { getAttendanceByCourseId, getAttendanceByStudentAndLesson, upsertAttendance } from '@cio/db/queries/attendance';
+import { getActiveAttendanceStudent, getAttendanceByCourseId, upsertAttendance } from '@cio/db/queries/attendance';
+import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { getLessonById } from '@cio/db/queries/lesson';
 import type { TGroupAttendance, TNewGroupAttendance } from '@cio/db/types';
 import type { TAttendanceUpsert } from '@cio/utils/validation/attendance';
 
@@ -21,15 +23,37 @@ export async function listAttendance(courseId: string, lessonId?: string): Promi
   }
 }
 
-/**
- * Creates or updates an attendance record
- * @param data Attendance data
- * @returns Created or updated attendance record
- */
-export async function upsertAttendanceService(data: TAttendanceUpsert): Promise<TGroupAttendance> {
+export async function upsertAttendanceService(
+  courseId: string,
+  profileId: string,
+  data: TAttendanceUpsert
+): Promise<TGroupAttendance> {
   try {
+    if (data.courseId !== courseId) {
+      throw new AppError('Attendance course must match the route course', ErrorCodes.VALIDATION_ERROR, 400, 'courseId');
+    }
+
+    const canManageAttendance = await isCourseTeamMemberOrOrgAdmin(courseId, profileId);
+    if (!canManageAttendance) {
+      throw new AppError(
+        'Only course team members or organization admins can manage attendance',
+        ErrorCodes.UNAUTHORIZED,
+        403
+      );
+    }
+
+    const lesson = await getLessonById(data.lessonId);
+    if (!lesson || lesson.courseId !== courseId) {
+      throw new AppError('Lesson not found in this course', ErrorCodes.NOT_FOUND, 404, 'lessonId');
+    }
+
+    const student = await getActiveAttendanceStudent(courseId, data.studentId);
+    if (!student) {
+      throw new AppError('Active student not found in this course', ErrorCodes.NOT_FOUND, 404, 'studentId');
+    }
+
     const attendanceData: TNewGroupAttendance = {
-      courseId: data.courseId,
+      courseId,
       lessonId: data.lessonId,
       studentId: data.studentId,
       isPresent: data.isPresent
@@ -37,6 +61,10 @@ export async function upsertAttendanceService(data: TAttendanceUpsert): Promise<
 
     return await upsertAttendance(attendanceData);
   } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to upsert attendance',
       ErrorCodes.INTERNAL_ERROR,

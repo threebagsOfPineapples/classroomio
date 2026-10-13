@@ -6,13 +6,14 @@ import {
   group,
   groupmember,
   organizationMemberEnterpriseRole,
+  organizationMemberDepartment,
   organizationmember,
   profile,
   question,
   submission
 } from '@db/schema';
 import { QUESTION_TYPE_IDS } from '@cio/question-types';
-import { and, asc, desc, eq, inArray, ne, or } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, or, sql } from 'drizzle-orm';
 
 export async function listPendingGradingSubmissions(organizationId: string) {
   const rows = await db
@@ -110,13 +111,34 @@ export function updateEnterpriseDepartment(
     .returning();
 }
 
-export function listEnterpriseEmployees(organizationId: string, departmentIds?: string[], selfMemberId?: number) {
-  const scope = departmentIds
-    ? or(
-        ...(departmentIds.length ? [inArray(organizationmember.departmentId, departmentIds)] : []),
-        ...(selfMemberId ? [eq(organizationmember.id, selfMemberId)] : [])
-      )
-    : undefined;
+export function listEnterpriseEmployees(
+  organizationId: string,
+  departmentIds?: string[],
+  selfMemberId?: number,
+  scopedMemberIds: number[] = []
+) {
+  const memberIds = [...new Set([...scopedMemberIds, ...(selfMemberId ? [selfMemberId] : [])])];
+  const predicates = [
+    ...(departmentIds?.length
+      ? [
+          inArray(organizationmember.departmentId, departmentIds),
+          inArray(
+            organizationmember.id,
+            db
+              .select({ memberId: organizationMemberDepartment.memberId })
+              .from(organizationMemberDepartment)
+              .where(
+                and(
+                  eq(organizationMemberDepartment.organizationId, organizationId),
+                  inArray(organizationMemberDepartment.departmentId, departmentIds)
+                )
+              )
+          )
+        ]
+      : []),
+    ...(memberIds.length ? [inArray(organizationmember.id, memberIds)] : [])
+  ];
+  const scope = departmentIds === undefined ? undefined : predicates.length ? or(...predicates) : sql`false`;
 
   return db
     .select({
@@ -146,11 +168,47 @@ export function updateEnterpriseEmployee(
   memberId: number,
   values: Partial<typeof organizationmember.$inferInsert>
 ) {
-  return db
-    .update(organizationmember)
-    .set(values)
-    .where(and(eq(organizationmember.organizationId, organizationId), eq(organizationmember.id, memberId)))
-    .returning();
+  return db.transaction(async (transaction) => {
+    const [previous] = await transaction
+      .select({ departmentId: organizationmember.departmentId })
+      .from(organizationmember)
+      .where(and(eq(organizationmember.organizationId, organizationId), eq(organizationmember.id, memberId)))
+      .for('update')
+      .limit(1);
+    const members = await transaction
+      .update(organizationmember)
+      .set(values)
+      .where(and(eq(organizationmember.organizationId, organizationId), eq(organizationmember.id, memberId)))
+      .returning();
+    if (!members.length || values.departmentId === undefined || values.departmentId === previous?.departmentId)
+      return members;
+
+    if (previous?.departmentId) {
+      await transaction
+        .delete(organizationMemberDepartment)
+        .where(
+          and(
+            eq(organizationMemberDepartment.organizationId, organizationId),
+            eq(organizationMemberDepartment.memberId, memberId),
+            eq(organizationMemberDepartment.departmentId, previous.departmentId),
+            eq(organizationMemberDepartment.source, 'MANUAL')
+          )
+        );
+    }
+    if (values.departmentId) {
+      await transaction
+        .insert(organizationMemberDepartment)
+        .values({
+          organizationId,
+          memberId,
+          departmentId: values.departmentId,
+          source: 'MANUAL'
+        })
+        .onConflictDoNothing();
+    }
+
+    return members;
+  });
 }
 
 export function replaceEnterpriseRoles(

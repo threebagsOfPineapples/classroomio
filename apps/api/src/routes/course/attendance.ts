@@ -14,7 +14,9 @@ export const attendanceRouter = new Hono().post(
   async (c) => {
     try {
       const data = c.req.valid('json');
-      const attendance = await upsertAttendanceService(data);
+      const courseId = c.req.param('courseId')!;
+      const profileId = c.get('user')!.id;
+      const attendance = await upsertAttendanceService(courseId, profileId, data);
 
       return c.json({ success: true, data: attendance }, 201);
     } catch (error) {

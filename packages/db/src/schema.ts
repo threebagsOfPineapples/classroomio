@@ -93,6 +93,8 @@ export const enterpriseRole = pgEnum('ENTERPRISE_ROLE', [
   'HR',
   'DEPARTMENT_MANAGER',
   'INSTRUCTOR',
+  'MENTOR',
+  'EXECUTIVE',
   'EMPLOYEE'
 ]);
 
@@ -2281,6 +2283,7 @@ export const trainingPlan = pgTable(
       name: 'training_plan_published_by_fkey'
     }),
     unique('training_plan_org_code_unique').on(table.organizationId, table.code),
+    unique('training_plan_org_id_unique').on(table.organizationId, table.id),
     index('idx_training_plan_org_status').on(table.organizationId, table.status),
     check('training_plan_dates_valid', sql`${table.endAt} >= ${table.startAt}`),
     check('training_plan_pass_score_valid', sql`${table.passScore} IS NULL OR ${table.passScore} BETWEEN 0 AND 100`)
@@ -4833,3 +4836,101 @@ export const examMakeup = pgTable(
   },
   (table) => [unique('exam_makeup_member_unique').on(table.exerciseId, table.groupMemberId)]
 );
+
+export const enterpriseDepartmentScope = pgTable(
+  'enterprise_department_scope',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    memberId: bigint('member_id', { mode: 'number' }).notNull(),
+    departmentId: uuid('department_id').notNull(),
+    createdByProfileId: uuid('created_by_profile_id').references(() => profile.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'enterprise_department_scope_member_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId, table.departmentId],
+      foreignColumns: [department.organizationId, department.id],
+      name: 'enterprise_department_scope_department_fkey'
+    }).onDelete('cascade'),
+    unique('enterprise_department_scope_unique').on(table.organizationId, table.memberId, table.departmentId)
+  ]
+);
+
+export const enterprisePersonScope = pgTable(
+  'enterprise_person_scope',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    memberId: bigint('member_id', { mode: 'number' }).notNull(),
+    targetMemberId: bigint('target_member_id', { mode: 'number' }).notNull(),
+    createdByProfileId: uuid('created_by_profile_id').references(() => profile.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'enterprise_person_scope_member_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId, table.targetMemberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'enterprise_person_scope_target_fkey'
+    }).onDelete('cascade'),
+    unique('enterprise_person_scope_unique').on(table.organizationId, table.memberId, table.targetMemberId)
+  ]
+);
+
+export const trainingOperationAudit = pgTable(
+  'training_operation_audit',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id, { onDelete: 'cascade' }),
+    actorProfileId: uuid('actor_profile_id').references(() => profile.id, { onDelete: 'set null' }),
+    targetMemberId: bigint('target_member_id', { mode: 'number' }),
+    resourceType: varchar('resource_type', { length: 64 }).notNull(),
+    resourceId: varchar('resource_id', { length: 128 }).notNull(),
+    action: varchar({ length: 64 }).notNull(),
+    reason: text(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [index('training_operation_audit_org_time').on(table.organizationId, table.createdAt)]
+);
+
+export const organizationMemberDepartment = pgTable(
+  'organization_member_department',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id').notNull(),
+    memberId: bigint('member_id', { mode: 'number' }).notNull(),
+    departmentId: uuid('department_id').notNull(),
+    source: varchar({ length: 24 }).default('MANUAL').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId, table.memberId],
+      foreignColumns: [organizationmember.organizationId, organizationmember.id],
+      name: 'organization_member_department_member_fkey'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.organizationId, table.departmentId],
+      foreignColumns: [department.organizationId, department.id],
+      name: 'organization_member_department_department_fkey'
+    }).onDelete('cascade'),
+    unique('organization_member_department_unique').on(table.organizationId, table.memberId, table.departmentId),
+    index('organization_member_department_scope').on(table.organizationId, table.departmentId)
+  ]
+);
+
+export * from './schema-surveys';
+export * from './schema-mentorship';
+export * from './schema-training-sessions';

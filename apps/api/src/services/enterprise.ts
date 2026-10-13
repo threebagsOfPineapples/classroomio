@@ -10,20 +10,28 @@ import {
   updateEnterpriseDepartment,
   updateEnterpriseEmployee
 } from '@cio/db/queries/enterprise';
+import {
+  addTrainingOperationAudit,
+  getEnterpriseMemberScopes,
+  lockEnterpriseMember,
+  replaceEnterpriseMemberScopes,
+  withEnterpriseAccessTransaction
+} from '@cio/db/queries/enterprise/access';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
 import type {
   TEnterpriseDepartment,
   TEnterpriseDepartmentUpdate,
   TEnterpriseEmployeeUpdate,
+  TEnterpriseMemberScopes,
   TEnterpriseRoles
 } from '@cio/utils/validation/enterprise';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { ROLE } from '@cio/utils/constants';
-import { visibleDepartmentIds, wouldCreateDepartmentCycle } from './enterprise-scope';
+import { wouldCreateDepartmentCycle } from './enterprise-scope';
 
 async function getContext(organizationId: string, profileId: string) {
   const [member] = await getEnterpriseMemberByProfile(organizationId, profileId);
-  if (!member || member.employmentStatus === 'TERMINATED') {
+  if (!member || member.status !== 'ACTIVE' || member.employmentStatus === 'TERMINATED') {
     throw new AppError('Active organization membership required', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
   }
 
@@ -31,10 +39,22 @@ async function getContext(organizationId: string, profileId: string) {
   const roles = roleRows.map((row) => row.role);
   const isSuperAdmin = member.roleId === ROLE.ADMIN || roles.includes('SUPER_ADMIN');
   const canManage = isSuperAdmin || roles.includes('TRAINING_ADMIN') || roles.includes('HR');
+  const canManageTraining = isSuperAdmin || roles.includes('TRAINING_ADMIN');
   const departments = await listEnterpriseDepartments(organizationId);
-  const scopedDepartmentIds = roles.includes('DEPARTMENT_MANAGER') ? visibleDepartmentIds(departments, member.id) : [];
+  const scopes = roles.includes('DEPARTMENT_MANAGER')
+    ? await getEnterpriseMemberScopes(organizationId, member.id)
+    : { departmentIds: [], memberIds: [] };
 
-  return { member, roles, isSuperAdmin, canManage, departments, scopedDepartmentIds };
+  return {
+    member,
+    roles,
+    isSuperAdmin,
+    canManage,
+    canManageTraining,
+    departments,
+    scopedDepartmentIds: scopes.departmentIds,
+    scopedMemberIds: scopes.memberIds
+  };
 }
 
 function requireManager(canManage: boolean) {
@@ -69,7 +89,10 @@ export async function getEnterpriseOverview(organizationId: string, profileId: s
     memberId: context.member.id,
     roles: context.roles,
     canManage: context.canManage,
+    canManageTraining: context.canManageTraining,
     isSuperAdmin: context.isSuperAdmin,
+    scopedDepartmentIds: context.scopedDepartmentIds,
+    scopedMemberIds: context.scopedMemberIds,
     departments
   };
 }
@@ -92,7 +115,7 @@ export async function getEnterpriseEmployees(organizationId: string, profileId: 
   const scope = context.canManage ? undefined : context.scopedDepartmentIds;
   const selfMemberId = context.canManage ? undefined : context.member.id;
 
-  return listEnterpriseEmployees(organizationId, scope, selfMemberId);
+  return listEnterpriseEmployees(organizationId, scope, selfMemberId, context.scopedMemberIds);
 }
 
 export async function getEnterpriseEmployee(organizationId: string, profileId: string, memberId: number) {
@@ -219,4 +242,64 @@ export async function setEnterpriseRoles(
   await requireActiveMember(organizationId, memberId);
   const roles = [...new Set(values.roles)];
   return replaceEnterpriseRoles(organizationId, memberId, roles, profileId);
+}
+
+export async function getEnterpriseTrainingScopes(organizationId: string, profileId: string, memberId: number) {
+  const context = await getContext(organizationId, profileId);
+  if (!context.isSuperAdmin) {
+    throw new AppError('Organization admin access required', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
+  }
+
+  await requireActiveMember(organizationId, memberId);
+  return getEnterpriseMemberScopes(organizationId, memberId);
+}
+
+export async function setEnterpriseTrainingScopes(
+  organizationId: string,
+  profileId: string,
+  memberId: number,
+  values: TEnterpriseMemberScopes
+) {
+  const context = await getContext(organizationId, profileId);
+  if (!context.isSuperAdmin) {
+    throw new AppError('Organization admin access required', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
+  }
+
+  const departmentIds = [...new Set(values.departmentIds)];
+  const memberIds = [...new Set(values.memberIds)];
+  for (const departmentId of departmentIds) requireActiveDepartment(context.departments, departmentId);
+  await Promise.all(memberIds.map((targetMemberId) => requireActiveMember(organizationId, targetMemberId)));
+
+  await withEnterpriseAccessTransaction(async (transaction) => {
+    const member = await lockEnterpriseMember(organizationId, memberId, transaction);
+    if (!member || member.status !== 'ACTIVE' || member.employmentStatus === 'TERMINATED') {
+      throw new AppError('Active organization member not found', ErrorCodes.VALIDATION_ERROR, 400);
+    }
+
+    const previous = await getEnterpriseMemberScopes(organizationId, memberId, transaction);
+    await replaceEnterpriseMemberScopes(organizationId, memberId, departmentIds, memberIds, profileId, transaction);
+
+    const changes = [
+      ...departmentIds
+        .filter((id) => !previous.departmentIds.includes(id))
+        .map((id) => ({ resourceType: 'department', resourceId: id, action: 'SCOPE_GRANTED' })),
+      ...previous.departmentIds
+        .filter((id) => !departmentIds.includes(id))
+        .map((id) => ({ resourceType: 'department', resourceId: id, action: 'SCOPE_REVOKED' })),
+      ...memberIds
+        .filter((id) => !previous.memberIds.includes(id))
+        .map((id) => ({ resourceType: 'employee', resourceId: String(id), action: 'SCOPE_GRANTED' })),
+      ...previous.memberIds
+        .filter((id) => !memberIds.includes(id))
+        .map((id) => ({ resourceType: 'employee', resourceId: String(id), action: 'SCOPE_REVOKED' }))
+    ];
+    for (const change of changes) {
+      await addTrainingOperationAudit(
+        { organizationId, actorProfileId: profileId, targetMemberId: memberId, ...change },
+        transaction
+      );
+    }
+  });
+
+  return { departmentIds, memberIds };
 }

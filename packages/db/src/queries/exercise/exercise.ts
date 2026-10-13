@@ -243,9 +243,10 @@ export async function getQuestionsByExerciseIds(
 
 export async function updateQuestion(questionId: number, data: Partial<TNewQuestion>, dbClient: DbOrTxClient = db) {
   try {
+    const updatedAt = sql`greatest(clock_timestamp(), ${schema.question.updatedAt} + interval '1 microsecond')`;
     const [updated] = await dbClient
       .update(schema.question)
-      .set(data)
+      .set({ ...data, updatedAt })
       .where(eq(schema.question.id, questionId))
       .returning();
     return updated || null;
@@ -298,7 +299,12 @@ export async function getOptionsByQuestionIds(questionIds: number[], dbClient: D
 
 export async function updateOption(optionId: number, data: Partial<TNewOption>, dbClient: DbOrTxClient = db) {
   try {
-    const [updated] = await dbClient.update(schema.option).set(data).where(eq(schema.option.id, optionId)).returning();
+    const updatedAt = sql`greatest(clock_timestamp(), ${schema.option.updatedAt} + interval '1 microsecond')`;
+    const [updated] = await dbClient
+      .update(schema.option)
+      .set({ ...data, updatedAt })
+      .where(eq(schema.option.id, optionId))
+      .returning();
     return updated || null;
   } catch (error) {
     console.error('updateOption error:', error);
@@ -370,12 +376,13 @@ export async function updateOptions(
 ) {
   if (updates.length === 0) return [];
   try {
+    const updatedAt = sql`greatest(clock_timestamp(), ${schema.option.updatedAt} + interval '1 microsecond')`;
     const run = (client: DbOrTxClient) =>
       Promise.all(
         updates.map(({ id, data }) =>
           client
             .update(schema.option)
-            .set(data)
+            .set({ ...data, updatedAt })
             .where(eq(schema.option.id, id))
             .returning()
             .then((r) => r[0])
@@ -399,12 +406,13 @@ export async function updateQuestions(
 ) {
   if (updates.length === 0) return [];
   try {
+    const updatedAt = sql`greatest(clock_timestamp(), ${schema.question.updatedAt} + interval '1 microsecond')`;
     const run = (client: DbOrTxClient) =>
       Promise.all(
         updates.map(({ id, data }) =>
           client
             .update(schema.question)
-            .set(data)
+            .set({ ...data, updatedAt })
             .where(eq(schema.question.id, id))
             .returning()
             .then((r) => r[0])

@@ -129,7 +129,8 @@ export const ZDingtalkDirectoryEmployee = z.object({
   employeeNo: z.string().max(128).nullable(),
   position: z.string().max(256).nullable(),
   companyEmail: z.string().max(320).nullable(),
-  departmentIds: z.array(z.number().int().positive().safe()).min(1).max(200)
+  departmentIds: z.array(z.number().int().positive().safe()).min(1).max(200),
+  hasMultipleDepartments: z.boolean().optional()
 });
 
 export const ZDingtalkDirectory = z
@@ -160,7 +161,7 @@ export const ZDingtalkDirectory = z
 
 export const ZDingtalkDirectorySelection = z.object({
   userId: z.string().min(1).max(128),
-  departmentId: z.number().int().positive().safe()
+  departmentId: z.number().int().positive().safe().nullable()
 });
 
 export const ZDingtalkDirectorySync = z

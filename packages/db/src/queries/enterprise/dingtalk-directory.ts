@@ -4,6 +4,7 @@ import {
   organization,
   organizationmember,
   organizationMemberEnterpriseRole,
+  organizationMemberDepartment,
   profile,
   user,
   verification
@@ -35,6 +36,11 @@ export async function readDingtalkDirectoryState(organizationId: string, emails:
     .from(organizationMemberEnterpriseRole)
     .where(eq(organizationMemberEnterpriseRole.organizationId, organizationId))
     .orderBy(organizationMemberEnterpriseRole.memberId, organizationMemberEnterpriseRole.role);
+  const memberDepartments = await client
+    .select()
+    .from(organizationMemberDepartment)
+    .where(eq(organizationMemberDepartment.organizationId, organizationId))
+    .orderBy(organizationMemberDepartment.memberId, organizationMemberDepartment.departmentId);
   const emailOwners = emails.length
     ? await client
         .select({ id: user.id, email: user.email })
@@ -49,7 +55,7 @@ export async function readDingtalkDirectoryState(organizationId: string, emails:
         .where(inArray(sql`lower(${profile.email})`, emails))
         .orderBy(profile.id)
     : [];
-  return { departments, members, roles, emailOwners, profileEmailOwners };
+  return { departments, members, roles, memberDepartments, emailOwners, profileEmailOwners };
 }
 
 export async function saveDingtalkDirectoryPreview(token: string, value: TDingtalkDirectorySnapshot) {
@@ -108,11 +114,44 @@ export async function createDingtalkDirectoryEmployees(
   profiles: (typeof profile.$inferInsert)[],
   members: (typeof organizationmember.$inferInsert)[]
 ) {
+  const createdMembers: { id: number; externalId: string | null }[] = [];
   for (let index = 0; index < users.length; index += 200) {
     await client.insert(user).values(users.slice(index, index + 200));
     await client.insert(profile).values(profiles.slice(index, index + 200));
-    await client.insert(organizationmember).values(members.slice(index, index + 200));
+    const created = await client
+      .insert(organizationmember)
+      .values(members.slice(index, index + 200))
+      .returning({ id: organizationmember.id, externalId: organizationmember.externalId });
+    createdMembers.push(...created);
   }
+
+  return createdMembers;
+}
+
+export async function replaceDingtalkDirectoryEmployeeDepartments(
+  client: TxClient,
+  organizationId: string,
+  memberId: number,
+  departmentIds: string[]
+) {
+  await client
+    .delete(organizationMemberDepartment)
+    .where(
+      and(
+        eq(organizationMemberDepartment.organizationId, organizationId),
+        eq(organizationMemberDepartment.memberId, memberId),
+        eq(organizationMemberDepartment.source, 'DINGTALK')
+      )
+    );
+  const rows = [...new Set(departmentIds)].map((departmentId) => ({
+    organizationId,
+    memberId,
+    departmentId,
+    source: 'DINGTALK'
+  }));
+  if (!rows.length) return;
+
+  await client.insert(organizationMemberDepartment).values(rows).onConflictDoNothing();
 }
 
 export async function updateDingtalkDirectoryEmployee(

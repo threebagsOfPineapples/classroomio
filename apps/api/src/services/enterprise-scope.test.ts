@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { visibleDepartmentIds, wouldCreateDepartmentCycle } from './enterprise-scope';
+import { wouldCreateDepartmentCycle } from './enterprise-scope';
 
 describe('enterprise department scope', () => {
-  it('includes an active leader department and descendants, excludes unrelated and inactive branches', () => {
+  it('prevents department cycles without treating hierarchy as authorization', () => {
     const departments = [
       { id: 'root', parentId: null, leaderMemberId: 7, status: 'ACTIVE' as const },
       { id: 'child', parentId: 'root', leaderMemberId: null, status: 'ACTIVE' as const },
@@ -11,7 +11,6 @@ describe('enterprise department scope', () => {
       { id: 'other', parentId: null, leaderMemberId: 8, status: 'ACTIVE' as const }
     ];
 
-    expect(visibleDepartmentIds(departments, 7).sort()).toEqual(['child', 'root']);
     expect(wouldCreateDepartmentCycle(departments, 'root', 'child')).toBe(true);
     expect(wouldCreateDepartmentCycle(departments, 'child', 'other')).toBe(false);
   });

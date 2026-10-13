@@ -4,6 +4,7 @@
   import { locale, t } from '$lib/utils/functions/translations';
   import { profile } from '$lib/utils/store/user';
   import * as Page from '@cio/ui/base/page';
+  import { Button } from '@cio/ui/base/button';
 
   const todayLabel = $derived(
     new Intl.DateTimeFormat($locale === 'zh' ? 'zh-CN' : $locale, {
@@ -36,6 +37,22 @@
 
   <Page.Body>
     {#snippet child()}
+      <section class="training-panel mb-6" aria-labelledby="training-activities-heading">
+        <h2 id="training-activities-heading" class="mb-3 text-base font-semibold">
+          {$t('enterprise.training_navigation.activities')}
+        </h2>
+        <div class="flex flex-wrap gap-3">
+          <Button href="/lms/surveys" variant="secondary" size="sm"
+            >{$t('enterprise.training_navigation.surveys')}</Button
+          >
+          <Button href="/lms/sessions" variant="secondary" size="sm"
+            >{$t('enterprise.training_navigation.sessions')}</Button
+          >
+          <Button href="/lms/mentorships" variant="secondary" size="sm"
+            >{$t('enterprise.training_navigation.mentorships')}</Button
+          >
+        </div>
+      </section>
       <DashboardPage />
     {/snippet}
   </Page.Body>

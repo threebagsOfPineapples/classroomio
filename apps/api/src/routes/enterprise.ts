@@ -10,12 +10,15 @@ import {
   getEnterpriseEmployees,
   getEnterpriseGradingQueue,
   getEnterpriseOverview,
+  getEnterpriseTrainingScopes,
+  setEnterpriseTrainingScopes,
   setEnterpriseRoles
 } from '@api/services/enterprise';
 import {
   ZEnterpriseDepartment,
   ZEnterpriseDepartmentUpdate,
   ZEnterpriseEmployeeUpdate,
+  ZEnterpriseMemberScopes,
   ZEnterpriseRoles
 } from '@cio/utils/validation/enterprise';
 import { zValidator } from '@hono/zod-validator';
@@ -62,6 +65,9 @@ import {
   supplementTrainingPlan
 } from '@api/services/training-plan';
 import { enterpriseDingtalkRouter } from './enterprise-dingtalk';
+import { enterpriseSurveysRouter } from './enterprise-surveys';
+import { enterpriseMentorshipsRouter } from './enterprise-mentorships';
+import { enterpriseSessionsRouter } from './enterprise-sessions';
 
 function enterpriseRequest(c: {
   req: { header: (name: string) => string | undefined; param: (name: string) => string };
@@ -123,6 +129,9 @@ function dateParam(raw: string | undefined) {
 export const enterpriseRouter = new Hono()
   .use('*', authMiddleware)
   .route('/dingtalk', enterpriseDingtalkRouter)
+  .route('/surveys', enterpriseSurveysRouter)
+  .route('/mentorships', enterpriseMentorshipsRouter)
+  .route('/sessions', enterpriseSessionsRouter)
   .get('/grading-queue', async (c) => {
     try {
       const { organizationId, profileId } = enterpriseRequest(c);
@@ -177,6 +186,26 @@ export const enterpriseRouter = new Hono()
       const memberId = memberIdParam(c.req.param('memberId'));
       const values = c.req.valid('json');
       const data = await setEnterpriseRoles(organizationId, profileId, memberId, values);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .get('/employees/:memberId/training-scopes', async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const memberId = memberIdParam(c.req.param('memberId'));
+      const data = await getEnterpriseTrainingScopes(organizationId, profileId, memberId);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error);
+    }
+  })
+  .put('/employees/:memberId/training-scopes', zValidator('json', ZEnterpriseMemberScopes), async (c) => {
+    try {
+      const { organizationId, profileId } = enterpriseRequest(c);
+      const memberId = memberIdParam(c.req.param('memberId'));
+      const data = await setEnterpriseTrainingScopes(organizationId, profileId, memberId, c.req.valid('json'));
       return c.json({ success: true, data });
     } catch (error) {
       return handleError(c, error);

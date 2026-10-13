@@ -1,0 +1,30 @@
+import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+
+export type SessionListRequest = typeof classroomio.enterprise.sessions.$get;
+export type SessionDetailRequest = (typeof classroomio.enterprise.sessions)[':sessionId']['$get'];
+export type SessionDraftRequest = typeof classroomio.enterprise.sessions.$post;
+export type SessionCandidateRequest = typeof classroomio.enterprise.sessions.candidates.$get;
+export type SessionPreviewRequest = typeof classroomio.enterprise.sessions.preview.$post;
+export type SessionTokenRequest = (typeof classroomio.enterprise.sessions)[':sessionId']['token']['$post'];
+export type SessionCorrectionRequest = (typeof classroomio.enterprise.sessions)[':sessionId']['correction']['$post'];
+export type SessionCheckinRequest = (typeof classroomio.enterprise.sessions)[':sessionId']['checkin']['$post'];
+export type TrainingSessions = Extract<InferResponseType<SessionListRequest>, { success: true }>['data'];
+export type TrainingSessionDetail = Extract<InferResponseType<SessionDetailRequest>, { success: true }>['data'];
+export type TrainingSessionDraft = InferRequestType<SessionDraftRequest>['json'];
+export type TrainingSessionCandidates = Extract<InferResponseType<SessionCandidateRequest>, { success: true }>['data'];
+export type TrainingSessionPreview = Extract<InferResponseType<SessionPreviewRequest>, { success: true }>['data'];
+export type TrainingSessionToken = Extract<InferResponseType<SessionTokenRequest>, { success: true }>['data'];
+export type TrainingSessionCorrection = InferRequestType<SessionCorrectionRequest>['json'];
+export type TrainingSessionCheckin = Extract<InferResponseType<SessionCheckinRequest>, { success: true }>['data'];
+export type TrainingSessionFilter = InferRequestType<SessionDetailRequest>['query'];
+export type SessionEditorForm = {
+  title: string;
+  instructor: string;
+  location: string;
+  courseId: string;
+  planId: string;
+  startAt: string;
+  endAt: string;
+  checkinOpensAt: string;
+  checkinClosesAt: string;
+};

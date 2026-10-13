@@ -49,7 +49,6 @@ export function planDingtalkDirectory(directory: TDingtalkDirectory, state: Dire
           : null;
     let status:
       | 'ready'
-      | 'department_required'
       | 'inactive'
       | 'employee_no_conflict'
       | 'email_conflict'
@@ -91,7 +90,6 @@ export function planDingtalkDirectory(directory: TDingtalkDirectory, state: Dire
         ))
     )
       status = 'email_conflict';
-    else if (!departmentId) status = 'department_required';
 
     return {
       ...employee,

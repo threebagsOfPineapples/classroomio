@@ -1,0 +1,20 @@
+import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+
+export type SurveyTemplatesRequest = typeof classroomio.enterprise.surveys.templates.$get;
+export type SurveyTasksRequest = typeof classroomio.enterprise.surveys.tasks.$get;
+export type SurveyTemplateCreateRequest = typeof classroomio.enterprise.surveys.templates.$post;
+export type SurveyTaskCreateRequest = typeof classroomio.enterprise.surveys.tasks.$post;
+export type SurveyTaskRequest = (typeof classroomio.enterprise.surveys.tasks)[':taskId']['$get'];
+export type SurveyReportRequest = (typeof classroomio.enterprise.surveys.tasks)[':taskId']['report']['$get'];
+export type MySurveysRequest = typeof classroomio.enterprise.surveys.mine.$get;
+export type MySurveyRequest = (typeof classroomio.enterprise.surveys.mine)[':taskId']['$get'];
+export type SurveyTemplates = Extract<InferResponseType<SurveyTemplatesRequest>, { success: true }>['data'];
+export type SurveyTasks = Extract<InferResponseType<SurveyTasksRequest>, { success: true }>['data'];
+export type SurveyTaskDetail = Extract<InferResponseType<SurveyTaskRequest>, { success: true }>['data'];
+export type SurveyReport = Extract<InferResponseType<SurveyReportRequest>, { success: true }>['data'];
+export type MySurveys = Extract<InferResponseType<MySurveysRequest>, { success: true }>['data'];
+export type MySurvey = Extract<InferResponseType<MySurveyRequest>, { success: true }>['data'];
+export type SurveyTemplateDraft = InferRequestType<SurveyTemplateCreateRequest>['json'];
+export type SurveyTaskDraft = InferRequestType<SurveyTaskCreateRequest>['json'];
+export type SurveyQuestionDraft = SurveyTemplateDraft['questions'][number];
+export type SurveyAnswerDraft = MySurvey['answers'];

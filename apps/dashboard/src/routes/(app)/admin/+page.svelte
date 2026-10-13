@@ -1,11 +1,13 @@
 <script lang="ts">
   import Workbench from '$features/enterprise/components/workbench.svelte';
+  import TrainingScopesEditor from '$features/enterprise/components/training-scopes-editor.svelte';
   import { untrack } from 'svelte';
   import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { enterpriseApi } from '$lib/features/enterprise/api/enterprise.svelte';
+  import { enterpriseAccessApi } from '$lib/features/enterprise/api/enterprise-access.svelte';
   import { employeeLabel, matchesEmployee } from '$lib/features/enterprise/utils/admin-workflow';
   import { UnsavedChanges } from '$features/ui';
   import type { EnterpriseDepartment, EnterpriseEmployee, EnterpriseRole } from '$lib/features/enterprise/utils/types';
@@ -48,6 +50,7 @@
   let savingEmployee = $state(false);
   let inviteOpen = $state(false);
   let inviteEmail = $state('');
+  let scopeEmployee = $state<EnterpriseEmployee | null>(null);
   const overview = $derived(enterpriseApi.overview);
   const employees = $derived(enterpriseApi.employees);
   const selectedEmployee = $derived(enterpriseApi.selectedEmployee);
@@ -75,6 +78,8 @@
     'HR',
     'DEPARTMENT_MANAGER',
     'INSTRUCTOR',
+    'MENTOR',
+    'EXECUTIVE',
     'EMPLOYEE'
   ];
   const filteredEmployees = $derived(
@@ -86,6 +91,7 @@
     if (!organizationId) return;
 
     untrack(() => {
+      scopeEmployee = null;
       void enterpriseApi.load(organizationId).then((loaded) => {
         if (loaded && $currentOrg.id === organizationId) populateEmployee();
       });
@@ -196,6 +202,7 @@
     if (saved) {
       savedRolesFingerprint = JSON.stringify([...selectedRoles].sort());
       await enterpriseApi.selectEmployee($currentOrg.id, selectedEmployee);
+      await enterpriseAccessApi.load($currentOrg.id);
     }
     return saved;
   }
@@ -269,7 +276,8 @@
             size="sm"
             href="/admin/statistics">{$t('org_navigation.stats')}</Button
           >{/if}
-        {#if overview?.canManage}<Button size="sm" href="/admin/plans">{$t('enterprise.ui_v2.new_plan')}</Button>{/if}
+        {#if overview?.canManageTraining}<Button size="sm" href="/admin/plans">{$t('enterprise.ui_v2.new_plan')}</Button
+          >{/if}
       {/if}
       {#if activeView === 'employees' && $isOrgAdmin}<Button
           size="sm"
@@ -444,6 +452,17 @@
                   <Button variant="secondary" href={`/admin/employees/${selectedEmployee.member.id}/archive`}
                     >{$t('enterprise.assessment.archive')}</Button
                   >
+                  {#if overview.isSuperAdmin && selectedEmployee.member.status === 'ACTIVE' && selectedEmployee.member.employmentStatus !== 'TERMINATED'}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={editorBusy}
+                      onclick={() => (scopeEmployee = selectedEmployee)}
+                      testId="training-scope-open"
+                    >
+                      {$t('enterprise.training_scopes.title')}
+                    </Button>
+                  {/if}
                   <form onsubmit={saveEmployeeChanges}>
                     <Field.Group>
                       <Field.Set>
@@ -595,3 +614,13 @@
     >
   </Dialog.Content>
 </Dialog.Root>
+
+{#if scopeEmployee && overview?.isSuperAdmin}
+  {#key $currentOrg.id}
+    <TrainingScopesEditor
+      organizationId={$currentOrg.id}
+      employee={scopeEmployee}
+      onClose={() => (scopeEmployee = null)}
+    />
+  {/key}
+{/if}

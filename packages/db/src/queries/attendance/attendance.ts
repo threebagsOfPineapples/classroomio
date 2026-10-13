@@ -1,7 +1,44 @@
 import * as schema from '@db/schema';
 
 import type { TGroupAttendance, TNewGroupAttendance } from '@db/types';
-import { and, db, eq } from '@db/drizzle';
+import { and, db, eq, isNotNull, isNull, or, sql } from '@db/drizzle';
+import { ROLE } from '@cio/utils/constants';
+
+export async function getActiveAttendanceStudent(courseId: string, studentId: string) {
+  try {
+    const [student] = await db
+      .select({ id: schema.groupmember.id })
+      .from(schema.course)
+      .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
+      .innerJoin(schema.groupmember, eq(schema.groupmember.groupId, schema.group.id))
+      .leftJoin(
+        schema.organizationmember,
+        and(
+          eq(schema.organizationmember.organizationId, schema.group.organizationId),
+          eq(schema.organizationmember.profileId, schema.groupmember.profileId),
+          eq(schema.organizationmember.status, 'ACTIVE'),
+          sql`${schema.organizationmember.employmentStatus} IS DISTINCT FROM 'TERMINATED'`
+        )
+      )
+      .where(
+        and(
+          eq(schema.course.id, courseId),
+          eq(schema.groupmember.id, studentId),
+          eq(schema.groupmember.roleId, ROLE.STUDENT),
+          isNotNull(schema.groupmember.profileId),
+          or(isNull(schema.group.organizationId), isNotNull(schema.organizationmember.id))
+        )
+      )
+      .limit(1);
+
+    return student ?? null;
+  } catch (error) {
+    console.error('getActiveAttendanceStudent error:', error);
+    throw new Error(
+      `Failed to get active attendance student: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
 
 /**
  * Gets attendance records by course ID

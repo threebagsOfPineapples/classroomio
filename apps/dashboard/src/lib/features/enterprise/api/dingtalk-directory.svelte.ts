@@ -31,8 +31,7 @@ export class DingtalkDirectoryApi {
   }
 
   get selectedCount() {
-    return (this.preview?.employees ?? []).filter((row) => this.selected[row.userId] && this.departments[row.userId])
-      .length;
+    return (this.preview?.employees ?? []).filter((row) => this.selected[row.userId] && this.canSelect(row)).length;
   }
 
   departmentLabel(id: number) {
@@ -41,12 +40,11 @@ export class DingtalkDirectoryApi {
   }
 
   canSelect(row: NonNullable<DingtalkDirectoryPreview>['employees'][number]) {
-    return ['ready', 'department_required'].includes(row.status) && !!this.departments[row.userId];
+    return row.status === 'ready';
   }
 
   setDepartment(userId: string, value: string) {
     this.departments[userId] = value;
-    this.selected[userId] = !!value;
   }
 
   selectReady() {
@@ -128,7 +126,8 @@ export class DingtalkDirectoryApi {
     const selections = this.preview.employees
       .filter((row) => this.selected[row.userId] && this.canSelect(row))
       .map((row) => {
-        const departmentId = Number(this.departments[row.userId]);
+        const selectedDepartment = this.departments[row.userId];
+        const departmentId = selectedDepartment ? Number(selectedDepartment) : null;
         return { userId: row.userId, departmentId };
       });
     const parsed = ZDingtalkDirectorySync.safeParse({ token: this.preview.token, selections });

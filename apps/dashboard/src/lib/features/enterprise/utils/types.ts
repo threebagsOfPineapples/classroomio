@@ -30,6 +30,13 @@ export type EnterpriseEmployee = EnterpriseEmployees[number];
 export type EnterpriseDepartment = EnterpriseOverview['departments'][number];
 export type EnterpriseRole = EnterpriseOverview['roles'][number];
 
+export type GetTrainingScopesRequest =
+  (typeof classroomio.enterprise.employees)[':memberId']['training-scopes']['$get'];
+export type UpdateTrainingScopesRequest =
+  (typeof classroomio.enterprise.employees)[':memberId']['training-scopes']['$put'];
+export type TrainingScopes = Extract<InferResponseType<GetTrainingScopesRequest>, { success: true }>['data'];
+export type TrainingScopesDraft = InferRequestType<UpdateTrainingScopesRequest>['json'];
+
 export type GetTrainingPlansRequest = typeof classroomio.enterprise.plans.$get;
 export type GetAvailableTrainingCoursesRequest = (typeof classroomio.enterprise)['training-courses']['$get'];
 export type CreateTrainingPlanRequest = typeof classroomio.enterprise.plans.$post;

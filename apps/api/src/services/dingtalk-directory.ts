@@ -11,7 +11,8 @@ import {
   finishDingtalkDirectoryPreview,
   applyDingtalkDirectoryDepartments,
   createDingtalkDirectoryEmployees,
-  updateDingtalkDirectoryEmployee
+  updateDingtalkDirectoryEmployee,
+  replaceDingtalkDirectoryEmployeeDepartments
 } from '@cio/db/queries/enterprise/dingtalk-directory';
 import {
   ZDingtalkDirectory,
@@ -21,6 +22,10 @@ import {
 } from '@cio/utils/validation/auth/dingtalk';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { ROLE } from '@cio/utils/constants';
+import {
+  DINGTALK_HEADQUARTERS_RULE,
+  filterDingtalkHeadquartersDirectory
+} from '@cio/utils/functions/dingtalk-headquarters';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
   directoryAccountKey,
@@ -66,11 +71,23 @@ function requireCurrentAdmin(state: DirectoryState, profileId: string) {
     throw directoryError('changed', 409);
 }
 
+function headquartersDirectory(source: TDingtalkDirectory) {
+  const scoped = filterDingtalkHeadquartersDirectory(source);
+  if (!scoped.summary.eligibleDepartmentCount) throw directoryError('invalid_directory');
+
+  return scoped;
+}
+
 export async function getDingtalkDirectoryStatus(organizationId: string, profileId: string) {
   const overview = await getEnterpriseOverview(organizationId, profileId);
   const configuration = getDingtalkConfig();
   const enabled = configuration?.organizationId === organizationId;
-  return { enabled, canSync: overview.isSuperAdmin, callbackUrl: enabled ? configuration.redirectUri : null };
+  return {
+    enabled,
+    canSync: overview.isSuperAdmin,
+    callbackUrl: enabled ? configuration.redirectUri : null,
+    scope: DINGTALK_HEADQUARTERS_RULE
+  };
 }
 
 export async function previewDingtalkDirectory(organizationId: string, profileId: string) {
@@ -94,12 +111,20 @@ export async function prepareDingtalkDirectoryPreview(
 ) {
   await requireDingtalkAdmin(organizationId, profileId);
   const configuration = configuredOrganization(organizationId);
-  const directory = ZDingtalkDirectory.parse(sourceDirectory);
+  const parsedDirectory = ZDingtalkDirectory.parse(sourceDirectory);
+  const scoped = headquartersDirectory(parsedDirectory);
+  const directory = scoped.directory;
   const emails = directoryEmailAddresses(directory);
   const state = await readDingtalkDirectoryState(organizationId, emails);
   requireCurrentAdmin(state, profileId);
   const source = `dingtalk:${configuration.corpId}`;
-  if (state.departments.some((row) => row.externalSource === source && row.status === 'INACTIVE'))
+  const retainedDepartmentIds = new Set(directory.departments.map((department) => String(department.id)));
+  if (
+    state.departments.some(
+      (row) =>
+        row.externalSource === source && retainedDepartmentIds.has(row.externalId ?? '') && row.status === 'INACTIVE'
+    )
+  )
     throw directoryError('invalid_directory');
 
   const plan = planDingtalkDirectory(directory, state, configuration.corpId);
@@ -115,7 +140,7 @@ export async function prepareDingtalkDirectoryPreview(
     selectionHash: null
   };
   await saveDingtalkDirectoryPreview(token, snapshot);
-  return { token, ...plan };
+  return { token, ...plan, scope: scoped.summary };
 }
 
 export async function syncDingtalkDirectory(organizationId: string, profileId: string, values: TDingtalkDirectorySync) {
@@ -137,7 +162,15 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
     )
       throw directoryError('changed', 409);
 
-    const emails = directoryEmailAddresses(snapshot.directory);
+    const scoped = headquartersDirectory(snapshot.directory);
+    const directory = scoped.directory;
+    for (const selection of selections) {
+      const employee = directory.employees.find((row) => row.userId === selection.userId);
+      if (!employee || (selection.departmentId !== null && !employee.departmentIds.includes(selection.departmentId)))
+        throw directoryError('changed', 409);
+    }
+
+    const emails = directoryEmailAddresses(directory);
     const state = await readDingtalkDirectoryState(organizationId, emails, client);
     requireCurrentAdmin(state, profileId);
     if (snapshot.result) {
@@ -148,17 +181,18 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
 
     if (directoryRevision(state) !== snapshot.revision) throw directoryError('changed', 409);
 
-    const plan = planDingtalkDirectory(snapshot.directory, state, configuration.corpId);
+    const plan = planDingtalkDirectory(directory, state, configuration.corpId);
     const selectedEmployees = selections.map((selection) => {
       const employee = plan.employees.find((row) => row.userId === selection.userId);
       if (
         !employee ||
-        !['ready', 'department_required'].includes(employee.status) ||
-        !employee.departmentIds.includes(selection.departmentId)
+        employee.status !== 'ready' ||
+        (selection.departmentId !== null && !employee.departmentIds.includes(selection.departmentId))
       )
         throw directoryError('changed', 409);
 
-      return { ...employee, departmentId: selection.departmentId };
+      const departmentId = selection.departmentId ?? employee.departmentId;
+      return { ...employee, departmentId };
     });
     const source = `dingtalk:${configuration.corpId}`;
     const departmentIds = new Map(plan.departments.map((row) => [row.id, row.localId ?? randomUUID()]));
@@ -209,7 +243,7 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
       };
     });
     const members = newEmployees.map((row, index) => {
-      const departmentId = departmentIds.get(row.departmentId)!;
+      const departmentId = row.departmentId === null ? null : departmentIds.get(row.departmentId)!;
       return {
         organizationId,
         profileId: users[index].id,
@@ -223,11 +257,11 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
         employmentStatus: 'ACTIVE' as const
       };
     });
-    await createDingtalkDirectoryEmployees(client, users, profiles, members);
+    const createdMembers = await createDingtalkDirectoryEmployees(client, users, profiles, members);
     for (const employee of selectedEmployees.filter((row) => row.action === 'update')) {
       const existing = state.members.find((row) => row.member.id === employee.memberId)!;
       const email = employee.companyEmail ?? existing.member.email;
-      const departmentId = departmentIds.get(employee.departmentId)!;
+      const departmentId = employee.departmentId === null ? null : departmentIds.get(employee.departmentId)!;
       await updateDingtalkDirectoryEmployee(
         client,
         organizationId,
@@ -238,6 +272,15 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
       );
     }
 
+    const createdMemberIds = new Map(createdMembers.map((member) => [member.externalId, member.id]));
+    for (const employee of selectedEmployees) {
+      const memberId = employee.action === 'create' ? createdMemberIds.get(employee.userId) : employee.memberId;
+      if (!memberId) throw directoryError('changed', 409);
+
+      const employeeDepartmentIds = employee.departmentIds.map((departmentId) => departmentIds.get(departmentId)!);
+      await replaceDingtalkDirectoryEmployeeDepartments(client, organizationId, memberId, employeeDepartmentIds);
+    }
+
     const departmentsCreated = plan.departments.filter((row) => row.action === 'create').length;
     const departmentsUpdated = plan.departments.length - departmentsCreated;
     const result = {
@@ -246,7 +289,7 @@ export async function syncDingtalkDirectory(organizationId: string, profileId: s
       employeesCreated: newEmployees.length,
       employeesUpdated: selectedEmployees.length - newEmployees.length
     };
-    await finishDingtalkDirectoryPreview(client, stored.id, { ...snapshot, selectionHash, result });
+    await finishDingtalkDirectoryPreview(client, stored.id, { ...snapshot, directory, selectionHash, result });
     return result;
   });
 }

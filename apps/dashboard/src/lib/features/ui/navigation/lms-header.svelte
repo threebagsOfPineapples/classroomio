@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { page } from '$app/state';
   import BellIcon from '@lucide/svelte/icons/bell';
   import MenuIcon from '@lucide/svelte/icons/menu';
@@ -14,6 +14,7 @@
   import { profile } from '$lib/utils/store/user';
   import { notificationsApi } from '$features/notifications/api/notifications.svelte';
   import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
+  import { enterpriseAccessApi } from '$features/enterprise/api/enterprise-access.svelte';
 
   interface Props {
     hideSearch?: boolean;
@@ -22,6 +23,14 @@
   let { hideSearch = false }: Props = $props();
   const notificationCount = $derived(notificationsApi.unreadCount);
   const navigation = $derived(getLmsNavigationItems($currentOrg, $t, page.url.pathname).filter((item) => !item.items));
+  const canOpenManagement = $derived(
+    $isOrgTeamMember || (enterpriseAccessApi.organizationId === $currentOrg.id && enterpriseAccessApi.canViewTraining)
+  );
+
+  $effect(() => {
+    const organizationId = $currentOrg.id;
+    untrack(() => void enterpriseAccessApi.load(organizationId));
+  });
 
   $effect(() => {
     if (!$currentOrg.id || !$profile.id) return;
@@ -81,7 +90,7 @@
         {/if}
       </div>
     {/if}
-    {#if $isOrgTeamMember}
+    {#if canOpenManagement}
       <Button href="/admin" variant="outline" size="sm" testId="switch-to-management">
         {$t('enterprise.interface.admin_portal')}
       </Button>

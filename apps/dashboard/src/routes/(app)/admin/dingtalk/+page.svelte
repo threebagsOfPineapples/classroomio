@@ -10,6 +10,7 @@
   import { Button } from '@cio/ui/base/button';
   import { InputField } from '@cio/ui/custom/input-field';
   import { CheckboxField } from '@cio/ui/custom/checkbox-field';
+  import { ScrollToTop } from '@cio/ui/custom/scroll-to-top';
 
   const api = new DingtalkDirectoryApi();
   let confirmOpen = $state(false);
@@ -54,6 +55,12 @@
                 : 'enterprise.dingtalk.directory.errors.disabled'
             )}
           </p>
+          <p class="ui:text-muted-foreground text-sm">
+            {$t('enterprise.dingtalk.directory.headquarters_scope', {
+              headquarters: api.status.scope.headquartersDepartmentId,
+              excluded: api.status.scope.excludedDepartmentIds.join('、')
+            })}
+          </p>
           {#if api.status.callbackUrl}<p class="ui:text-muted-foreground text-sm break-all">
               {$t('enterprise.dingtalk.directory.callback')}：{api.status.callbackUrl}
             </p>{/if}
@@ -72,7 +79,7 @@
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
               <p class="ui:text-muted-foreground text-sm">{$t('enterprise.departments')}</p>
-              <strong class="text-2xl">{api.preview.departments.length}</strong>
+              <strong class="text-2xl">{api.preview.scope.eligibleDepartmentCount}</strong>
             </div>
             <div>
               <p class="ui:text-muted-foreground text-sm">{$t('enterprise.employees')}</p>
@@ -84,6 +91,17 @@
             </div>
           </div>
           <p class="ui:text-muted-foreground text-sm">{$t('enterprise.dingtalk.directory.rules')}</p>
+          <div role="status" class="ui:bg-muted space-y-2 rounded-lg p-4 text-sm">
+            <p>
+              {$t('enterprise.dingtalk.directory.excluded_staff', { count: api.preview.scope.excludedEmployeeCount })}
+            </p>
+            <p>
+              {$t('enterprise.dingtalk.directory.multi_department_staff', {
+                count: api.preview.scope.multiDepartmentEmployeeCount
+              })}
+            </p>
+            <p class="ui:text-muted-foreground">{$t('enterprise.dingtalk.directory.department_associations')}</p>
+          </div>
           <div class="flex flex-wrap items-end justify-between gap-4">
             <div class="w-full max-w-sm">
               <InputField label={$t('enterprise.dingtalk.directory.search')} bind:value={api.search} />
@@ -119,35 +137,37 @@
                     >
                     <Table.Cell>{employee.name}</Table.Cell><Table.Cell>{employee.employeeNo ?? '—'}</Table.Cell>
                     <Table.Cell>
-                      {#if ['ready', 'department_required'].includes(employee.status) && employee.departmentIds.length > 1}
+                      {#if employee.status === 'ready' && (employee.hasMultipleDepartments || employee.departmentIds.length > 1)}
                         <Select.Root
                           type="single"
-                          value={api.departments[employee.userId]}
-                          onValueChange={(value) => api.setDepartment(employee.userId, value)}
+                          value={api.departments[employee.userId] || 'none'}
+                          onValueChange={(value) => api.setDepartment(employee.userId, value === 'none' ? '' : value)}
                           disabled={api.busy}
                         >
                           <Select.Trigger
-                            aria-label={$t('enterprise.dingtalk.directory.primary_department', { name: employee.name })}
+                            aria-label={$t('enterprise.dingtalk.directory.primary_department_optional', {
+                              name: employee.name
+                            })}
                             >{api.departments[employee.userId]
                               ? api.departmentLabel(Number(api.departments[employee.userId]))
-                              : $t('enterprise.dingtalk.directory.choose_department')}</Select.Trigger
+                              : $t('enterprise.dingtalk.directory.without_primary_department')}</Select.Trigger
                           >
                           <Select.Content
+                            ><Select.Item value="none"
+                              >{$t('enterprise.dingtalk.directory.without_primary_department')}</Select.Item
                             >{#each employee.departmentIds as id}<Select.Item value={String(id)}
                                 >{api.departmentLabel(id)}</Select.Item
                               >{/each}</Select.Content
                           >
                         </Select.Root>
+                        <p class="ui:text-muted-foreground mt-2 text-xs">
+                          {employee.departmentIds.map((id) => api.departmentLabel(id)).join('、')}
+                        </p>
                       {:else}{employee.departmentIds.map((id) => api.departmentLabel(id)).join('、')}{/if}
                     </Table.Cell>
                     <Table.Cell>{$t(`enterprise.dingtalk.directory.actions.${employee.action}`)}</Table.Cell>
-                    <Table.Cell
-                      class={['ready', 'department_required'].includes(employee.status)
-                        ? 'ui:text-muted-foreground'
-                        : 'text-red-700'}
-                      >{$t(
-                        `enterprise.dingtalk.directory.status.${employee.status === 'department_required' && api.departments[employee.userId] ? 'ready' : employee.status}`
-                      )}</Table.Cell
+                    <Table.Cell class={employee.status === 'ready' ? 'ui:text-muted-foreground' : 'text-red-700'}
+                      >{$t(`enterprise.dingtalk.directory.status.${employee.status}`)}</Table.Cell
                     >
                   </Table.Row>
                 {/each}
@@ -181,6 +201,7 @@
     {/snippet}
   </Page.Body>
 </Page.Root>
+<ScrollToTop label={$t('common.scroll_to_top')} />
 
 <Dialog.Root bind:open={confirmOpen}>
   <Dialog.Content>

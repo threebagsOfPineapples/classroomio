@@ -1,7 +1,7 @@
 import * as schema from '@db/schema';
 
 import { TNewGroup, TNewGroupmember } from '@db/types';
-import { and, asc, eq, inArray, isNotNull, isNull, or } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 import { ROLE } from '@cio/utils/constants';
@@ -170,7 +170,8 @@ export const isUserCourseMemberOrOrgAdmin = async (courseId: string, profileId: 
       and(
         eq(orgMembership.organizationId, schema.group.organizationId),
         eq(orgMembership.profileId, profileId),
-        eq(orgMembership.status, 'ACTIVE')
+        eq(orgMembership.status, 'ACTIVE'),
+        sql`${orgMembership.employmentStatus} IS DISTINCT FROM 'TERMINATED'`
       )
     )
     .where(
@@ -243,7 +244,8 @@ export const isCourseTeamMemberOrOrgAdmin = async (courseId: string, profileId: 
       and(
         eq(orgMembership.organizationId, schema.group.organizationId),
         eq(orgMembership.profileId, profileId),
-        eq(orgMembership.status, 'ACTIVE')
+        eq(orgMembership.status, 'ACTIVE'),
+        sql`${orgMembership.employmentStatus} IS DISTINCT FROM 'TERMINATED'`
       )
     )
     .where(

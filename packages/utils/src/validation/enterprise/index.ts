@@ -23,10 +23,27 @@ export const ZEnterpriseEmployeeUpdate = z.object({
 });
 
 export const ZEnterpriseRoles = z.object({
-  roles: z.array(z.enum(['SUPER_ADMIN', 'TRAINING_ADMIN', 'HR', 'DEPARTMENT_MANAGER', 'INSTRUCTOR', 'EMPLOYEE']))
+  roles: z.array(
+    z.enum([
+      'SUPER_ADMIN',
+      'TRAINING_ADMIN',
+      'HR',
+      'DEPARTMENT_MANAGER',
+      'INSTRUCTOR',
+      'MENTOR',
+      'EXECUTIVE',
+      'EMPLOYEE'
+    ])
+  )
+});
+
+export const ZEnterpriseMemberScopes = z.object({
+  departmentIds: z.array(z.uuid()).max(500),
+  memberIds: z.array(z.number().int().positive()).max(2000)
 });
 
 export type TEnterpriseDepartment = z.infer<typeof ZEnterpriseDepartment>;
 export type TEnterpriseDepartmentUpdate = z.infer<typeof ZEnterpriseDepartmentUpdate>;
 export type TEnterpriseEmployeeUpdate = z.infer<typeof ZEnterpriseEmployeeUpdate>;
 export type TEnterpriseRoles = z.infer<typeof ZEnterpriseRoles>;
+export type TEnterpriseMemberScopes = z.infer<typeof ZEnterpriseMemberScopes>;
